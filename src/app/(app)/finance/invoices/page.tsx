@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, FileText, CheckCircle, XCircle, Clock, BellRing } from "lucide-react";
+import { PlusCircle, FileText, CheckCircle, XCircle, Clock, BellRing, CreditCard } from "lucide-react";
 import { useFinance } from '@/hooks/use-finance';
 import { useStudents } from '@/hooks/use-students';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +18,53 @@ import jsPDF from 'jspdf';
 import "jspdf-autotable";
 import type { Invoice, Payment } from '@/lib/data';
 import { differenceInDays, parseISO } from 'date-fns';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+
+function PaymentGatewayDialog({ invoice }: { invoice: Invoice }) {
+    const { addPayment } = useFinance();
+    const [open, setOpen] = useState(false);
+    const { toast } = useToast();
+
+    const handlePayment = (method: string) => {
+        addPayment({ invoiceId: invoice.id, amount: invoice.total, date: new Date().toISOString().split('T')[0], method });
+        toast({
+            title: `Payment Successful via ${method}`,
+            description: `Invoice ${invoice.id.split('-')[1]} for $${invoice.total} has been paid.`
+        });
+        setOpen(false);
+    }
+    
+    return (
+         <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button size="sm" variant="default" disabled={invoice.status === 'Paid'}><CreditCard className="mr-2"/>Pay Online</Button></DialogTrigger>
+            <DialogContent>
+                <DialogHeader><DialogTitle>Pay Invoice #{invoice.id.split('-')[1]}</DialogTitle><DialogDescription>Total Amount: ${invoice.total.toFixed(2)}</DialogDescription></DialogHeader>
+                <Tabs defaultValue="card">
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="card">Card</TabsTrigger>
+                        <TabsTrigger value="mpesa">M-Pesa</TabsTrigger>
+                        <TabsTrigger value="bnpl">Fee Financing</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="card" className="space-y-4 pt-4">
+                        <Input placeholder="Card Number" />
+                        <div className="grid grid-cols-2 gap-4"><Input placeholder="MM/YY" /><Input placeholder="CVC" /></div>
+                        <Button className="w-full" onClick={() => handlePayment('Card')}>Pay ${invoice.total.toFixed(2)}</Button>
+                    </TabsContent>
+                    <TabsContent value="mpesa" className="space-y-4 pt-4">
+                        <Input placeholder="M-Pesa Phone Number (e.g. 254...)" />
+                        <Button className="w-full" onClick={() => toast({title: "STK Push Sent", description:"Please check your phone to complete payment."})}>Initiate STK Push</Button>
+                    </TabsContent>
+                     <TabsContent value="bnpl" className="space-y-4 pt-4 text-center">
+                        <p className="text-sm text-muted-foreground">Get flexible payment options with our financing partners.</p>
+                        <Button variant="outline" className="w-full">Apply for Fee Financing</Button>
+                         <p className="text-xs text-muted-foreground">This is a mock integration for demonstration.</p>
+                    </TabsContent>
+                </Tabs>
+            </DialogContent>
+        </Dialog>
+    )
+}
 
 function GenerateInvoicesDialog() {
     const { feeStructures, generateInvoicesForGrade } = useFinance();
@@ -232,6 +279,7 @@ export default function InvoicesPage() {
                                         {getStatus(invoice)}
                                     </TableCell>
                                     <TableCell className="text-right space-x-2">
+                                        <PaymentGatewayDialog invoice={invoice}/>
                                         <ViewInvoiceDialog invoice={invoice} payments={getPaymentsByInvoice(invoice.id)} />
                                         <RecordPaymentDialog invoice={invoice} />
                                     </TableCell>

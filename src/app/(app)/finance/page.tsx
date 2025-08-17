@@ -7,18 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { ArrowRight, DollarSign, FileText, Settings, Users, TrendingUp, TrendingDown, FileDown, PlusCircle, Hammer, Lightbulb, ShoppingCart, Receipt } from "lucide-react";
+import { ArrowRight, DollarSign, FileText, Settings, Users, TrendingUp, TrendingDown, FileDown, PlusCircle, Hammer, Lightbulb, ShoppingCart, Receipt, AlertTriangle } from "lucide-react";
 import { useStudents } from '@/hooks/use-students';
 import { useStaff } from '@/hooks/use-staff';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from 'xlsx';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Expense } from '@/lib/data';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 function LogExpenseDialog() {
     const { addExpense } = useFinance();
@@ -72,6 +74,14 @@ export default function FinancePage() {
     
     const unpaidInvoices = invoices.filter(i => i.status === 'Unpaid' || i.status === 'Overdue');
     const totalDues = unpaidInvoices.reduce((acc, i) => acc + i.total - getPaymentsByInvoice(i.id).reduce((pAcc, p) => pAcc + p.amount, 0), 0);
+    
+    const multiYearData = useMemo(() => {
+        return [
+            { year: '2022', income: 450000, expenses: 380000 },
+            { year: '2023', income: 520000, expenses: 450000 },
+            { year: '2024', income: totalIncome, expenses: totalExpenses },
+        ];
+    }, [totalIncome, totalExpenses]);
 
     function getPaymentsByInvoice(invoiceId: string) {
         return payments.filter(p => p.invoiceId === invoiceId);
@@ -209,6 +219,44 @@ export default function FinancePage() {
             </div>
             
             <div className="grid md:grid-cols-3 gap-6">
+                <Card className="md:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Multi-Year Financial Overview</CardTitle>
+                        <CardDescription>Mock comparison of income vs. expenses over the last few years.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={{}} className="h-[250px] w-full">
+                            <LineChart data={multiYearData}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis dataKey="year" />
+                                <YAxis />
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <Line type="monotone" dataKey="income" stroke="hsl(var(--chart-2))" name="Income" />
+                                <Line type="monotone" dataKey="expenses" stroke="hsl(var(--destructive))" name="Expenses"/>
+                            </LineChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+                <Card>
+                     <CardHeader>
+                        <CardTitle>Fee Default Risk (Mock)</CardTitle>
+                        <CardDescription>Simulated predictive analytics on fee payment likelihood.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader><TableRow><TableHead>Student</TableHead><TableHead>Risk</TableHead></TableRow></TableHeader>
+                            <TableBody>
+                                <TableRow><TableCell>Charlie Brown</TableCell><TableCell><Badge variant="destructive"><AlertTriangle className="mr-1"/>High</Badge></TableCell></TableRow>
+                                <TableRow><TableCell>Diana Miller</TableCell><TableCell><Badge variant="secondary"><AlertTriangle className="mr-1"/>Medium</Badge></TableCell></TableRow>
+                                <TableRow><TableCell>George Rodriguez</TableCell><TableCell><Badge variant="secondary"><AlertTriangle className="mr-1"/>Medium</Badge></TableCell></TableRow>
+                                <TableRow><TableCell>Bob Williams</TableCell><TableCell><Badge variant="default">Low</Badge></TableCell></TableRow>
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
                 {financeFeatures.map(feature => (
                      <Link href={feature.href} key={feature.title}>
                         <Card className="hover:shadow-lg transition-shadow h-full">
@@ -225,53 +273,6 @@ export default function FinancePage() {
                     </Link>
                 ))}
             </div>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Recent Invoices</CardTitle>
-                    <CardDescription>A list of the most recently created invoices.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                     <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Invoice ID</TableHead>
-                                <TableHead>Student</TableHead>
-                                <TableHead>Amount</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {invoices.slice(-5).reverse().map((invoice) => (
-                                <TableRow key={invoice.id}>
-                                    <TableCell className="font-mono">{invoice.id.split('-')[1]}</TableCell>
-                                    <TableCell>{students.find(s => s.id === invoice.studentId)?.name || 'N/A'}</TableCell>
-                                    <TableCell>${invoice.total.toLocaleString()}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={invoice.status === 'Paid' ? 'default' : (invoice.status === 'Unpaid' ? 'secondary' : 'destructive')}>
-                                            {invoice.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button asChild variant="ghost" size="sm">
-                                            <Link href={`/finance/invoices`}>
-                                                View Details
-                                                <ArrowRight className="ml-2 h-4 w-4" />
-                                            </Link>
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                             {invoices.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={5} className="text-center text-muted-foreground">No invoices generated yet.</TableCell>
-                                </TableRow>
-                             )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
 
         </div>
     );
