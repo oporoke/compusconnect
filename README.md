@@ -31,7 +31,7 @@ This repository contains extensive documentation covering every aspect of the pr
 | Document | Description |
 | :--- | :--- |
 | 📄 **[Software Requirements Specification (SRS)](./srs.md)** | Detailed breakdown of all functional and non-functional requirements. |
-| 🏗️ **[System Architecture & Design (SADD)](./SADD.md)** | Overview of the system architecture, technology stack, and module design. |
+| 🏗️ **[System Architecture & Design (SADD)](./SADD.md)** | High-level overview of the system architecture, technology stack, and module design. |
 | 🏗️ **[System Architecture (Detailed)](./SYSTEM_ARCHITECTURE.md)** | A comprehensive, in-depth document detailing the complete system architecture. |
 | 💻 **[Developer Documentation](./DOCUMENTATION.md)** | In-depth guide to the codebase, component structure, and development flow. |
 | 🔗 **[API Documentation](./API_DOCUMENTATION.md)** | Conceptual blueprint for the backend RESTful API. |
