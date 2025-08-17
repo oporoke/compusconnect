@@ -3,6 +3,9 @@ import { students } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 export default function StudentsPage() {
     return (
@@ -27,6 +30,7 @@ export default function StudentsPage() {
                                 <TableHead>Name</TableHead>
                                 <TableHead>Grade</TableHead>
                                 <TableHead>Section</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -39,6 +43,14 @@ export default function StudentsPage() {
                                     </TableCell>
                                     <TableCell>
                                         <Badge variant="outline">{student.section}</Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button asChild variant="ghost" size="sm">
+                                            <Link href={`/students/${student.id}`}>
+                                                View Profile
+                                                <ArrowRight className="ml-2 h-4 w-4" />
+                                            </Link>
+                                        </Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
