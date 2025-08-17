@@ -1,15 +1,69 @@
 
 # CampusConnect Lite - API Documentation
 
-This document outlines the conceptual RESTful API for the CampusConnect Lite system. It serves as a blueprint for backend development.
+This document outlines the RESTful API for the CampusConnect Lite system. It serves as a blueprint for backend development and frontend integration.
 
 ---
 
 ## **Authentication**
 
-- **Method**: All API requests must include a `Bearer Token` in the `Authorization` header.
-- **Token**: The token is a JSON Web Token (JWT) obtained upon successful login via the `/api/auth/login` endpoint. The JWT will contain the user's ID and role.
+- **Method**: The API uses a session-based authentication model with secure, HTTP-only cookies. A successful login returns a `session` cookie that must be included in all subsequent requests to protected endpoints.
 - **Base URL**: `/api`
+
+### 1. Start Session
+
+- **Endpoint**: `POST /auth/login`
+- **Description**: Initiates a user session. In the current MFA flow, this is called after the user provides their credentials and MFA code.
+- **Authentication**: Public
+- **Request Body**:
+    ```json
+    {
+      "name": "Admin User",
+      "role": "admin"
+    }
+    ```
+- **Success Response (200 OK)**:
+    - Sets an HTTP-only `session` cookie.
+    - Response Body:
+    ```json
+    {
+      "user": {
+        "name": "Admin User",
+        "role": "admin"
+      }
+    }
+    ```
+- **Error Responses**:
+    - `400 Bad Request`: Invalid role or name.
+
+### 2. Get Session
+
+- **Endpoint**: `GET /auth/session`
+- **Description**: Retrieves the current authenticated user's session data.
+- **Authentication**: Cookie-based
+- **Success Response (200 OK)**:
+    ```json
+    {
+      "user": {
+        "name": "Admin User",
+        "role": "admin"
+      }
+    }
+    ```
+- **Error Responses**:
+    - Returns `{"user": null}` if no active session is found.
+
+### 3. End Session
+
+- **Endpoint**: `POST /auth/logout`
+- **Description**: Logs the user out by clearing the session cookie.
+- **Authentication**: Cookie-based
+- **Success Response (200 OK)**:
+    ```json
+    {
+      "message": "Logged out"
+    }
+    ```
 
 ---
 
@@ -18,10 +72,8 @@ This document outlines the conceptual RESTful API for the CampusConnect Lite sys
 ### 1. Get All Students
 
 - **Endpoint**: `GET /students`
-- **Description**: Retrieves a list of all students. Supports filtering by grade.
+- **Description**: Retrieves a list of all students, including their discipline records.
 - **Authentication**: `admin`, `teacher`, `super-admin`
-- **Query Parameters**:
-    - `grade` (optional, string): Filter students by their grade (e.g., `?grade=10`).
 - **Success Response (200 OK)**:
     ```json
     [
@@ -29,40 +81,18 @@ This document outlines the conceptual RESTful API for the CampusConnect Lite sys
         "id": "S001",
         "name": "Alice Johnson",
         "grade": "10",
-        "section": "A"
+        "section": "A",
+        "discipline": [
+            { "id": "D01", "date": "2024-09-15T00:00:00.000Z", "reason": "Late Submission", "actionTaken": "Warning" }
+        ]
       },
       ...
     ]
     ```
 - **Error Responses**:
-    - `401 Unauthorized`: Missing or invalid JWT.
-    - `403 Forbidden`: User role does not have permission.
+    - `500 Internal Server Error`: If the database query fails.
 
-### 2. Get Student by ID
-
-- **Endpoint**: `GET /students/{id}`
-- **Description**: Retrieves a single student's complete profile.
-- **Authentication**: `admin`, `teacher`, `super-admin`
-- **Path Parameters**:
-    - `id` (required, string): The unique ID of the student (e.g., `S001`).
-- **Success Response (200 OK)**:
-    ```json
-    {
-      "id": "S001",
-      "name": "Alice Johnson",
-      "grade": "10",
-      "section": "A",
-      "discipline": [
-        { "id": "D01", "date": "2024-09-15", "reason": "Late Submission", "actionTaken": "Warning" }
-      ]
-    }
-    ```
-- **Error Responses**:
-    - `401 Unauthorized`: Missing or invalid JWT.
-    - `403 Forbidden`: User role does not have permission.
-    - `404 Not Found`: No student found with the given ID.
-
-### 3. Create Student
+### 2. Create Student
 
 - **Endpoint**: `POST /students`
 - **Description**: Creates a new student record.
@@ -70,24 +100,31 @@ This document outlines the conceptual RESTful API for the CampusConnect Lite sys
 - **Request Body**:
     ```json
     {
+      "id": "S123",
       "name": "Gary Wilson",
       "grade": "9",
       "section": "B"
     }
     ```
-- **Success Response (201 Created)**:
+- **Success Response (201 Created)**: Returns the newly created student object.
+- **Error Responses**:
+    - `500 Internal Server Error`: If the database query fails.
+
+### 3. Delete Student
+
+- **Endpoint**: `DELETE /students/{id}`
+- **Description**: Deletes a student record.
+- **Authentication**: `admin`, `super-admin`
+- **Path Parameters**:
+    - `id` (required, string): The unique ID of the student.
+- **Success Response (200 OK)**:
     ```json
     {
-      "id": "S008",
-      "name": "Gary Wilson",
-      "grade": "9",
-      "section": "B"
+        "message": "Student deleted successfully"
     }
     ```
 - **Error Responses**:
-    - `400 Bad Request`: Invalid or missing data in the request body.
-    - `401 Unauthorized`: Missing or invalid JWT.
-    - `403 Forbidden`: User role does not have permission.
+    - `500 Internal Server Error`: If the database query fails.
 
 ---
 
@@ -95,105 +132,138 @@ This document outlines the conceptual RESTful API for the CampusConnect Lite sys
 
 ### 1. Get All Invoices
 
-- **Endpoint**: `GET /invoices`
-- **Description**: Retrieves all invoices, with optional filtering.
+- **Endpoint**: `GET /finance/invoices`
+- **Description**: Retrieves all invoices.
 - **Authentication**: `admin`, `super-admin`
-- **Query Parameters**:
-    - `studentId` (optional, string): Filter invoices for a specific student.
-    - `status` (optional, string): Filter by status (`Paid`, `Unpaid`, `Overdue`).
 - **Success Response (200 OK)**:
     ```json
     [
       {
         "id": "INV-S001-1672531200000",
         "studentId": "S001",
-        "date": "2024-08-01",
-        "dueDate": "2024-09-01",
+        "date": "2024-08-01T00:00:00.000Z",
+        "dueDate": "2024-09-01T00:00:00.000Z",
         "total": 5000,
         "status": "Unpaid"
       }
     ]
     ```
-- **Error Responses**:
-    - `401 Unauthorized`: Missing or invalid JWT.
-    - `403 Forbidden`: User role does not have permission.
 
-### 2. Create Payment for Invoice
+### 2. Get All Payments
 
-- **Endpoint**: `POST /invoices/{id}/payments`
-- **Description**: Records a payment against a specific invoice.
+- **Endpoint**: `GET /finance/payments`
+- **Description**: Retrieves all recorded payments.
 - **Authentication**: `admin`, `super-admin`
-- **Path Parameters**:
-    - `id` (required, string): The ID of the invoice being paid.
-- **Request Body**:
-    ```json
-    {
-      "amount": 5000,
-      "method": "Card"
-    }
-    ```
-- **Success Response (201 Created)**:
-    ```json
-    {
-      "id": "PAY-1672531200001",
-      "invoiceId": "INV-S001-1672531200000",
-      "amount": 5000,
-      "date": "2024-09-12",
-      "method": "Card"
-    }
-    ```
-- **Error Responses**:
-    - `400 Bad Request`: Invalid data or payment exceeds amount due.
-    - `401 Unauthorized`: Missing or invalid JWT.
-    - `403 Forbidden`: User role does not have permission.
-    - `404 Not Found`: Invoice not found.
-
-### 3. Run Payroll
-
-- **Endpoint**: `POST /payroll`
-- **Description**: Executes the payroll process for a given month for all staff.
-- **Authentication**: `admin`, `super-admin`
-- **Request Body**:
-    ```json
-    {
-      "month": "2024-10"
-    }
-    ```
 - **Success Response (200 OK)**:
     ```json
+    [
+      {
+        "id": "PAY-1",
+        "invoiceId": "INV-S001-1672531200000",
+        "amount": 5000,
+        "date": "2024-09-12T00:00:00.000Z",
+        "method": "Card"
+      }
+    ]
+    ```
+
+### 3. Get All Payroll Records
+
+- **Endpoint**: `GET /finance/payroll`
+- **Description**: Retrieves the history of all payroll runs.
+- **Authentication**: `admin`, `super-admin`
+- **Success Response (200 OK)**:
+    ```json
+    [
+      {
+        "id": "PAYROLL-2024-10-T01",
+        "staffId": "T01",
+        "month": "2024-10",
+        "grossSalary": 6000,
+        "deductions": 1200,
+        "netSalary": 4800
+      }
+    ]
+    ```
+
+---
+
+## **Admissions**
+
+### 1. Get All Applications
+
+- **Endpoint**: `GET /admissions`
+- **Description**: Retrieves all student admission applications.
+- **Authentication**: `admin`, `super-admin`
+- **Success Response (200 OK)**:
+    ```json
+    [
+      {
+        "id": "APP001",
+        "name": "John Doe",
+        "age": 14,
+        "previousSchool": "Greenwood High",
+        "grade": "9",
+        "date": "2024-09-01T00:00:00.000Z",
+        "status": "Pending"
+      }
+    ]
+    ```
+
+### 2. Create Application
+
+- **Endpoint**: `POST /admissions`
+- **Description**: Submits a new student application.
+- **Authentication**: Public
+- **Request Body**:
+    ```json
     {
-      "status": "Success",
-      "message": "Payroll for 2024-10 has been processed for 4 staff members.",
-      "recordsCreated": 4
+      "name": "Jane Smith",
+      "age": 15,
+      "previousSchool": "Oakridge Academy",
+      "grade": "10",
+      "parentName": "Robert Smith",
+      "parentEmail": "robert.smith@example.com"
     }
     ```
-- **Error Responses**:
-    - `400 Bad Request`: Payroll for the month has already been run.
-    - `401 Unauthorized`: Missing or invalid JWT.
-    - `403 Forbidden`: User role does not have permission.
+- **Success Response (201 Created)**: Returns the newly created application object.
+
+### 3. Update Application Status
+
+- **Endpoint**: `PUT /admissions`
+- **Description**: Updates the status of an existing application.
+- **Authentication**: `admin`, `super-admin`
+- **Request Body**:
+    ```json
+    {
+      "id": "APP001",
+      "status": "Approved"
+    }
+    ```
+- **Success Response (200 OK)**: Returns the updated application object.
 
 ---
 
 ## **AI Flows**
 
-### 1. Generate Timetable
+### 1. Chatbot Interaction
 
-- **Endpoint**: `POST /ai/generate-timetable`
-- **Description**: Calls the AI assistant to generate a timetable.
-- **Authentication**: `admin`, `teacher`, `super-admin`
+- **Endpoint**: `POST /chatbot`
+- **Description**: Sends a user question to the AI chatbot and gets a response.
+- **Authentication**: `student`, `parent`
 - **Request Body**:
     ```json
     {
-      "courseSchedules": "- Math 101: 3 hours, Mon/Wed/Fri...",
-      "instructorAvailability": "- Dr. Smith: Mon-Fri 9am-5pm..."
+      "studentId": "S001",
+      "question": "What were my grades in the last exam?"
     }
     ```
 - **Success Response (200 OK)**:
     ```json
     {
-      "timetable": "Monday:\n  9:00 AM - 10:00 AM: Math 101 (Dr. Smith)\n..."
+      "answer": "In the Final Exam, you scored: Math: 85, Science: 92, English: 78, History: 88, Art: 95, Physical Education: 89."
     }
     ```
 - **Error Responses**:
-    - `401 Unauthorized`: Missing or invalid JWT.
+    - `400 Bad Request`: Missing `studentId` or `question`.
     - `500 Internal Server Error`: AI service failed to generate a response.

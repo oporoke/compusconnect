@@ -4,11 +4,11 @@ This directory contains all the professional and technical documentation for the
 
 ## Core Documents
 
-- **[Software Requirements Specification (SRS)](./SRS.md)**: Detailed breakdown of all functional and non-functional requirements.
+- **[Software Requirements Specification (SRS)](./srs.md)**: Detailed breakdown of all functional and non-functional requirements.
 - **[System Architecture & Design (SADD)](./System_Architecture_Design.md)**: Overview of the system architecture, technology stack, and module design.
 - **[System Architecture (Detailed)](../SYSTEM_ARCHITECTURE.md)**: A comprehensive, in-depth document detailing the complete system architecture.
 - **[Developer Documentation](./Developer_Documentation.md)**: In-depth guide to the codebase, component structure, and development flow.
-- **[API Documentation](./API_DOCUMENTATION.md)**: Conceptual blueprint for the backend RESTful API.
+- **[API Documentation](./API_DOCUMENTATION.md)**: Comprehensive reference for all backend RESTful API endpoints.
 - **[User Manual](./User_Manual.md)**: A user-friendly guide for end-users (admins, teachers, parents).
 - **[Admin & Deployment Guide](./ADMIN_GUIDE.md)**: Instructions for system administrators and DevOps engineers.
 - **[Analytics & Reporting Guide](./analytics_reporting_guide.md)**: A guide for decision-makers on using the analytics features.
