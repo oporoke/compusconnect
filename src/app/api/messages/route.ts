@@ -25,6 +25,7 @@ export async function GET(request: Request) {
     return NextResponse.json(conversationMap);
   } catch (error) {
     console.error(error);
+    // Return 200 OK with an empty object to prevent client-side errors
     return NextResponse.json({}, { status: 200 });
   }
 }
