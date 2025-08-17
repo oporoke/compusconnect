@@ -1,5 +1,4 @@
 
-
 export interface Student {
     id: string;
     name: string;
@@ -180,9 +179,13 @@ export interface Vehicle {
     id: string;
     model: string;
     capacity: number;
-    driverName: string;
-    driverContact: string;
-    routeId: string;
+    location: { lat: number; lng: number; };
+}
+export interface Driver {
+    id: string;
+    name: string;
+    licenseNumber: string;
+    contact: string;
 }
 
 export interface Route {
@@ -190,16 +193,21 @@ export interface Route {
     name: string;
     stops: string[];
     vehicleId: string;
+    driverId: string;
 }
 
 export const vehicles: Vehicle[] = [
-    { id: 'V01', model: 'Blue Bird Vision', capacity: 48, driverName: 'John Doe', driverContact: '555-1234', routeId: 'R01' },
-    { id: 'V02', model: 'Thomas Saf-T-Liner', capacity: 54, driverName: 'Jane Smith', driverContact: '555-5678', routeId: 'R02' },
+    { id: 'V01', model: 'Blue Bird Vision', capacity: 48, location: { lat: 34.0522, lng: -118.2437 } },
+    { id: 'V02', model: 'Thomas Saf-T-Liner', capacity: 54, location: { lat: 34.0522, lng: -118.2437 } },
+];
+export const drivers: Driver[] = [
+    { id: 'D01', name: 'John Doe', licenseNumber: 'DL12345', contact: '555-1234' },
+    { id: 'D02', name: 'Jane Smith', licenseNumber: 'DL67890', contact: '555-5678' },
 ];
 
 export const routes: Route[] = [
-    { id: 'R01', name: 'Uptown Express', stops: ['Central Station', 'Oak Street', 'Maple Avenue', 'School'], vehicleId: 'V01' },
-    { id: 'R02', name: 'Downtown Local', stops: ['City Hall', 'Pine Street', 'Elm Street', 'School'], vehicleId: 'V02' },
+    { id: 'R01', name: 'Uptown Express', stops: ['Central Station', 'Oak Street', 'Maple Avenue', 'School'], vehicleId: 'V01', driverId: 'D01' },
+    { id: 'R02', name: 'Downtown Local', stops: ['City Hall', 'Pine Street', 'Elm Street', 'School'], vehicleId: 'V02', driverId: 'D02' },
 ];
 
 export interface Hostel {

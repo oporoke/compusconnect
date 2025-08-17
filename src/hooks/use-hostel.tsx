@@ -45,18 +45,18 @@ export const HostelProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const assignStudentToRoom = useCallback((hostelId: string, roomId: string, studentId: string) => {
     setHostels(prevHostels => {
-      const newHostels = [...prevHostels];
-      const hostel = newHostels.find(h => h.id === hostelId);
+      const newHostels = JSON.parse(JSON.stringify(prevHostels));
+      const hostel = newHostels.find((h: Hostel) => h.id === hostelId);
       if (!hostel) return prevHostels;
       
-      const room = hostel.rooms.find(r => r.id === roomId);
+      const room = hostel.rooms.find((r: any) => r.id === roomId);
       if (!room || room.occupants.length >= room.capacity) {
           toast({ variant: 'destructive', title: "Room Full", description: "Cannot assign student to a full room."});
           return prevHostels;
       }
       
       // Prevent assigning a student who is already in a room
-      const alreadyAssigned = newHostels.some(h => h.rooms.some(r => r.occupants.includes(studentId)));
+      const alreadyAssigned = newHostels.some((h: Hostel) => h.rooms.some((r: any) => r.occupants.includes(studentId)));
       if (alreadyAssigned) {
           toast({ variant: 'destructive', title: "Already Assigned", description: "This student is already assigned to a room."});
           return prevHostels;
