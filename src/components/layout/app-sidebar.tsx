@@ -24,7 +24,9 @@ import {
   BedDouble,
   DollarSign,
   MessageSquare,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  ShieldCheck,
+  History,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -34,23 +36,25 @@ interface AppSidebarProps {
 }
 
 const navLinks = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
-  { href: '/admissions', label: 'Admissions', icon: UserPlus, roles: [ROLES.ADMIN] },
-  { href: '/staff', label: 'Staff', icon: Briefcase, roles: [ROLES.ADMIN] },
-  { href: '/students', label: 'Students', icon: Users, roles: [ROLES.ADMIN, ROLES.TEACHER] },
-  { href: '/exams', label: 'Exams', icon: FilePen, roles: [ROLES.ADMIN, ROLES.TEACHER] },
-  { href: '/attendance', label: 'Attendance', icon: CalendarCheck, roles: [ROLES.ADMIN, ROLES.TEACHER] },
-  { href: '/gradebook', label: 'Gradebook', icon: GraduationCap, roles: [ROLES.ADMIN, ROLES.TEACHER] },
-  { href: '/timetable', label: 'Timetable', icon: BookCopy, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
-  { href: '/lms', label: 'LMS', icon: BookOpenCheck, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
-  { href: '/library', label: 'Library', icon: Library, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
-  { href: '/transport', label: 'Transport', icon: Bus, roles: [ROLES.ADMIN] },
-  { href: '/hostel', label: 'Hostel', icon: BedDouble, roles: [ROLES.ADMIN] },
-  { href: '/announcements', label: 'Announcements', icon: Megaphone, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
-  { href: '/messages', label: 'Messages', icon: MessageSquare, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
-  { href: '/events', label: 'Events', icon: CalendarIcon, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
-  { href: '/report-cards', label: 'Report Cards', icon: ClipboardCheck, roles: [ROLES.ADMIN, ROLES.TEACHER] },
-  { href: '/finance', label: 'Finance', icon: DollarSign, roles: [ROLES.ADMIN] }
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/admissions', label: 'Admissions', icon: UserPlus, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
+  { href: '/staff', label: 'Staff', icon: Briefcase, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
+  { href: '/students', label: 'Students', icon: Users, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
+  { href: '/exams', label: 'Exams', icon: FilePen, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
+  { href: '/attendance', label: 'Attendance', icon: CalendarCheck, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
+  { href: '/gradebook', label: 'Gradebook', icon: GraduationCap, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
+  { href: '/timetable', label: 'Timetable', icon: BookCopy, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/lms', label: 'LMS', icon: BookOpenCheck, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/library', label: 'Library', icon: Library, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/transport', label: 'Transport', icon: Bus, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
+  { href: '/hostel', label: 'Hostel', icon: BedDouble, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
+  { href: '/announcements', label: 'Announcements', icon: Megaphone, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/messages', label: 'Messages', icon: MessageSquare, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/events', label: 'Events', icon: CalendarIcon, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/report-cards', label: 'Report Cards', icon: ClipboardCheck, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
+  { href: '/finance', label: 'Finance', icon: DollarSign, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
+  { href: '/security/permissions', label: 'Permissions', icon: ShieldCheck, roles: [ROLES.SUPER_ADMIN] },
+  { href: '/security/audit-log', label: 'Audit Log', icon: History, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
 ];
 
 export function AppSidebar({ user }: AppSidebarProps) {

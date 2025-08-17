@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useAuth } from '@/hooks/use-auth';
@@ -7,14 +8,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
-import { LogIn } from 'lucide-react';
+import { LogIn, KeyRound } from 'lucide-react';
+import { Input } from '../ui/input';
 
 export function LoginForm() {
   const { login, isLoading } = useAuth();
   const [selectedRole, setSelectedRole] = useState<Role>(ROLES.STUDENT);
+  const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    login(selectedRole);
+    login(selectedRole, password);
   };
 
   return (
@@ -33,11 +36,25 @@ export function LoginForm() {
             <SelectContent>
               {Object.values(ROLES).map((role) => (
                 <SelectItem key={role} value={role} className="capitalize">
-                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                  {role.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+        </div>
+         <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+                 <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    id="password" 
+                    type="password"
+                    placeholder="Enter your password"
+                    className="pl-10"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+            </div>
         </div>
       </CardContent>
       <CardFooter>

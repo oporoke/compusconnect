@@ -1,4 +1,6 @@
+
 export const ROLES = {
+  SUPER_ADMIN: 'super-admin',
   ADMIN: 'admin',
   TEACHER: 'teacher',
   STUDENT: 'student',
@@ -13,6 +15,7 @@ export interface User {
 }
 
 export const USERS: User[] = [
+  { name: 'Super Admin User', role: ROLES.SUPER_ADMIN },
   { name: 'Admin User', role: ROLES.ADMIN },
   { name: 'Teacher User', role: ROLES.TEACHER },
   { name: 'Student User', role: ROLES.STUDENT },
