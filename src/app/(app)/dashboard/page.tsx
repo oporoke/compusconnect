@@ -7,6 +7,8 @@ import { BookCopy, CalendarCheck, Megaphone, Users } from "lucide-react";
 import { ROLES } from "@/lib/auth";
 import { ParentDashboard } from "@/components/dashboard/parent-dashboard";
 import { ChatbotWidget } from "@/components/chatbot/chatbot-widget";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 function AdminTeacherDashboard() {
      const stats = [
@@ -84,6 +86,20 @@ function AdminTeacherDashboard() {
     )
 }
 
+function StudentSelfAdmissionPrompt() {
+    return (
+        <Card className="bg-primary/10 border-primary/20">
+            <CardHeader>
+                <CardTitle>Welcome to CampusConnect Lite!</CardTitle>
+                <p className="text-muted-foreground">Complete your admission process online to save time.</p>
+            </CardHeader>
+            <CardFooter>
+                <Button asChild><Link href="/self-admission">Start Self-Admission</Link></Button>
+            </CardFooter>
+        </Card>
+    )
+}
+
 export default function DashboardPage() {
     const { user } = useAuth();
 
@@ -105,6 +121,8 @@ export default function DashboardPage() {
                     }
                 </p>
             </div>
+
+            {user?.role === ROLES.STUDENT && <StudentSelfAdmissionPrompt />}
 
             {isParentOrStudent ? <ParentDashboard studentId={studentForDashboard} /> : <AdminTeacherDashboard />}
             
