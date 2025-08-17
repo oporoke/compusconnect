@@ -67,7 +67,7 @@ const navLinks = [
   { href: '/report-cards', label: 'Report Cards', icon: ClipboardCheck, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { href: '/finance', label: 'Finance', icon: DollarSign, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/analytics', label: 'Analytics', icon: AreaChart, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
-  { type: 'divider', roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT]},
+  { type: 'divider', roles: [ROLES.STUDENT, ROLES.PARENT]},
   { href: '/academics/adaptive-learning', label: 'Adaptive Learning', icon: BrainCircuit, roles: [ROLES.STUDENT, ROLES.PARENT] },
   { href: '/academics/gamification', label: 'Achievements', icon: Trophy, roles: [ROLES.STUDENT, ROLES.PARENT] },
   { type: 'divider', roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN]},
