@@ -1,7 +1,7 @@
 import { Role, User, ROLES } from './auth';
 export type { User, Role };
 
-export type { DisciplinaryRecord, Student, Exam, Grade, Announcement, CourseMaterial, Assignment, OnlineClass, AdmissionDocument, Admission, LeaveRequest, Staff, Book, StudentFee, LibraryTransaction, Vehicle, Driver, Route, TransportFeeRecord, Room, Hostel, HostelFeeRecord, MessMenu, FeeStructure, Invoice, InvoiceItem, Payment, PayrollRecord, Expense, CanteenAccount, CanteenTransaction, CanteenMenuItem, AlumniProfile, Donation, Mentorship, HealthRecord, ClinicVisit, Asset, Campaign, Pledge, AdmissionRequirement, Skill } from '@prisma/client';
+export type { DisciplinaryRecord, Student, Exam, Grade, Announcement, CourseMaterial, Assignment, OnlineClass, Admission, Staff, Book, LibraryTransaction, Vehicle, Driver, Route, Room, Hostel, FeeStructure, Invoice, Payment, PayrollRecord, Expense, CanteenAccount, CanteenTransaction, CanteenMenuItem, AlumniProfile, Mentorship, HealthRecord, ClinicVisit, Asset } from '@prisma/client';
 
 
 export const defaultCourseSchedules = `
