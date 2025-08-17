@@ -1,4 +1,5 @@
 
+
 export interface Student {
     id: string;
     name: string;
@@ -7,7 +8,7 @@ export interface Student {
 }
 
 export interface Exam {
-    id: string;
+    id:string;
     name: string;
     date: string; // YYYY-MM-DD
     subjects: string[];
@@ -102,7 +103,11 @@ export const onlineClasses: OnlineClass[] = [
     { id: 'OC04', subject: 'History', topic: 'Ancient Civilizations', time: 'Thu, 2:00 PM', link: '#' },
 ];
 
-
+export type AdmissionDocument = {
+    name: string;
+    type: string;
+    size: number;
+}
 export type Admission = {
     id: string;
     name: string;
@@ -113,14 +118,23 @@ export type Admission = {
     parentEmail: string;
     date: string;
     status: 'Pending' | 'Approved' | 'Rejected';
+    documents: AdmissionDocument[];
 };
 
 export const admissions: Admission[] = [
-    { id: 'APP001', name: 'Olivia Martinez', age: 14, previousSchool: 'Northwood Middle', grade: '9', parentName: 'Daniel Martinez', parentEmail: 'daniel@example.com', date: '2024-08-01', status: 'Pending' },
-    { id: 'APP002', name: 'James Wilson', age: 15, previousSchool: 'Southside High', grade: '10', parentName: 'Sophia Wilson', parentEmail: 'sophia@example.com', date: '2024-08-03', status: 'Approved' },
-    { id: 'APP003', name: 'Isabella Anderson', age: 14, previousSchool: 'Eastgate Prep', grade: '9', parentName: 'Liam Anderson', parentEmail: 'liam@example.com', date: '2024-08-05', status: 'Rejected' },
+    { id: 'APP001', name: 'Olivia Martinez', age: 14, previousSchool: 'Northwood Middle', grade: '9', parentName: 'Daniel Martinez', parentEmail: 'daniel@example.com', date: '2024-08-01', status: 'Pending', documents: [] },
+    { id: 'APP002', name: 'James Wilson', age: 15, previousSchool: 'Southside High', grade: '10', parentName: 'Sophia Wilson', parentEmail: 'sophia@example.com', date: '2024-08-03', status: 'Approved', documents: [] },
+    { id: 'APP003', name: 'Isabella Anderson', age: 14, previousSchool: 'Eastgate Prep', grade: '9', parentName: 'Liam Anderson', parentEmail: 'liam@example.com', date: '2024-08-05', status: 'Rejected', documents: [] },
 ];
 
+export interface LeaveRequest {
+    id: string;
+    staffId: string;
+    reason: string;
+    days: number;
+    startDate: string;
+    status: 'Pending' | 'Approved' | 'Rejected';
+}
 export interface Staff {
   id: string;
   name: string;
@@ -133,24 +147,33 @@ export interface Staff {
   leavesTaken: number;
   leavesAvailable: number;
   performanceNotes?: string;
+  deductions: { tax: number; insurance: number };
 }
 
 export const staff: Staff[] = [
-  { id: 'T01', name: 'Dr. Evelyn Reed', role: 'Principal', department: 'Administration', email: 'e.reed@example.com', phone: '123-456-7890', joiningDate: '2010-08-15', salary: 90000, leavesTaken: 5, leavesAvailable: 20, performanceNotes: 'Excellent leadership and administrative skills.' },
-  { id: 'T02', name: 'Mr. Samuel Jones', role: 'Math Teacher', department: 'Academics', email: 's.jones@example.com', phone: '123-456-7891', joiningDate: '2015-09-01', salary: 65000, leavesTaken: 3, leavesAvailable: 15, performanceNotes: 'Consistently receives positive feedback from students. Encourages classroom participation.' },
-  { id: 'T03', name: 'Ms. Clara Oswald', role: 'Science Teacher', department: 'Academics', email: 'c.oswald@example.com', phone: '123-456-7892', joiningDate: '2018-07-20', salary: 62000, leavesTaken: 8, leavesAvailable: 15 },
-  { id: 'T04', name: 'Mr. Peter Capaldi', role: 'Librarian', department: 'Library', email: 'p.capaldi@example.com', phone: '123-456-7893', joiningDate: '2019-01-10', salary: 55000, leavesTaken: 2, leavesAvailable: 12, performanceNotes: 'Has done a great job organizing the new fiction section.' },
+  { id: 'T01', name: 'Dr. Evelyn Reed', role: 'Principal', department: 'Administration', email: 'e.reed@example.com', phone: '123-456-7890', joiningDate: '2010-08-15', salary: 90000, leavesTaken: 5, leavesAvailable: 20, performanceNotes: 'Excellent leadership and administrative skills.', deductions: { tax: 15, insurance: 500 } },
+  { id: 'T02', name: 'Mr. Samuel Jones', role: 'Math Teacher', department: 'Academics', email: 's.jones@example.com', phone: '123-456-7891', joiningDate: '2015-09-01', salary: 65000, leavesTaken: 3, leavesAvailable: 15, performanceNotes: 'Consistently receives positive feedback from students. Encourages classroom participation.', deductions: { tax: 12, insurance: 400 } },
+  { id: 'T03', name: 'Ms. Clara Oswald', role: 'Science Teacher', department: 'Academics', email: 'c.oswald@example.com', phone: '123-456-7892', joiningDate: '2018-07-20', salary: 62000, leavesTaken: 8, leavesAvailable: 15, deductions: { tax: 12, insurance: 380 } },
+  { id: 'T04', name: 'Mr. Peter Capaldi', role: 'Librarian', department: 'Library', email: 'p.capaldi@example.com', phone: '123-456-7893', joiningDate: '2019-01-10', salary: 55000, leavesTaken: 2, leavesAvailable: 12, performanceNotes: 'Has done a great job organizing the new fiction section.', deductions: { tax: 10, insurance: 350 } },
 ];
+export const leaveRequests: LeaveRequest[] = [];
 
 
 export interface Book {
   id: string;
+  rfid: string;
   title: string;
   author: string;
   subject: string;
   isbn: string;
   quantity: number;
   available: number;
+}
+export interface StudentFee {
+    studentId: string;
+    type: 'late_fee' | 'transport' | 'hostel';
+    amount: number;
+    date: string;
 }
 
 export interface LibraryTransaction {
@@ -163,12 +186,14 @@ export interface LibraryTransaction {
 }
 
 export const books: Book[] = [
-    { id: 'B001', title: 'To Kill a Mockingbird', author: 'Harper Lee', subject: 'English', isbn: '978-0061120084', quantity: 5, available: 3 },
-    { id: 'B002', title: '1984', author: 'George Orwell', subject: 'English', isbn: '978-0451524935', quantity: 3, available: 3 },
-    { id: 'B003', title: 'A Brief History of Time', author: 'Stephen Hawking', subject: 'Science', isbn: '978-0553380163', quantity: 4, available: 2 },
-    { id: 'B004', title: 'The Elements of Style', author: 'Strunk & White', subject: 'General', isbn: '978-0205309023', quantity: 10, available: 10 },
-    { id: 'B005', title: 'Calculus: A Modern Approach', author: 'James Stewart', subject: 'Math', isbn: '978-1285740621', quantity: 6, available: 5 },
+    { id: 'B001', rfid: 'RFID001', title: 'To Kill a Mockingbird', author: 'Harper Lee', subject: 'English', isbn: '978-0061120084', quantity: 5, available: 3 },
+    { id: 'B002', rfid: 'RFID002', title: '1984', author: 'George Orwell', subject: 'English', isbn: '978-0451524935', quantity: 3, available: 3 },
+    { id: 'B003', rfid: 'RFID003', title: 'A Brief History of Time', author: 'Stephen Hawking', subject: 'Science', isbn: '978-0553380163', quantity: 4, available: 2 },
+    { id: 'B004', rfid: 'RFID004', title: 'The Elements of Style', author: 'Strunk & White', subject: 'General', isbn: '978-0205309023', quantity: 10, available: 10 },
+    { id: 'B005', rfid: 'RFID005', title: 'Calculus: A Modern Approach', author: 'James Stewart', subject: 'Math', isbn: '978-1285740621', quantity: 6, available: 5 },
 ];
+
+export const studentFees: StudentFee[] = [];
 
 export const libraryTransactions: LibraryTransaction[] = [
     { id: 'L001', studentId: 'S001', bookId: 'B001', type: 'borrow', date: '2024-09-01', dueDate: '2024-09-15' },
@@ -195,6 +220,13 @@ export interface Route {
     vehicleId: string;
     driverId: string;
 }
+export interface TransportFeeRecord {
+    id: string;
+    studentId: string;
+    routeId: string;
+    amount: number;
+    date: string;
+}
 
 export const vehicles: Vehicle[] = [
     { id: 'V01', model: 'Blue Bird Vision', capacity: 48, location: { lat: 34.0522, lng: -118.2437 } },
@@ -204,18 +236,12 @@ export const drivers: Driver[] = [
     { id: 'D01', name: 'John Doe', licenseNumber: 'DL12345', contact: '555-1234' },
     { id: 'D02', name: 'Jane Smith', licenseNumber: 'DL67890', contact: '555-5678' },
 ];
-
 export const routes: Route[] = [
     { id: 'R01', name: 'Uptown Express', stops: ['Central Station', 'Oak Street', 'Maple Avenue', 'School'], vehicleId: 'V01', driverId: 'D01' },
     { id: 'R02', name: 'Downtown Local', stops: ['City Hall', 'Pine Street', 'Elm Street', 'School'], vehicleId: 'V02', driverId: 'D02' },
 ];
+export const transportFeeRecords: TransportFeeRecord[] = [];
 
-export interface Hostel {
-    id: string;
-    name: string;
-    capacity: number;
-    rooms: Room[];
-}
 
 export interface Room {
     id: string;
@@ -223,12 +249,28 @@ export interface Room {
     capacity: number;
     occupants: string[]; // student IDs
 }
-
+export interface Hostel {
+    id: string;
+    name: string;
+    capacity: number;
+    rooms: Room[];
+}
+export interface HostelFeeRecord {
+    id: string;
+    studentId: string;
+    month: string;
+    amount: number;
+    date: string;
+}
+export interface MessMenu {
+    day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+    breakfast: string;
+    lunch: string;
+    dinner: string;
+}
 export const hostels: Hostel[] = [
     {
-        id: 'H01',
-        name: 'Boys Hostel A',
-        capacity: 10,
+        id: 'H01', name: 'Boys Hostel A', capacity: 10,
         rooms: [
             { id: 'R101', number: '101', capacity: 2, occupants: ['S002', 'S005'] },
             { id: 'R102', number: '102', capacity: 2, occupants: ['S007'] },
@@ -236,13 +278,68 @@ export const hostels: Hostel[] = [
         ]
     },
     {
-        id: 'H02',
-        name: 'Girls Hostel B',
-        capacity: 10,
+        id: 'H02', name: 'Girls Hostel B', capacity: 10,
         rooms: [
             { id: 'R201', number: '201', capacity: 2, occupants: ['S001', 'S004'] },
             { id: 'R202', number: '202', capacity: 2, occupants: ['S006'] },
-             { id: 'R203', number: '203', capacity: 2, occupants: ['S003'] },
+            { id: 'R203', number: '203', capacity: 2, occupants: ['S003'] },
         ]
     }
 ];
+export const hostelFeeRecords: HostelFeeRecord[] = [];
+export const messMenu: MessMenu[] = [
+    { day: 'Monday', breakfast: 'Oatmeal', lunch: 'Pizza', dinner: 'Pasta' },
+    { day: 'Tuesday', breakfast: 'Cereal', lunch: 'Sandwich', dinner: 'Stir-fry' },
+    { day: 'Wednesday', breakfast: 'Eggs', lunch: 'Salad', dinner: 'Soup' },
+    { day: 'Thursday', breakfast: 'Pancakes', lunch: 'Tacos', dinner: 'Curry' },
+    { day: 'Friday', breakfast: 'Yogurt', lunch: 'Burgers', dinner: 'Roast Chicken' },
+    { day: 'Saturday', breakfast: 'Waffles', lunch: 'Leftovers', dinner: 'Steak' },
+    { day: 'Sunday', breakfast: 'French Toast', lunch: 'Brunch', dinner: 'Pot Roast' },
+];
+
+// New Finance Module Data
+export interface FeeStructure {
+    id: string;
+    name: string; // e.g., 'Annual Tuition', 'Activity Fee'
+    amount: number;
+    grades: string[]; // e.g., ['9', '10', '11', '12'] or ['all']
+}
+export interface InvoiceItem {
+    description: string;
+    amount: number;
+}
+export interface Invoice {
+    id: string;
+    studentId: string;
+    date: string; // YYYY-MM-DD
+    dueDate: string; // YYYY-MM-DD
+    items: InvoiceItem[];
+    total: number;
+    status: 'Paid' | 'Unpaid' | 'Overdue';
+}
+export interface Payment {
+    id: string;
+    invoiceId: string;
+    amount: number;
+    date: string;
+    method: 'Card' | 'Cash' | 'Bank Transfer';
+}
+export interface PayrollRecord {
+    id: string;
+    staffId: string;
+    month: string; // e.g., '2024-10'
+    grossSalary: number;
+    deductions: number;
+    netSalary: number;
+    date: string;
+}
+
+export const feeStructures: FeeStructure[] = [
+    { id: 'FS01', name: 'Annual Tuition', amount: 5000, grades: ['all'] },
+    { id: 'FS02', name: 'Activity Fee', amount: 200, grades: ['all'] },
+    { id: 'FS03', name: 'Transport Fee - Uptown', amount: 800, grades: ['all'] },
+    { id: 'FS04', name: 'Hostel Fee', amount: 2500, grades: ['all'] },
+];
+export const invoices: Invoice[] = [];
+export const payments: Payment[] = [];
+export const payrollRecords: PayrollRecord[] = [];
