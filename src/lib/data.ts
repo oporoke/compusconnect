@@ -396,4 +396,80 @@ export const events: Event[] = [
     { id: 'EVT03', title: 'Winter Break', date: '2024-12-20', description: 'School closed for winter break.' },
 ];
 
-    
+// Extension Module Data
+
+// Canteen Management
+export interface CanteenAccount {
+    studentId: string;
+    balance: number;
+}
+export interface CanteenTransaction {
+    id: string;
+    studentId: string;
+    type: 'credit' | 'debit';
+    amount: number;
+    description: string;
+    date: string;
+}
+export interface CanteenMenu {
+    id: string;
+    day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
+    items: { name: string; price: number }[];
+}
+
+// Alumni Management
+export interface AlumniProfile {
+    id: string; // Can be the original student ID
+    name: string;
+    graduationYear: number;
+    email: string;
+    phone: string;
+    occupation: string;
+    company: string;
+}
+export interface Donation {
+    id: string;
+    alumniId: string;
+    amount: number;
+    purpose: string;
+    date: string;
+}
+
+// Health Center
+export interface HealthRecord {
+    studentId: string;
+    bloodGroup: string;
+    allergies: string[];
+    vaccinations: { name: string; date: string }[];
+}
+export interface ClinicVisit {
+    id: string;
+    studentId: string;
+    reason: string;
+    treatment: string;
+    date: string;
+}
+
+// Initial Data for Extension Module
+export const canteenAccounts: CanteenAccount[] = [
+    { studentId: 'S001', balance: 50 },
+    { studentId: 'S002', balance: 25.5 },
+];
+export const canteenTransactions: CanteenTransaction[] = [
+    { id: 'CT01', studentId: 'S001', type: 'debit', amount: 5.50, description: 'Lunch', date: new Date().toISOString().split('T')[0] },
+];
+export const canteenMenu: CanteenMenu[] = [
+    { id: 'CM1', day: 'Monday', items: [{ name: 'Pizza Slice', price: 2.50 }, { name: 'Salad', price: 3.00 }] },
+    { id: 'CM2', day: 'Tuesday', items: [{ name: 'Burger', price: 4.00 }, { name: 'Fries', price: 1.50 }] },
+    { id: 'CM3', day: 'Wednesday', items: [{ name: 'Pasta', price: 4.50 }, { name: 'Garlic Bread', price: 1.00 }] },
+    { id: 'CM4', day: 'Thursday', items: [{ name: 'Taco', price: 3.00 }, { name: 'Nachos', price: 3.50 }] },
+    { id: 'CM5', day: 'Friday', items: [{ name: 'Fish & Chips', price: 5.00 }, { name: 'Soup', price: 2.00 }] },
+];
+export const alumniProfiles: AlumniProfile[] = [
+    { id: 'S000', name: 'John Smith (Alumnus)', graduationYear: 2015, email: 'j.smith@alumni.com', phone: '555-0001', occupation: 'Software Engineer', company: 'Google' },
+];
+export const donations: Donation[] = [];
+export const healthRecords: HealthRecord[] = [
+    { studentId: 'S001', bloodGroup: 'O+', allergies: ['Peanuts'], vaccinations: [{ name: 'MMR', date: '2015-05-20' }] },
+];
+export const clinicVisits: ClinicVisit[] = [];

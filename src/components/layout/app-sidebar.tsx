@@ -28,6 +28,9 @@ import {
   ShieldCheck,
   History,
   AreaChart,
+  HeartPulse,
+  Utensils,
+  UserSquare,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -55,6 +58,11 @@ const navLinks = [
   { href: '/report-cards', label: 'Report Cards', icon: ClipboardCheck, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { href: '/finance', label: 'Finance', icon: DollarSign, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/analytics', label: 'Analytics', icon: AreaChart, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
+  { type: 'divider', roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN]},
+  { href: '/canteen', label: 'Canteen', icon: Utensils, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
+  { href: '/alumni', label: 'Alumni', icon: UserSquare, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
+  { href: '/health', label: 'Health Center', icon: HeartPulse, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
+  { type: 'divider', roles: [ROLES.SUPER_ADMIN]},
   { href: '/security/permissions', label: 'Permissions', icon: ShieldCheck, roles: [ROLES.SUPER_ADMIN] },
   { href: '/security/audit-log', label: 'Audit Log', icon: History, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
 ];
@@ -81,11 +89,15 @@ export function AppSidebar({ user }: AppSidebarProps) {
       </div>
       <div className="flex-1 overflow-y-auto">
         <nav className="grid items-start px-2 text-sm font-medium lg:px-4 py-4 gap-1">
-          {navLinks.filter(link => link.roles.includes(user.role)).map(link => (
-            <Link key={link.href} href={link.href} className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname.startsWith(link.href) ? 'bg-muted text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+          {navLinks.filter(link => link.roles.includes(user.role)).map((link, index) => (
+            link.type === 'divider' ? (
+              <div key={`divider-${index}`} className="my-2 border-t border-border/50" />
+            ) : (
+            <Link key={link.href} href={link.href!} className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname.startsWith(link.href!) ? 'bg-muted text-primary' : 'text-muted-foreground hover:text-primary'}`}>
               <link.icon className="h-4 w-4" />
               {link.label}
             </Link>
+            )
           ))}
         </nav>
       </div>
@@ -110,5 +122,3 @@ export function AppSidebar({ user }: AppSidebarProps) {
     </>
   );
 }
-
-    

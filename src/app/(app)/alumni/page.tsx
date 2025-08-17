@@ -1,0 +1,177 @@
+
+"use client";
+
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useAlumni } from '@/hooks/use-alumni';
+import { UserSquare, Search, PlusCircle, Pencil, Gift } from 'lucide-react';
+import type { AlumniProfile } from '@/lib/data';
+
+function AddAlumniDialog({ alumniToEdit, onComplete }: { alumniToEdit?: AlumniProfile, onComplete: () => void }) {
+    const { addAlumni, updateAlumni } = useAlumni();
+    const [name, setName] = useState(alumniToEdit?.name || '');
+    const [graduationYear, setGraduationYear] = useState(alumniToEdit?.graduationYear.toString() || '');
+    const [email, setEmail] = useState(alumniToEdit?.email || '');
+    const [phone, setPhone] = useState(alumniToEdit?.phone || '');
+    const [occupation, setOccupation] = useState(alumniToEdit?.occupation || '');
+    const [company, setCompany] = useState(alumniToEdit?.company || '');
+    
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const profileData = { name, graduationYear: Number(graduationYear), email, phone, occupation, company };
+        if (alumniToEdit) {
+            updateAlumni({ ...profileData, id: alumniToEdit.id });
+        } else {
+            addAlumni(profileData);
+        }
+        onComplete();
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1"><Label>Full Name</Label><Input value={name} onChange={e => setName(e.target.value)} required /></div>
+                <div className="space-y-1"><Label>Graduation Year</Label><Input type="number" value={graduationYear} onChange={e => setGraduationYear(e.target.value)} required /></div>
+            </div>
+             <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1"><Label>Email</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} required /></div>
+                <div className="space-y-1"><Label>Phone</Label><Input value={phone} onChange={e => setPhone(e.target.value)} required /></div>
+            </div>
+             <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1"><Label>Occupation</Label><Input value={occupation} onChange={e => setOccupation(e.target.value)} /></div>
+                <div className="space-y-1"><Label>Company</Label><Input value={company} onChange={e => setCompany(e.target.value)} /></div>
+            </div>
+            <DialogFooter>
+                <Button type="submit">{alumniToEdit ? 'Save Changes' : 'Add Alumni'}</Button>
+            </DialogFooter>
+        </form>
+    );
+}
+
+
+function AddDonationDialog() {
+    const { alumni, addDonation } = useAlumni();
+    const [open, setOpen] = useState(false);
+    const [alumniId, setAlumniId] = useState('');
+    const [amount, setAmount] = useState('');
+    const [purpose, setPurpose] = useState('');
+    
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        addDonation({ alumniId, amount: Number(amount), purpose, date: new Date().toISOString().split('T')[0] });
+        setOpen(false);
+    }
+    
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button><Gift/> Record Donation</Button></DialogTrigger>
+            <DialogContent>
+                <DialogHeader><DialogTitle>Record New Donation</DialogTitle></DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                     <Select value={alumniId} onValueChange={setAlumniId} required><SelectTrigger><SelectValue placeholder="Select Alumni..." /></SelectTrigger><SelectContent>{alumni.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent></Select>
+                    <Input type="number" placeholder="Amount" value={amount} onChange={e => setAmount(e.target.value)} required />
+                    <Input placeholder="Purpose (e.g. Scholarship Fund)" value={purpose} onChange={e => setPurpose(e.target.value)} required />
+                    <DialogFooter><Button type="submit">Record</Button></DialogFooter>
+                </form>
+            </DialogContent>
+    )
+}
+
+export default function AlumniPage() {
+    const { alumni, donations, isLoading } = useAlumni();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [editingAlumni, setEditingAlumni] = useState<AlumniProfile | undefined>(undefined);
+    const [dialogOpen, setDialogOpen] = useState(false);
+
+    const filteredAlumni = alumni.filter(a =>
+        a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        a.occupation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        a.company.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    const getAlumniName = (id: string) => alumni.find(a => a.id === id)?.name || 'N/A';
+
+    return (
+        <div className="space-y-6">
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                 <DialogContent>
+                    <DialogHeader><DialogTitle>{editingAlumni ? 'Edit Alumni Profile' : 'Add New Alumni'}</DialogTitle></DialogHeader>
+                    <AddAlumniDialog alumniToEdit={editingAlumni} onComplete={() => setDialogOpen(false)} />
+                 </DialogContent>
+            </Dialog>
+            
+            <div className="flex justify-between items-center">
+                 <div>
+                    <h1 className="text-3xl font-headline font-bold">Alumni Management</h1>
+                    <p className="text-muted-foreground">Manage the alumni database, networking, and donations.</p>
+                </div>
+                 <div className="flex gap-2">
+                    <AddDonationDialog />
+                    <Button variant="outline" onClick={() => { setEditingAlumni(undefined); setDialogOpen(true); }}><PlusCircle /> Add Alumni</Button>
+                </div>
+            </div>
+
+            <Tabs defaultValue="directory">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="directory"><UserSquare className="mr-2"/>Alumni Directory</TabsTrigger>
+                    <TabsTrigger value="donations"><Gift className="mr-2"/>Donations</TabsTrigger>
+                </TabsList>
+                <TabsContent value="directory">
+                    <Card>
+                        <CardHeader>
+                             <div className="relative">
+                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input placeholder="Search by name, occupation, company..." className="pl-8" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Grad. Year</TableHead><TableHead>Occupation</TableHead><TableHead>Company</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader>
+                                <TableBody>
+                                    {filteredAlumni.map(profile => (
+                                        <TableRow key={profile.id}>
+                                            <TableCell className="font-medium">{profile.name}</TableCell>
+                                            <TableCell>{profile.graduationYear}</TableCell>
+                                            <TableCell>{profile.occupation}</TableCell>
+                                            <TableCell>{profile.company}</TableCell>
+                                            <TableCell className="text-right">
+                                                <Button variant="ghost" size="icon" onClick={() => { setEditingAlumni(profile); setDialogOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                 <TabsContent value="donations">
+                    <Card>
+                        <CardHeader><CardTitle>Donations History</CardTitle></CardHeader>
+                        <CardContent>
+                             <Table>
+                                <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Alumni</TableHead><TableHead>Purpose</TableHead><TableHead className="text-right">Amount</TableHead></TableRow></TableHeader>
+                                <TableBody>
+                                    {donations.slice().reverse().map(donation => (
+                                        <TableRow key={donation.id}>
+                                            <TableCell>{donation.date}</TableCell>
+                                            <TableCell>{getAlumniName(donation.alumniId)}</TableCell>
+                                            <TableCell>{donation.purpose}</TableCell>
+                                            <TableCell className="text-right font-mono">${donation.amount.toFixed(2)}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
+        </div>
+    );
+}
