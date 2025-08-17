@@ -2,19 +2,23 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { Student, Grade, Exam, AttendanceRecord as IAttendanceRecord } from '@prisma/client';
+import type { Student as PrismaStudent, Grade as PrismaGrade, Exam as PrismaExam, AttendanceRecord as PrismaAttendanceRecord, DisciplinaryRecord } from '@prisma/client';
 import { useAuditLog } from './use-audit-log';
 
 // Re-exporting Prisma types for client-side usage if needed
-export type { Student, Grade, Exam };
-export interface AttendanceRecord extends IAttendanceRecord {}
+export interface Student extends PrismaStudent {
+    discipline: DisciplinaryRecord[];
+}
+export type Grade = PrismaGrade;
+export type Exam = PrismaExam;
+export type AttendanceRecord = PrismaAttendanceRecord;
 
 interface StudentContextType {
   students: Student[];
   grades: Grade[];
   exams: Exam[];
   attendance: AttendanceRecord[];
-  addStudent: (student: Omit<Student, 'id' | 'createdAt' | 'updatedAt' | 'hostelRoomId'>) => void;
+  addStudent: (student: Omit<Student, 'id' | 'createdAt' | 'updatedAt' | 'discipline' | 'hostelRoomId'>) => void;
   addExam: (exam: Omit<Exam, 'id'>) => void;
   updateGrades: (newGrade: Omit<Grade, 'id'>) => void;
   logAttendance: (classId: string, studentStatuses: { studentId: string; present: boolean }[]) => void;
@@ -69,12 +73,13 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
     fetchData();
   }, [fetchData]);
 
-  const addStudent = useCallback(async (studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt' | 'hostelRoomId'>) => {
+  const addStudent = useCallback(async (studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt'| 'discipline' | 'hostelRoomId'>) => {
     try {
+        const id = `S${(students.length + 1).toString().padStart(3, '0')}`;
         const response = await fetch('/api/students', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(studentData),
+            body: JSON.stringify({...studentData, id}),
         });
         if (!response.ok) throw new Error('Failed to create student');
         const newStudent = await response.json();
@@ -83,7 +88,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
     } catch (error) {
         console.error(error);
     }
-  }, [logAction]);
+  }, [logAction, students.length]);
   
   const addExam = useCallback(async (examData: Omit<Exam, 'id'>) => {
     // Similar fetch call to POST /api/exams

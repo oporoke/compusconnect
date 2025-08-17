@@ -226,7 +226,15 @@ async function main() {
         studentId: hr.studentId,
         bloodGroup: hr.bloodGroup,
         allergies: hr.allergies,
-        vaccinations: hr.vaccinations
+        vaccinations: hr.vaccinations,
+        clinicVisits: {
+            create: clinicVisits.filter(cv => cv.studentId === hr.studentId).map(cv => ({
+                id: cv.id,
+                reason: cv.reason,
+                treatment: cv.treatment,
+                date: new Date(cv.date)
+            }))
+        }
       }})
   }
 

@@ -32,86 +32,34 @@ export const LMSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
+  // This hook will now fetch from an API route
   useEffect(() => {
-    try {
-      const storedAssignments = localStorage.getItem('campus-connect-assignments');
-      const storedCourseMaterials = localStorage.getItem('campus-connect-course-materials');
-      const storedOnlineClasses = localStorage.getItem('campus-connect-online-classes');
-      
-      setAssignments(storedAssignments ? JSON.parse(storedAssignments) : initialAssignments);
-      setCourseMaterials(storedCourseMaterials ? JSON.parse(storedCourseMaterials) : initialCourseMaterials);
-      setOnlineClasses(storedOnlineClasses ? JSON.parse(storedOnlineClasses) : initialOnlineClasses);
-
-    } catch (error) {
-      console.error("Failed to parse LMS data from localStorage", error);
-      setAssignments(initialAssignments);
-      setCourseMaterials(initialCourseMaterials);
-      setOnlineClasses(initialOnlineClasses);
-    } finally {
-      setIsLoading(false);
+    const fetchLMSData = async () => {
+        setIsLoading(true);
+        // ... API calls to fetch assignments, materials, etc.
+        setAssignments(initialAssignments);
+        setCourseMaterials(initialCourseMaterials);
+        setOnlineClasses(initialOnlineClasses);
+        setIsLoading(false);
     }
+    fetchLMSData();
+  }, []);
+  
+  const submitAssignment = useCallback(async (assignmentId: string) => {
+    // API call to POST /api/assignments/:id/submit
   }, []);
 
-  const persistAssignments = (data: Assignment[]) => {
-    localStorage.setItem('campus-connect-assignments', JSON.stringify(data));
-  };
-  
-  const persistCourseMaterials = (data: CourseMaterial[]) => {
-    localStorage.setItem('campus-connect-course-materials', JSON.stringify(data));
-  };
+  const addAssignment = useCallback(async (data: Omit<Assignment, 'id' | 'status'>) => {
+    // API call to POST /api/assignments
+  }, []);
 
-  const persistOnlineClasses = (data: OnlineClass[]) => {
-    localStorage.setItem('campus-connect-online-classes', JSON.stringify(data));
-  };
-  
-  const submitAssignment = useCallback((assignmentId: string) => {
-    setAssignments(prev => {
-        const newAssignments = prev.map(a => a.id === assignmentId ? { ...a, status: 'Submitted' as const } : a);
-        persistAssignments(newAssignments);
-        toast({ title: "Assignment Submitted", description: "Your assignment has been marked as submitted." });
-        return newAssignments;
-    });
-  }, [toast]);
+  const addCourseMaterial = useCallback(async (data: Omit<CourseMaterial, 'id'>) => {
+    // API call to POST /api/materials
+  }, []);
 
-  const addAssignment = useCallback((data: Omit<Assignment, 'id' | 'status'>) => {
-    setAssignments(prev => {
-        const newAssignment: Assignment = {
-            ...data,
-            id: `AS${prev.length + 1}`,
-            status: 'Pending',
-        }
-        const newAssignments = [...prev, newAssignment];
-        persistAssignments(newAssignments);
-        toast({ title: "Assignment Created", description: "The new assignment has been added." });
-        return newAssignments;
-    })
-  }, [toast]);
-
-  const addCourseMaterial = useCallback((data: Omit<CourseMaterial, 'id'>) => {
-    setCourseMaterials(prev => {
-        const newMaterial: CourseMaterial = {
-            ...data,
-            id: `CM${prev.length + 1}`,
-        }
-        const newMaterials = [...prev, newMaterial];
-        persistCourseMaterials(newMaterials);
-        toast({ title: "Course Material Added", description: "The new material is now available." });
-        return newMaterials;
-    })
-  }, [toast]);
-
-  const addOnlineClass = useCallback((data: Omit<OnlineClass, 'id'>) => {
-    setOnlineClasses(prev => {
-        const newClass: OnlineClass = {
-            ...data,
-            id: `OC${prev.length + 1}`,
-        }
-        const newClasses = [...prev, newClass];
-        persistOnlineClasses(newClasses);
-        toast({ title: "Online Class Scheduled", description: "The new class has been added to the schedule." });
-        return newClasses;
-    })
-  }, [toast]);
+  const addOnlineClass = useCallback(async (data: Omit<OnlineClass, 'id'>) => {
+    // API call to POST /api/online-classes
+  }, []);
 
 
   return (

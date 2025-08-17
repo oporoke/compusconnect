@@ -82,7 +82,11 @@ Follow these instructions to get a local copy of the project up and running for 
     ```bash
     touch .env
     ```
-2.  To enable the AI-powered features, you must add your Google AI API key to the `.env` file:
+2.  Add the database connection string to your `.env` file. For SQLite, this is:
+    ```
+    DATABASE_URL="file:./dev.db"
+    ```
+3.  To enable the AI-powered features, you must add your Google AI API key to the `.env` file:
     ```
     GEMINI_API_KEY=your_google_ai_studio_api_key
     ```

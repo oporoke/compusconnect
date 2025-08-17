@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     const data = await request.json();
     const newStudent = await prisma.student.create({
       data: {
+        id: data.id,
         name: data.name,
         grade: data.grade,
         section: data.section,
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(newStudent, { status: 201 });
   } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: 'Failed to create student' }, { status: 500 });
   }
 }

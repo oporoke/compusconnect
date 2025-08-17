@@ -6,7 +6,7 @@ import { admissions as initialAdmissions, Admission } from '@/lib/data';
 
 interface AdmissionsContextType {
   applications: Admission[];
-  addApplication: (application: Omit<Admission, 'id' | 'status' | 'date'>) => void;
+  addApplication: (application: Omit<Admission, 'id' | 'status' | 'date' | 'documents'>) => void;
   updateApplicationStatus: (id: string, status: Admission['status']) => void;
   isLoading: boolean;
 }
@@ -17,42 +17,46 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
   const [applications, setApplications] = useState<Admission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // This hook will now fetch from an API route
   useEffect(() => {
-    try {
-      const storedAdmissions = localStorage.getItem('campus-connect-admissions');
-      setApplications(storedAdmissions ? JSON.parse(storedAdmissions) : initialAdmissions);
-    } catch (error) {
-      console.error("Failed to parse admissions data from localStorage", error);
+    const fetchAdmissions = async () => {
+      setIsLoading(true);
+      // In a real app:
+      // const response = await fetch('/api/admissions');
+      // const data = await response.json();
+      // setApplications(data);
+      // For now, we continue using mock data as the API doesn't exist yet
       setApplications(initialAdmissions);
-    } finally {
       setIsLoading(false);
-    }
+    };
+    fetchAdmissions();
   }, []);
 
-  const persistApplications = (data: Admission[]) => {
-    localStorage.setItem('campus-connect-admissions', JSON.stringify(data));
-  };
+  const addApplication = useCallback(async (applicationData: Omit<Admission, 'id' | 'status' | 'date' | 'documents'>) => {
+    // In a real app:
+    // const response = await fetch('/api/admissions', { method: 'POST', body: JSON.stringify(applicationData) });
+    // const newApplication = await response.json();
+    // setApplications(prev => [...prev, newApplication]);
 
-  const addApplication = useCallback((applicationData: Omit<Admission, 'id' | 'status' | 'date'>) => {
-    setApplications(prev => {
-      const newApplication: Admission = {
+    // Mock implementation:
+     const newApplication: Admission = {
         ...applicationData,
-        id: `APP${(prev.length + 1).toString().padStart(3, '0')}`,
+        id: `APP${(applications.length + 1).toString().padStart(3, '0')}`,
         date: new Date().toISOString().split('T')[0],
         status: 'Pending',
+        documents: [],
       };
-      const newApplications = [...prev, newApplication];
-      persistApplications(newApplications);
-      return newApplications;
-    });
-  }, []);
+    setApplications(prev => [...prev, newApplication]);
+  }, [applications.length]);
   
-  const updateApplicationStatus = useCallback((id: string, status: Admission['status']) => {
-    setApplications(prev => {
-        const newApplications = prev.map(app => app.id === id ? { ...app, status } : app);
-        persistApplications(newApplications);
-        return newApplications;
-    });
+  const updateApplicationStatus = useCallback(async (id: string, status: Admission['status']) => {
+    // In a real app:
+    // const response = await fetch(`/api/admissions/${id}`, { method: 'PUT', body: JSON.stringify({ status }) });
+    // const updatedApplication = await response.json();
+    // setApplications(prev => prev.map(app => app.id === id ? updatedApplication : app));
+
+    // Mock implementation:
+    setApplications(prev => prev.map(app => app.id === id ? { ...app, status } : app));
   }, []);
 
   return (
