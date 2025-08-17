@@ -24,83 +24,85 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (signal: AbortSignal) => {
     setIsLoading(true);
-      try {
-        const eventRes = await fetch('/api/events');
-        console.log('Events response status:', eventRes.status, 'ok:', eventRes.ok);
+    try {
+      const [eventRes, announcementRes, messagesRes] = await Promise.all([
+        fetch('/api/events', { signal }),
+        fetch('/api/announcements', { signal }),
+        fetch('/api/messages', { signal })
+      ]);
 
-        const announcementRes = await fetch('/api/announcements');
-        console.log('Announcements response status:', announcementRes.status, 'ok:', announcementRes.ok);
+      if (!eventRes.ok || !announcementRes.ok || !messagesRes.ok) {
+        throw new Error("Failed to fetch one or more communication resources.");
+      }
 
-        const messagesRes = await fetch('/api/messages');
-        console.log('Messages response status:', messagesRes.status, 'ok:', messagesRes.ok);
+      const eventsData = await eventRes.json();
+      const announcementsData = await announcementRes.json();
+      const conversationsData = await messagesRes.json();
 
-
-        if(!eventRes.ok || !announcementRes.ok || !messagesRes.ok) {
-            console.error("Failed to fetch one or more communication resources.");
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not load communication data.' });
-            setEvents([]);
-            setAnnouncements([]);
-            setConversations({});
-            setIsLoading(false);
-            return;
-        }
-
-        setEvents(await eventRes.json());
-        setAnnouncements(await announcementRes.json());
-        setConversations(await messagesRes.json()); 
-      } catch (error) {
-        console.error("Failed to parse communication data from API", error);
+      setEvents(eventsData);
+      setAnnouncements(announcementsData);
+      setConversations(conversationsData);
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error("Failed to load communication data:", error);
         toast({ variant: 'destructive', title: 'Error', description: 'Could not load communication data.' });
         setEvents([]);
         setAnnouncements([]);
         setConversations({});
-      } finally {
-        setIsLoading(false);
       }
+    } finally {
+      setIsLoading(false);
+    }
   }, [toast]);
 
   useEffect(() => {
-    fetchData();
+    const abortController = new AbortController();
+    fetchData(abortController.signal);
+    return () => {
+      abortController.abort();
+    };
   }, [fetchData]);
 
   const sendMessage = useCallback(async (sender: string, receiver: string, content: string) => {
-    // Optimistic UI update
-    const tempMessage: Message = {
-        sender,
-        content,
-        timestamp: new Date().toISOString()
-    };
-    setConversations(prev => {
-        const conversationId = [sender, receiver].sort().join('-');
-        const oldConversation = prev[conversationId] || [];
-        const newConversation = [...oldConversation, tempMessage];
-        return { ...prev, [conversationId]: newConversation };
-    });
+    const conversationId = [sender, receiver].sort().join('-');
+    const optimisticMessage: Message = { sender, content, timestamp: new Date().toISOString() };
+
+    setConversations(prev => ({
+      ...prev,
+      [conversationId]: [...(prev[conversationId] || []), optimisticMessage]
+    }));
 
     try {
-        const response = await fetch('/api/messages', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({sender, receiver, content})
-        });
-        if (!response.ok) {
-            
-            fetchData();
-        }
-    } catch(error) {
-        console.error("Failed to send message", error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not send message.'});
-        
-        fetchData();
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sender, receiver, content })
+      });
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+      // Optionally refetch to confirm, or trust the optimistic update
+      // await fetchData(new AbortController().signal);
+    } catch (error) {
+      console.error("Failed to send message", error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not send message.' });
+      // Revert optimistic update
+      setConversations(prev => {
+          const newConvo = {...prev};
+          const currentConvo = newConvo[conversationId];
+          if(currentConvo) {
+            newConvo[conversationId] = currentConvo.filter(m => m.timestamp !== optimisticMessage.timestamp);
+          }
+          return newConvo;
+      });
     }
-  }, [toast, fetchData]);
+  }, [toast]);
 
   const addEvent = useCallback((eventData: Omit<SchoolEvent, 'id'>) => {
     toast({ title: "Mock Action", description: `Event creation is not implemented.` });
   }, [toast]);
-
 
   return (
     <CommunicationContext.Provider value={{ conversations, events, announcements, isLoading, sendMessage, addEvent }}>

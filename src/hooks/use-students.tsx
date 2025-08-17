@@ -8,7 +8,7 @@ import { useToast } from './use-toast';
 
 // Re-exporting Prisma types for client-side usage if needed
 export interface Student extends PrismaStudent {
-    discipline: DisciplinaryRecord[];
+  discipline: DisciplinaryRecord[];
 }
 export type Grade = PrismaGrade;
 export type Exam = PrismaExam;
@@ -41,88 +41,83 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const { logAction } = useAuditLog();
   const { toast } = useToast();
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (signal: AbortSignal) => {
     setIsLoading(true);
     try {
-        const [studentsRes, gradesRes, examsRes, attendanceRes] = await Promise.all([
-            fetch('/api/students'),
-            fetch('/api/grades'),
-            fetch('/api/exams'),
-            fetch('/api/attendance')
-        ]);
+      const [studentsRes, gradesRes, examsRes, attendanceRes] = await Promise.all([
+        fetch('/api/students', { signal }),
+        fetch('/api/grades', { signal }),
+        fetch('/api/exams', { signal }),
+        fetch('/api/attendance', { signal })
+      ]);
 
-        if(!studentsRes.ok || !gradesRes.ok || !examsRes.ok || !attendanceRes.ok) {
-            console.error('Failed to fetch one or more student-related resources.');
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not load student data.' });
-            setStudents([]);
-            setGrades([]);
-            setExams([]);
-            setAttendance([]);
-            setIsLoading(false);
-            return;
-        }
+      if (!studentsRes.ok || !gradesRes.ok || !examsRes.ok || !attendanceRes.ok) {
+        throw new Error('Failed to fetch one or more student-related resources.');
+      }
 
-        const studentsData = await studentsRes.json();
-        const gradesData = await gradesRes.json();
-        const examsData = await examsRes.json();
-        const attendanceData = await attendanceRes.json();
-
-        setStudents(studentsData);
-        setGrades(gradesData);
-        setExams(examsData);
-        setAttendance(attendanceData);
+      setStudents(await studentsRes.json());
+      setGrades(await gradesRes.json());
+      setExams(await examsRes.json());
+      setAttendance(await attendanceRes.json());
 
     } catch (error) {
-      console.error("Failed to fetch data from API", error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not load student data.' });
-      setStudents([]);
-      setGrades([]);
-      setExams([]);
-      setAttendance([]);
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error("Failed to fetch data from API:", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not load student data.' });
+        setStudents([]);
+        setGrades([]);
+        setExams([]);
+        setAttendance([]);
+      }
     } finally {
       setIsLoading(false);
     }
   }, [toast]);
 
   useEffect(() => {
-    fetchData();
+    const abortController = new AbortController();
+    fetchData(abortController.signal);
+    return () => {
+        abortController.abort();
+    }
   }, [fetchData]);
 
-  const addStudent = useCallback(async (studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt'| 'discipline' | 'hostelRoomId'>) => {
+  const addStudent = useCallback(async (studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt' | 'discipline' | 'hostelRoomId'>) => {
     try {
-        const studentId = `S${Math.floor(1000 + Math.random() * 9000)}`;
-        const response = await fetch('/api/students', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...studentData, id: studentId }),
-        });
-        if (!response.ok) throw new Error('Failed to create student');
-        
-        await fetchData(); 
+      const studentId = `S${Math.floor(1000 + Math.random() * 9000)}`;
+      const response = await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...studentData, id: studentId }),
+      });
+      if (!response.ok) throw new Error('Failed to create student');
+      
+      const newStudent = await response.json();
+      setStudents(prev => [...prev, newStudent]);
 
-        logAction('Student Created', { studentId: studentId, studentName: studentData.name });
-        toast({
-            title: "Student Created",
-            description: `The profile for ${studentData.name} has been successfully created.`,
-        });
+      logAction('Student Created', { studentId: studentId, studentName: studentData.name });
+      toast({
+        title: "Student Created",
+        description: `The profile for ${studentData.name} has been successfully created.`,
+      });
     } catch (error) {
-        console.error(error);
-         toast({
-            variant: 'destructive',
-            title: "Creation Failed",
-            description: "Could not create the student profile.",
-        });
+      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: "Creation Failed",
+        description: "Could not create the student profile.",
+      });
     }
-  }, [logAction, toast, fetchData]);
+  }, [logAction, toast]);
   
   const deleteStudent = useCallback(async (id: string) => {
+    const originalStudents = students;
+    setStudents(prev => prev.filter(s => s.id !== id));
     try {
       const response = await fetch(`/api/students/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete student');
-      
-      await fetchData(); 
       
       logAction('Student Deleted', { studentId: id });
       toast({
@@ -131,26 +126,24 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
       });
     } catch (error) {
       console.error(error);
+      setStudents(originalStudents);
       toast({
         variant: 'destructive',
         title: "Deletion Failed",
         description: "Could not delete the student profile.",
       });
     }
-  }, [logAction, toast, fetchData]);
+  }, [students, logAction, toast]);
 
   const addExam = useCallback(async (examData: Omit<Exam, 'id'>) => {
-    // This should be a POST to /api/exams
     toast({ title: "Mock Action", description: `Exam creation is not implemented.` });
   }, [toast]);
 
   const updateGrades = useCallback(async (newGrade: Omit<Grade, 'id'>) => {
-    // This should be a POST to /api/grades
     toast({ title: "Mock Action", description: `Grade update is not implemented.` });
   }, [toast]);
 
   const logAttendance = useCallback(async (classId: string, studentStatuses: { studentId: string; present: boolean }[]) => {
-    // This should be a POST to /api/attendance
     toast({ title: "Mock Action", description: `Attendance logging is not implemented.` });
   }, [toast]);
 
@@ -165,7 +158,6 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const getAttendanceByStudentId = useCallback((id: string) => {
     return attendance.filter(a => a.studentId === id);
   }, [attendance]);
-
 
   return (
     <StudentContext.Provider value={{ students, grades, exams, attendance, addStudent, deleteStudent, addExam, updateGrades, logAttendance, getStudentById, getGradesByStudentId, getAttendanceByStudentId, isLoading }}>

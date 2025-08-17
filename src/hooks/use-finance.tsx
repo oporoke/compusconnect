@@ -3,7 +3,6 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import type { FeeStructure, Invoice, Payment, PayrollRecord, Expense } from '@prisma/client';
-
 import { useToast } from './use-toast';
 
 interface FinanceContextType {
@@ -16,7 +15,7 @@ interface FinanceContextType {
   addFeeStructure: (structure: Omit<FeeStructure, 'id'>) => void;
   removeFeeStructure: (id: string) => void;
   generateInvoicesForGrade: (grade: string, feeStructureIds: string[]) => void;
-  addPayment: (payment: Omit<Payment, 'id'>) => void;
+  addPayment: (payment: Omit<Payment, 'id' | 'invoiceId'> & { invoiceId: string }) => void;
   runPayrollForMonth: (month: string) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   getInvoicesByStudent: (studentId: string) => Invoice[];
@@ -34,50 +33,55 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchData = async () => {
-        setIsLoading(true);
-        try {
-            const [fsRes, invRes, payRes, prRes, expRes] = await Promise.all([
-                fetch('/api/finance/feestructures'),
-                fetch('/api/finance/invoices'),
-                fetch('/api/finance/payments'),
-                fetch('/api/finance/payroll'),
-                fetch('/api/finance/expenses'),
-            ]);
-            
-            if(!fsRes.ok || !invRes.ok || !payRes.ok || !prRes.ok || !expRes.ok) {
-                console.error("Failed to fetch one or more finance resources.");
-                toast({ variant: 'destructive', title: 'Error', description: 'Could not load complete finance data.' });
-                setFeeStructures([]);
-                setInvoices([]);
-                setPayments([]);
-                setPayrollRecords([]);
-                setExpenses([]);
-                setIsLoading(false);
-                return;
-            }
-            
-            setFeeStructures(await fsRes.json());
-            setInvoices(await invRes.json());
-            setPayments(await payRes.json());
-            setPayrollRecords(await prRes.json());
-            setExpenses(await expRes.json());
+  const fetchData = useCallback(async (signal: AbortSignal) => {
+    setIsLoading(true);
+    try {
+      const [fsRes, invRes, payRes, prRes, expRes] = await Promise.all([
+        fetch('/api/finance/feestructures', { signal }),
+        fetch('/api/finance/invoices', { signal }),
+        fetch('/api/finance/payments', { signal }),
+        fetch('/api/finance/payroll', { signal }),
+        fetch('/api/finance/expenses', { signal }),
+      ]);
 
-        } catch(e) {
-            console.error("Failed to load finance data", e);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not load finance data.' });
-            setFeeStructures([]);
-            setInvoices([]);
-            setPayments([]);
-            setPayrollRecords([]);
-            setExpenses([]);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    fetchData();
+      if (!fsRes.ok || !invRes.ok || !payRes.ok || !prRes.ok || !expRes.ok) {
+        throw new Error('Failed to fetch one or more finance resources.');
+      }
+
+      const fsData = await fsRes.json();
+      const invData = await invRes.json();
+      const payData = await payRes.json();
+      const prData = await prRes.json();
+      const expData = await expRes.json();
+
+      setFeeStructures(fsData);
+      setInvoices(invData);
+      setPayments(payData);
+      setPayrollRecords(prData);
+      setExpenses(expData);
+
+    } catch (error) {
+       if (error instanceof Error && error.name !== 'AbortError') {
+          console.error("Failed to load finance data:", error);
+          toast({ variant: 'destructive', title: 'Error', description: 'Could not load finance data.' });
+          setFeeStructures([]);
+          setInvoices([]);
+          setPayments([]);
+          setPayrollRecords([]);
+          setExpenses([]);
+       }
+    } finally {
+      setIsLoading(false);
+    }
   }, [toast]);
+
+  useEffect(() => {
+    const abortController = new AbortController();
+    fetchData(abortController.signal);
+    return () => {
+        abortController.abort();
+    };
+  }, [fetchData]);
 
   const addFeeStructure = useCallback((structureData: Omit<FeeStructure, 'id'>) => {
     toast({ title: 'Mock Action', description: `Fee structure creation is not implemented.` });
@@ -103,15 +107,13 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
      toast({ title: 'Mock Action', description: `Expense logging is not implemented.` });
   }, [toast]);
 
-
   const getInvoicesByStudent = useCallback((studentId: string) => {
-      return invoices.filter(inv => inv.studentId === studentId);
+    return invoices.filter(inv => inv.studentId === studentId);
   }, [invoices]);
 
-   const getPaymentsByInvoice = useCallback((invoiceId: string) => {
-      return payments.filter(p => p.invoiceId === invoiceId);
+  const getPaymentsByInvoice = useCallback((invoiceId: string) => {
+    return payments.filter(p => p.invoiceId === invoiceId);
   }, [payments]);
-
 
   return (
     <FinanceContext.Provider value={{ feeStructures, invoices, payments, payrollRecords, expenses, isLoading, addFeeStructure, removeFeeStructure, generateInvoicesForGrade, addPayment, runPayrollForMonth, addExpense, getInvoicesByStudent, getPaymentsByInvoice }}>

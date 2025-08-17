@@ -25,66 +25,58 @@ export const LMSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchData = async () => {
-        setIsLoading(true);
-        try {
-            const [assRes, matRes, clsRes] = await Promise.all([
-                fetch('/api/lms/assignments'),
-                fetch('/api/lms/materials'),
-                fetch('/api/lms/classes'),
-            ]);
-            if(!assRes.ok || !matRes.ok || !clsRes.ok) {
-                console.error('Failed to fetch LMS data');
-                toast({ variant: 'destructive', title: 'Error', description: 'Could not load LMS data.' });
-                setAssignments([]);
-                setCourseMaterials([]);
-                setOnlineClasses([]);
-                setIsLoading(false);
-                return;
-            }
-            
-            const assData = await assRes.json();
-            const matData = await matRes.json();
-            const clsData = await clsRes.json();
-            
-            setAssignments(assData);
-            setCourseMaterials(matData);
-            setOnlineClasses(clsData);
-        } catch(e) {
-            console.error("Failed to load LMS data", e);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not load LMS data.' });
-            setAssignments([]);
-            setCourseMaterials([]);
-            setOnlineClasses([]);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    fetchData();
+  const fetchData = useCallback(async (signal: AbortSignal) => {
+    setIsLoading(true);
+    try {
+      const [assRes, matRes, clsRes] = await Promise.all([
+        fetch('/api/lms/assignments', { signal }),
+        fetch('/api/lms/materials', { signal }),
+        fetch('/api/lms/classes', { signal }),
+      ]);
+      if (!assRes.ok || !matRes.ok || !clsRes.ok) {
+        throw new Error('Failed to fetch LMS data');
+      }
+
+      setAssignments(await assRes.json());
+      setCourseMaterials(await matRes.json());
+      setOnlineClasses(await clsRes.json());
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error("Failed to load LMS data:", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not load LMS data.' });
+        setAssignments([]);
+        setCourseMaterials([]);
+        setOnlineClasses([]);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }, [toast]);
-  
+
+  useEffect(() => {
+    const abortController = new AbortController();
+    fetchData(abortController.signal);
+    return () => {
+        abortController.abort();
+    }
+  }, [fetchData]);
+
   const submitAssignment = useCallback(async (assignmentId: string) => {
-    // This should be a POST to /api/lms/assignments/[id]/submit
     setAssignments(prev => prev.map(a => a.id === assignmentId ? { ...a, status: 'Submitted' } : a));
     toast({ title: "Assignment Submitted (Mock)", description: "Your assignment has been submitted." });
   }, [toast]);
 
   const addAssignment = useCallback(async (data: Omit<Assignment, 'id' | 'status'>) => {
-    // This should be a POST to /api/lms/assignments
-     toast({ title: 'Assignment Created (Mock)', description: `The assignment "${data.title}" has been created.` });
+    toast({ title: 'Assignment Created (Mock)', description: `The assignment "${data.title}" has been created.` });
   }, [toast]);
 
   const addCourseMaterial = useCallback(async (data: Omit<CourseMaterial, 'id'>) => {
-    // This should be a POST to /api/lms/materials
-     toast({ title: 'Course Material Added (Mock)' });
+    toast({ title: 'Course Material Added (Mock)' });
   }, [toast]);
 
   const addOnlineClass = useCallback(async (data: Omit<OnlineClass, 'id'>) => {
-    // This should be a POST to /api/lms/classes
     toast({ title: 'Online Class Scheduled (Mock)' });
   }, [toast]);
-
 
   return (
     <LMSContext.Provider value={{ assignments, courseMaterials, onlineClasses, submitAssignment, addAssignment, addCourseMaterial, addOnlineClass, isLoading }}>

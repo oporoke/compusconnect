@@ -20,39 +20,39 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchData = async () => {
-        setIsLoading(true);
-        try {
-            const res = await fetch('/api/staff');
-            if(!res.ok) {
-                console.error("Failed to fetch staff data");
-                toast({ variant: 'destructive', title: 'Error', description: 'Could not load staff data.' });
-                setStaff([]);
-                setIsLoading(false);
-                return;
-            }
-            const data = await res.json();
-            setStaff(data);
-        } catch(e) {
-            console.error(e);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not load staff data.' });
-            setStaff([]);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    fetchData();
+  const fetchData = useCallback(async (signal: AbortSignal) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/staff', { signal });
+      if (!res.ok) {
+        throw new Error("Failed to fetch staff data from API.");
+      }
+      const data = await res.json();
+      setStaff(data);
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') {
+        console.error(e);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not load staff data.' });
+        setStaff([]);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }, [toast]);
 
+  useEffect(() => {
+    const abortController = new AbortController();
+    fetchData(abortController.signal);
+    return () => {
+        abortController.abort();
+    }
+  }, [fetchData]);
 
   const addStaff = useCallback(async (staffData: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable' | 'performanceNotes' | 'schoolId' | 'taxDeduction' | 'insuranceDeduction'>) => {
-    // This should be a POST request to /api/staff
     toast({ title: "Staff Member Added (Mock)", description: `The profile for ${staffData.name} has been created.` });
   }, [toast]);
   
   const updateStaff = useCallback(async (updatedStaffMember: Staff) => {
-     // This should be a PUT request to /api/staff/[id]
      setStaff(prev => prev.map(s => s.id === updatedStaffMember.id ? updatedStaffMember : s));
      toast({ title: 'Staff Updated (Mock)', description: `${updatedStaffMember.name}'s profile has been updated.` });
   }, [toast]);

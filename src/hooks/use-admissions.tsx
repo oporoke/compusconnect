@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { Admission } from '@/lib/data';
+import type { Admission } from '@prisma/client';
 import { useToast } from './use-toast';
 
 interface AdmissionsContextType {
@@ -19,37 +19,40 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchAdmissions = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch('/api/admissions');
-        if (!response.ok) {
-            console.error('Failed to fetch admissions');
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not load admissions data.' });
-            setApplications([]);
-            return;
-        };
-        const data = await response.json();
-        setApplications(data);
-      } catch (error) {
-        console.error(error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not load admissions data.' });
-        setApplications([]);
-      } finally {
-        setIsLoading(false);
+  const fetchAdmissions = useCallback(async (signal: AbortSignal) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/admissions', { signal });
+      if (!response.ok) {
+        throw new Error('Failed to fetch admissions from API.');
       }
-    };
-    fetchAdmissions();
+      const data = await response.json();
+      setApplications(data);
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Failed to fetch admissions:', error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not load admissions data.' });
+        setApplications([]); // Reset to a safe state
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }, [toast]);
 
+  useEffect(() => {
+    const abortController = new AbortController();
+    fetchAdmissions(abortController.signal);
+
+    return () => {
+      abortController.abort(); // Cancel the fetch request on component unmount
+    };
+  }, [fetchAdmissions]);
+
   const addApplication = useCallback(async (applicationData: Omit<Admission, 'id' | 'status' | 'date' | 'documents'>) => {
-    // This part should be implemented with a POST request to a new /api/admissions route
     toast({ title: "Mock Action", description: `Application submission is not implemented.` });
   }, [toast]);
   
   const updateApplicationStatus = useCallback(async (id: string, status: Admission['status']) => {
-    // This part should be implemented with a PUT request to /api/admissions/[id]
     toast({ title: "Mock Action", description: `Status update is not implemented.` });
   }, [toast]);
 
