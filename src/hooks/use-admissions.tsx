@@ -24,12 +24,18 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
       setIsLoading(true);
       try {
         const response = await fetch('/api/admissions');
-        if (!response.ok) throw new Error('Failed to fetch admissions');
+        if (!response.ok) {
+            console.error('Failed to fetch admissions');
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not load admissions data.' });
+            setApplications([]);
+            return;
+        };
         const data = await response.json();
         setApplications(data);
       } catch (error) {
         console.error(error);
         toast({ variant: 'destructive', title: 'Error', description: 'Could not load admissions data.' });
+        setApplications([]);
       } finally {
         setIsLoading(false);
       }
@@ -39,22 +45,12 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const addApplication = useCallback(async (applicationData: Omit<Admission, 'id' | 'status' | 'date' | 'documents'>) => {
     // This part should be implemented with a POST request to a new /api/admissions route
-    // For now, we'll just update the local state to keep UI interactive
-    const newApplication: Admission = {
-      ...applicationData,
-      id: `APP${(applications.length + 1).toString().padStart(3, '0')}`,
-      date: new Date().toISOString().split('T')[0],
-      status: 'Pending',
-      documents: [],
-    };
-    setApplications(prev => [...prev, newApplication]);
-    toast({ title: "Application Submitted", description: "Your application has been received (mock)." });
-  }, [applications.length, toast]);
+    toast({ title: "Mock Action", description: `Application submission is not implemented.` });
+  }, [toast]);
   
   const updateApplicationStatus = useCallback(async (id: string, status: Admission['status']) => {
     // This part should be implemented with a PUT request to /api/admissions/[id]
-    setApplications(prev => prev.map(app => app.id === id ? { ...app, status } : app));
-    toast({ title: "Status Updated", description: `Application status has been changed to ${status} (mock).` });
+    toast({ title: "Mock Action", description: `Status update is not implemented.` });
   }, [toast]);
 
   return (

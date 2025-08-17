@@ -47,7 +47,15 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
             ]);
             
             if(!fsRes.ok || !invRes.ok || !payRes.ok || !prRes.ok || !expRes.ok) {
-                throw new Error("Failed to fetch financial data");
+                console.error("Failed to fetch one or more finance resources.");
+                toast({ variant: 'destructive', title: 'Error', description: 'Could not load complete finance data.' });
+                // Set empty arrays to prevent crashes
+                setFeeStructures([]);
+                setInvoices([]);
+                setPayments([]);
+                setPayrollRecords([]);
+                setExpenses([]);
+                return;
             }
             
             setFeeStructures(await fsRes.json());
@@ -65,14 +73,6 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
     };
     fetchData();
   }, [toast]);
-
-  const persistData = (key: string, data: any) => {
-    // localStorage.setItem(`campus-connect-${key}`, JSON.stringify(data));
-  };
-
-  const getPaymentsByInvoice = useCallback((invoiceId: string) => {
-      return payments.filter(p => p.invoiceId === invoiceId);
-  }, [payments]);
 
   const addFeeStructure = useCallback((structureData: Omit<FeeStructure, 'id'>) => {
     toast({ title: 'Mock Action', description: `Fee structure creation is not implemented.` });
@@ -102,6 +102,11 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
   const getInvoicesByStudent = useCallback((studentId: string) => {
       return invoices.filter(inv => inv.studentId === studentId);
   }, [invoices]);
+
+   const getPaymentsByInvoice = useCallback((invoiceId: string) => {
+      return payments.filter(p => p.invoiceId === invoiceId);
+  }, [payments]);
+
 
   return (
     <FinanceContext.Provider value={{ feeStructures, invoices, payments, payrollRecords, expenses, isLoading, addFeeStructure, removeFeeStructure, generateInvoicesForGrade, addPayment, runPayrollForMonth, addExpense, getInvoicesByStudent, getPaymentsByInvoice }}>
