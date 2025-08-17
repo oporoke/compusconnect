@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import type { Student as PrismaStudent, Grade as PrismaGrade, Exam as PrismaExam, AttendanceRecord as PrismaAttendanceRecord, DisciplinaryRecord } from '@prisma/client';
 import { useAuditLog } from './use-audit-log';
+import { useToast } from './use-toast';
 
 // Re-exporting Prisma types for client-side usage if needed
 export interface Student extends PrismaStudent {
@@ -37,6 +38,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { logAction } = useAuditLog();
+  const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -85,10 +87,19 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
         const newStudent = await response.json();
         setStudents(prev => [...prev, newStudent]);
         logAction('Student Created', { studentId: newStudent.id, studentName: newStudent.name });
+        toast({
+            title: "Student Created",
+            description: `The profile for ${newStudent.name} has been successfully created.`,
+        });
     } catch (error) {
         console.error(error);
+         toast({
+            variant: 'destructive',
+            title: "Creation Failed",
+            description: "Could not create the student profile.",
+        });
     }
-  }, [logAction, students.length]);
+  }, [logAction, students.length, toast]);
   
   const addExam = useCallback(async (examData: Omit<Exam, 'id'>) => {
     // Similar fetch call to POST /api/exams

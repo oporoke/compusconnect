@@ -14,10 +14,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, DatabaseZap } from 'lucide-react';
 import { useStudents } from '@/hooks/use-students';
 import { faker } from '@faker-js/faker';
+import { useToast } from '@/hooks/use-toast';
 
 export function CreateStudentDialog() {
     const [open, setOpen] = useState(false);
@@ -27,15 +27,10 @@ export function CreateStudentDialog() {
     const [grade, setGrade] = useState('');
     const [section, setSection] = useState('');
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const newStudent = { name, grade, section };
-        addStudent(newStudent);
-        
-        toast({
-            title: "Student Created",
-            description: `The profile for ${name} has been successfully created.`,
-        });
+        await addStudent(newStudent);
         
         // Reset form and close dialog
         setName('');
