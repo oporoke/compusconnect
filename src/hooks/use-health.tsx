@@ -3,7 +3,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { HealthRecord, ClinicVisit, healthRecords, clinicVisits } from '@/lib/data';
+import { HealthRecord, ClinicVisit, healthRecords as initialHealthRecords, clinicVisits as initialClinicVisits } from '@/lib/data';
 import { useToast } from './use-toast';
 
 interface HealthContextType {
@@ -30,12 +30,12 @@ export const HealthProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       const storedRecords = localStorage.getItem('campus-connect-health-records');
       const storedVisits = localStorage.getItem('campus-connect-clinic-visits');
       
-      setHealthRecords(storedRecords ? JSON.parse(storedRecords) : healthRecords);
-      setClinicVisits(storedVisits ? JSON.parse(storedVisits) : clinicVisits);
+      setHealthRecords(storedRecords ? JSON.parse(storedRecords) : initialHealthRecords);
+      setClinicVisits(storedVisits ? JSON.parse(storedVisits) : initialClinicVisits);
     } catch (error) {
       console.error("Failed to parse health data from localStorage", error);
-      setHealthRecords(healthRecords);
-      setClinicVisits(clinicVisits);
+      setHealthRecords(initialHealthRecords);
+      setClinicVisits(initialClinicVisits);
     } finally {
       setIsLoading(false);
     }
@@ -101,3 +101,5 @@ export const useHealth = () => {
   }
   return context;
 };
+
+    

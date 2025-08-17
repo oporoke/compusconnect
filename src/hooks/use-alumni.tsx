@@ -86,6 +86,19 @@ export const AlumniProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         const newDonation: Donation = { ...donationData, id: `DON-${Date.now()}` };
         const updatedDonations = [...prev, newDonation];
         persistData('donations', updatedDonations);
+        
+        // Also update the campaign raised amount
+        setCampaigns(prevCampaigns => {
+            const updatedCampaigns = prevCampaigns.map(c => {
+                if (c.id === donationData.campaignId) {
+                    return { ...c, raised: c.raised + donationData.amount };
+                }
+                return c;
+            });
+            persistData('campaigns', updatedCampaigns);
+            return updatedCampaigns;
+        });
+
         toast({ title: 'Donation Recorded', description: `A donation of $${donationData.amount} has been recorded.` });
         return updatedDonations;
     });

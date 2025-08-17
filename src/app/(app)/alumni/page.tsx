@@ -16,6 +16,7 @@ import { useStudents } from '@/hooks/use-students';
 import { UserSquare, Search, PlusCircle, Pencil, Gift, TrendingUp, Handshake, ShieldQuestion, Linkedin } from 'lucide-react';
 import type { AlumniProfile, Campaign, Pledge } from '@/lib/data';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 
 function AddAlumniDialog({ alumniToEdit, onComplete }: { alumniToEdit?: AlumniProfile, onComplete: () => void }) {
     const { addAlumni, updateAlumni } = useAlumni();
@@ -326,3 +327,5 @@ export default function AlumniPage() {
     );
 }
 
+
+    

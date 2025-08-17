@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from 'react';
@@ -148,7 +149,7 @@ function MenuManager() {
                                 <Input placeholder="Item Name" value={item.name} onChange={(e) => handleItemChange(dayMenu.day, index, 'name', e.target.value)} />
                                 <Input type="number" placeholder="Price" value={item.price} onChange={(e) => handleItemChange(dayMenu.day, index, 'price', e.target.value)} className="w-24"/>
                                 <Input type="number" placeholder="Stock" value={item.stock} onChange={(e) => handleItemChange(dayMenu.day, index, 'stock', e.target.value)} className="w-24"/>
-                                <Button variant="ghost" size="icon" onClick={() => removeItem(dayMenu.day, index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(dayMenu.day, index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                             </div>
                         ))}
                         </div>
@@ -269,3 +270,5 @@ export default function CanteenPage() {
         </div>
     );
 }
+
+    
