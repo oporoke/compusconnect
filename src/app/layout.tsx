@@ -6,6 +6,7 @@ import { AuthProvider } from '@/hooks/use-auth';
 import { StudentProvider } from '@/hooks/use-students';
 import { LMSProvider } from '@/hooks/use-lms';
 import { AdmissionsProvider } from '@/hooks/use-admissions';
+import { StaffProvider } from '@/hooks/use-staff';
 
 export const metadata: Metadata = {
   title: 'CampusConnect Lite',
@@ -29,7 +30,9 @@ export default function RootLayout({
             <StudentProvider>
                 <LMSProvider>
                   <AdmissionsProvider>
-                    {children}
+                    <StaffProvider>
+                        {children}
+                    </StaffProvider>
                   </AdmissionsProvider>
                 </LMSProvider>
             </StudentProvider>

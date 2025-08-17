@@ -1,4 +1,5 @@
 
+
 export interface Student {
     id: string;
     name: string;
@@ -119,4 +120,22 @@ export const admissions: Admission[] = [
     { id: 'APP001', name: 'Olivia Martinez', age: 14, previousSchool: 'Northwood Middle', grade: '9', parentName: 'Daniel Martinez', parentEmail: 'daniel@example.com', date: '2024-08-01', status: 'Pending' },
     { id: 'APP002', name: 'James Wilson', age: 15, previousSchool: 'Southside High', grade: '10', parentName: 'Sophia Wilson', parentEmail: 'sophia@example.com', date: '2024-08-03', status: 'Approved' },
     { id: 'APP003', name: 'Isabella Anderson', age: 14, previousSchool: 'Eastgate Prep', grade: '9', parentName: 'Liam Anderson', parentEmail: 'liam@example.com', date: '2024-08-05', status: 'Rejected' },
+];
+
+export interface Staff {
+  id: string;
+  name: string;
+  role: string;
+  department: string;
+  email: string;
+  phone: string;
+  joiningDate: string;
+  salary: number;
+}
+
+export const staff: Staff[] = [
+  { id: 'T01', name: 'Dr. Evelyn Reed', role: 'Principal', department: 'Administration', email: 'e.reed@example.com', phone: '123-456-7890', joiningDate: '2010-08-15', salary: 90000 },
+  { id: 'T02', name: 'Mr. Samuel Jones', role: 'Math Teacher', department: 'Academics', email: 's.jones@example.com', phone: '123-456-7891', joiningDate: '2015-09-01', salary: 65000 },
+  { id: 'T03', name: 'Ms. Clara Oswald', role: 'Science Teacher', department: 'Academics', email: 'c.oswald@example.com', phone: '123-456-7892', joiningDate: '2018-07-20', salary: 62000 },
+  { id: 'T04', name: 'Mr. Peter Capaldi', role: 'Librarian', department: 'Library', email: 'p.capaldi@example.com', phone: '123-456-7893', joiningDate: '2019-01-10', salary: 55000 },
 ];
