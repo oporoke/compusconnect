@@ -37,6 +37,7 @@ import {
   Trophy,
   Bot,
   Columns,
+  Archive,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -70,6 +71,7 @@ const navLinks = [
   { href: '/academics/adaptive-learning', label: 'Adaptive Learning', icon: BrainCircuit, roles: [ROLES.STUDENT, ROLES.PARENT] },
   { href: '/academics/gamification', label: 'Achievements', icon: Trophy, roles: [ROLES.STUDENT, ROLES.PARENT] },
   { type: 'divider', roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN]},
+  { href: '/inventory', label: 'Inventory', icon: Archive, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN]},
   { href: '/canteen', label: 'Canteen', icon: Utensils, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/alumni', label: 'Alumni', icon: UserSquare, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/health', label: 'Health Center', icon: HeartPulse, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
