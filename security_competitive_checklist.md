@@ -16,7 +16,7 @@
 - **How it works**: A new "Data & Privacy" page provides UI options for users to request a data export or account erasure. Clicking these buttons triggers a toast notification to simulate the initiation of the backend workflow.
 - **Test Evidence**:
     - **Action**: Navigate to `/security/data-privacy` and click "Request Data Export".
-    - **Result**: A toast message appears: "Data Export Requested. Your data export is being prepared... (This is a mock action)".
+    - **Result**: A toast message appears: "Data Export Requested. Your data export is being prepared and will be sent to your registered email. (This is a mock action)".
 - **Gaps**: No backend process is actually initiated. This is a UI/UX mock of the GDPR compliance tools.
 
 ---
