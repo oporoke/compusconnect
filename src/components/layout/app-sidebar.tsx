@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { User, ROLES } from '@/lib/auth';
@@ -30,6 +31,7 @@ import {
   AreaChart,
   HeartPulse,
   Utensils,
+  Hammer,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -61,6 +63,7 @@ const navLinks = [
   { href: '/canteen', label: 'Canteen', icon: Utensils, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/alumni', label: 'Alumni', icon: Users, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/health', label: 'Health Center', icon: HeartPulse, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
+  { href: '/inventory', label: 'Inventory', icon: Hammer, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { type: 'divider', roles: [ROLES.SUPER_ADMIN]},
   { href: '/security/permissions', label: 'Permissions', icon: ShieldCheck, roles: [ROLES.SUPER_ADMIN] },
   { href: '/security/audit-log', label: 'Audit Log', icon: History, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },

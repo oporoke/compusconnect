@@ -327,5 +327,4 @@ export default function AlumniPage() {
     );
 }
 
-
     
