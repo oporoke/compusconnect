@@ -538,5 +538,3 @@ export const campaigns: Campaign[] = [
     { id: 'CAMP01', title: 'New Library Wing', goal: 50000, raised: 12500, startDate: '2024-09-01', endDate: '2025-01-31' },
 ];
 export const pledges: Pledge[] = [];
-
-    
