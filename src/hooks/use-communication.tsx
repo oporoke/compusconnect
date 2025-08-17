@@ -36,7 +36,6 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
         if(!eventRes.ok || !announcementRes.ok || !messagesRes.ok) {
             console.error("Failed to fetch one or more communication resources.");
             toast({ variant: 'destructive', title: 'Error', description: 'Could not load communication data.' });
-            // Set empty states to prevent crashing
             setEvents([]);
             setAnnouncements([]);
             setConversations({});
@@ -79,13 +78,13 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
             body: JSON.stringify({sender, receiver, content})
         });
         if (!response.ok) {
-            // Revert on failure
+            
             fetchData();
         }
     } catch(error) {
         console.error("Failed to send message", error);
         toast({ variant: 'destructive', title: 'Error', description: 'Could not send message.'});
-        // Revert on failure
+        
         fetchData();
     }
   }, [toast, fetchData]);

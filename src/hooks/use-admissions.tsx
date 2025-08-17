@@ -27,7 +27,7 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
         if (!response.ok) {
             console.error('Failed to fetch admissions');
             toast({ variant: 'destructive', title: 'Error', description: 'Could not load admissions data.' });
-            setApplications([]); // Set to empty array on failure
+            setApplications([]);
             return;
         };
         const data = await response.json();
@@ -35,7 +35,7 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
       } catch (error) {
         console.error(error);
         toast({ variant: 'destructive', title: 'Error', description: 'Could not load admissions data.' });
-        setApplications([]); // Set to empty array on failure
+        setApplications([]);
       } finally {
         setIsLoading(false);
       }

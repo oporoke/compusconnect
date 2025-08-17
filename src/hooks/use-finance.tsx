@@ -49,7 +49,6 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
             if(!fsRes.ok || !invRes.ok || !payRes.ok || !prRes.ok || !expRes.ok) {
                 console.error("Failed to fetch one or more finance resources.");
                 toast({ variant: 'destructive', title: 'Error', description: 'Could not load complete finance data.' });
-                // Set empty arrays to prevent crashes
                 setFeeStructures([]);
                 setInvoices([]);
                 setPayments([]);

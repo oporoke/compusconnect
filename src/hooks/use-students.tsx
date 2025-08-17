@@ -97,7 +97,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
         });
         if (!response.ok) throw new Error('Failed to create student');
         
-        await fetchData(); // Refetch data to update the UI with the new student
+        await fetchData(); 
 
         logAction('Student Created', { studentId: studentId, studentName: studentData.name });
         toast({
@@ -121,7 +121,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
       });
       if (!response.ok) throw new Error('Failed to delete student');
       
-      await fetchData(); // Refetch data to update the UI
+      await fetchData(); 
       
       logAction('Student Deleted', { studentId: id });
       toast({
