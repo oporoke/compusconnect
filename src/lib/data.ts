@@ -1,10 +1,18 @@
 
 
+export interface DisciplinaryRecord {
+    id: string;
+    date: string;
+    reason: string;
+    actionTaken: string;
+}
+
 export interface Student {
     id: string;
     name: string;
     grade: string;
     section: string;
+    discipline?: DisciplinaryRecord[];
 }
 
 export interface Exam {
@@ -21,7 +29,7 @@ export interface Grade {
 }
 
 export const students: Student[] = [
-    { id: 'S001', name: 'Alice Johnson', grade: '10', section: 'A' },
+    { id: 'S001', name: 'Alice Johnson', grade: '10', section: 'A', discipline: [{ id: 'D01', date: '2024-09-15', reason: 'Late Submission', actionTaken: 'Warning' }] },
     { id: 'S002', name: 'Bob Williams', grade: '10', section: 'A' },
     { id: 'S003', name: 'Charlie Brown', grade: '10', section: 'B' },
     { id: 'S004', name: 'Diana Miller', grade: '11', section: 'A' },
@@ -387,3 +395,5 @@ export const events: Event[] = [
     { id: 'EVT02', title: 'Science Fair', date: '2024-11-15', description: 'Annual science fair for grades 9-12.' },
     { id: 'EVT03', title: 'Winter Break', date: '2024-12-20', description: 'School closed for winter break.' },
 ];
+
+    

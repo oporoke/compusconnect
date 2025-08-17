@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
@@ -15,7 +16,7 @@ interface StudentContextType {
   grades: Grade[];
   exams: Exam[];
   attendance: AttendanceRecord[];
-  addStudent: (student: Omit<Student, 'id'>) => void;
+  addStudent: (student: Omit<Student, 'id' | 'discipline'>) => void;
   addExam: (exam: Omit<Exam, 'id'>) => void;
   updateGrades: (newGrade: Grade) => void;
   logAttendance: (classId: string, studentStatuses: { studentId: string; present: boolean }[]) => void;
@@ -89,7 +90,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
     localStorage.setItem('campus-connect-attendance', JSON.stringify(data));
   };
 
-  const addStudent = useCallback((studentData: Omit<Student, 'id'>) => {
+  const addStudent = useCallback((studentData: Omit<Student, 'id' | 'discipline'>) => {
     setStudents(prevStudents => {
         const newStudent: Student = {
             ...studentData,
@@ -170,3 +171,5 @@ export const useStudents = () => {
   }
   return context;
 };
+
+    

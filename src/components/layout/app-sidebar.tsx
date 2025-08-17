@@ -27,6 +27,7 @@ import {
   Calendar as CalendarIcon,
   ShieldCheck,
   History,
+  AreaChart,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -53,6 +54,7 @@ const navLinks = [
   { href: '/events', label: 'Events', icon: CalendarIcon, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/report-cards', label: 'Report Cards', icon: ClipboardCheck, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { href: '/finance', label: 'Finance', icon: DollarSign, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
+  { href: '/analytics', label: 'Analytics', icon: AreaChart, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/security/permissions', label: 'Permissions', icon: ShieldCheck, roles: [ROLES.SUPER_ADMIN] },
   { href: '/security/audit-log', label: 'Audit Log', icon: History, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
 ];
@@ -108,3 +110,5 @@ export function AppSidebar({ user }: AppSidebarProps) {
     </>
   );
 }
+
+    
