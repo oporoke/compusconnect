@@ -1,3 +1,4 @@
+
 # CampusConnect Lite - Code Documentation
 
 This document provides a detailed overview of the CampusConnect Lite application's codebase, architecture, and functionality.
@@ -70,7 +71,7 @@ These server-side functions handle AI-powered features using Genkit.
 - **Name**: `useAuth`
 - **Parameters**: None.
 - **Returns**: An object with `user`, `authState`, `login`, `logout`, `submitMfa`, and `isLoading`.
-- **Purpose**: Manages the application's authentication state. It handles a multi-step login process (credentials then MFA) and persists the user session via an HTTP-only cookie by calling Next.js API endpoints (`/api/auth/session`, `/api/auth/login`, `/api/auth/logout`).
+- **Purpose**: Manages the application's authentication state. It handles a multi-step login process (credentials then MFA) and persists the user session via an HTTP-only cookie by calling Next.js API endpoints (`/api/auth/session`, `/api/auth/login`, `/api/auth/logout`). The `login` function initiates the process by capturing user details and moving the state to `awaitingMfa`. The `submitMfa` function completes the process by creating the session on the backend.
 - **Dependencies**: `react`, `next/navigation`, `@/hooks/use-audit-log`.
 
 #### API-Driven Data Hooks (`useStudents`, `useFinance`, etc.)
@@ -83,14 +84,15 @@ These server-side functions handle AI-powered features using Genkit.
 ## 3. Flow / Execution Order
 
 1.  **Initial Load & Redirect**: User accesses the site, `src/app/page.tsx` redirects them to `/login`.
-2.  **Authentication**: The `LoginPage` is displayed. The user fills the `LoginForm`.
-3.  **MFA Step**: The `login` function from `useAuth` updates the state to `awaitingMfa`. The `MfaForm` is displayed.
-4.  **Session Creation**: The `submitMfa` function calls the `/api/auth/login` endpoint. The backend creates a session and returns a secure, HTTP-only cookie. The `useAuth` hook then updates its state to `authenticated`.
-5.  **Redirection to Dashboard**: The `LoginPage` detects the `authenticated` state and redirects the user to `/dashboard`.
-6.  **Authenticated Layout**: `AppLayout` takes over. It confirms authentication via `useAuth` and renders the main application interface.
-7.  **Data Fetching**: All data provider hooks (e.g., `StudentProvider`, `FinanceProvider`), now detecting that `authState` is `authenticated`, trigger their `fetch` requests to the backend APIs (e.g., `/api/students`).
-8.  **Page Rendering**: Once data is loaded, the requested page component (e.g., `StudentsPage`) renders with live data from the backend.
-9.  **AI Feature Interaction**: On pages like "AI Weekly Digest", the user interacts with a component that calls a server-side Genkit flow (e.g., `generateWeeklyDigest`) to get an AI-generated result.
+2.  **Authentication**: The `LoginPage` is displayed, showing the `LoginForm` by default. The user can toggle to the `SignupForm`.
+3.  **Credential Entry**: The user fills in their details (name, email, password, role) and submits the form.
+4.  **MFA Step**: The `login` function from `useAuth` is called, which captures the user's details and updates the state to `awaitingMfa`. The `MfaForm` is displayed.
+5.  **Session Creation**: The user enters a 6-digit code. The `submitMfa` function calls the `/api/auth/login` backend endpoint. The backend creates a session and returns a secure, HTTP-only cookie. The `useAuth` hook then updates its state to `authenticated`.
+6.  **Redirection to Dashboard**: The `LoginPage` (or any other page) detects the `authenticated` state and redirects the user to `/dashboard`.
+7.  **Authenticated Layout**: `AppLayout` takes over. It confirms authentication via `useAuth` and renders the main application interface.
+8.  **Data Fetching**: All data provider hooks (e.g., `StudentProvider`, `FinanceProvider`), now detecting that `authState` is `authenticated`, trigger their `fetch` requests to the backend APIs (e.g., `/api/students`).
+9.  **Page Rendering**: Once data is loaded, the requested page component (e.g., `StudentsPage`) renders with live data from the backend.
+10. **AI Feature Interaction**: On pages like "AI Weekly Digest", the user interacts with a component that calls a server-side Genkit flow (e.g., `generateWeeklyDigest`) to get an AI-generated result.
 
 ## 4. Backend Integration Strategy
 

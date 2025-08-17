@@ -1,3 +1,4 @@
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -22,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Security**: GDPR data request UI and a comprehensive Audit Log.
 
 ### Changed
-- **Authentication**: Updated from a simple role-based login to a multi-step process including a password and Multi-Factor Authentication (MFA) simulation. Session management is now handled via secure, HTTP-only cookies.
+- **Authentication**: Updated from a simple role-based login to a multi-step process including separate sign-up and login forms, a password field, and Multi-Factor Authentication (MFA) simulation. Session management is now handled via secure, HTTP-only cookies.
 - **Data Hooks**: All data provider hooks (`useStudents`, `useFinance`, etc.) were refactored to fetch data from the live backend API instead of `localStorage`.
 - **Documentation**: All documentation (`README.md`, `SRS`, `SADD`, `USER_MANUAL`, etc.) has been extensively updated to reflect the new full-stack architecture and all added features.
 

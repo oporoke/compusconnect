@@ -1,8 +1,9 @@
+
 # 🏫 CampusConnect Lite - School Management System
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**CampusConnect Lite** is a modern, feature-rich, and AI-powered school management system designed to streamline the academic, administrative, and financial operations of educational institutions. This repository contains the complete frontend application, built as a high-fidelity, interactive prototype using Next.js and React.
+**CampusConnect Lite** is a modern, feature-rich, and AI-powered school management system designed to streamline the academic, administrative, and financial operations of educational institutions. This repository contains the complete full-stack application, built with a Next.js frontend, a Next.js/Prisma backend, and a suite of AI features powered by Google Genkit.
 
 The system is designed to be a comprehensive, all-in-one solution, replacing fragmented manual systems with an integrated and intuitive platform for administrators, teachers, students, and parents.
 

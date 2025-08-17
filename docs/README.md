@@ -1,3 +1,4 @@
+
 # CampusConnect Lite - Documentation
 
 This directory contains all the professional and technical documentation for the CampusConnect Lite project.
@@ -11,7 +12,7 @@ This directory contains all the professional and technical documentation for the
 - **[API Documentation](../API_DOCUMENTATION.md)**: Detailed reference for the backend RESTful API.
 - **[User Manual](../USER_MANUAL.md)**: A user-friendly guide for end-users (admins, teachers, parents).
 - **[Admin & Deployment Guide](../ADMIN_GUIDE.md)**: Instructions for system administrators and DevOps engineers.
-- **[Analytics & Reporting Guide](./analytics_reporting_guide.md)**: A guide for decision-makers on using the analytics features.
+- **[Analytics & Reporting Guide](../analytics_reporting_guide.md)**: A guide for decision-makers on using the analytics features.
 - **[Test Plan & QA Strategy](../TestPlan_QA.md)**: The strategy for testing and quality assurance.
 - **[Changelog](./CHANGELOG.md)**: A log of all notable changes to the project.
 
