@@ -1,42 +1,31 @@
 
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageSquare, Send } from "lucide-react";
-
-const initialThreads = [
-    {
-        id: 1,
-        title: "Question about Algebra Homework",
-        author: "Alice Johnson",
-        replies: [
-            { author: "Mr. Samuel Jones", text: "Great question, Alice! Remember to use the distributive property on page 45." },
-            { author: "Bob Williams", text: "I was stuck on that too, thanks for asking." },
-        ]
-    },
-    {
-        id: 2,
-        title: "Clarification on Science Fair deadline",
-        author: "Ethan Davis",
-        replies: []
-    }
-];
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Send } from "lucide-react";
+import { useLMS } from '@/hooks/use-lms';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function DiscussionForumPage() {
-    const [threads, setThreads] = useState(initialThreads);
-    const [currentThread, setCurrentThread] = useState(threads[0]);
+    const { threads, postReply, isLoading } = useLMS();
+    const { user } = useAuth();
+    const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
     const [newReply, setNewReply] = useState("");
 
+    useEffect(() => {
+        if (!currentThreadId && threads.length > 0) {
+            setCurrentThreadId(threads[0].id);
+        }
+    }, [threads, currentThreadId]);
+    
+    const currentThread = threads.find(t => t.id === currentThreadId);
+
     const handlePostReply = () => {
-        if (!newReply.trim()) return;
-        const reply = { author: "Student User", text: newReply }; // Mocked user
-        const updatedThread = { ...currentThread, replies: [...currentThread.replies, reply] };
-        setCurrentThread(updatedThread);
-        setThreads(threads.map(t => t.id === currentThread.id ? updatedThread : t));
+        if (!newReply.trim() || !currentThreadId || !user) return;
+        postReply(currentThreadId, newReply, user.name);
         setNewReply("");
     }
     
@@ -57,35 +46,43 @@ export default function DiscussionForumPage() {
             <CardHeader><CardTitle>Threads</CardTitle></CardHeader>
             <CardContent>
                 {threads.map(thread => (
-                    <button key={thread.id} onClick={() => setCurrentThread(thread)} className="block w-full text-left p-2 rounded-md hover:bg-muted">
+                    <button key={thread.id} onClick={() => setCurrentThreadId(thread.id)} className="block w-full text-left p-2 rounded-md hover:bg-muted">
                         <p className="font-semibold">{thread.title}</p>
-                        <p className="text-sm text-muted-foreground">by {thread.author}</p>
+                        <p className="text-sm text-muted-foreground">by {thread.authorName}</p>
                     </button>
                 ))}
             </CardContent>
           </Card>
            <Card className="flex flex-col">
-            <CardHeader>
-                <CardTitle>{currentThread.title}</CardTitle>
-                <CardDescription>Posted by {currentThread.author}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 space-y-4 overflow-y-auto">
-                {currentThread.replies.map((reply, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                        <Avatar><AvatarFallback>{getInitials(reply.author)}</AvatarFallback></Avatar>
-                        <div>
-                            <p className="font-semibold">{reply.author}</p>
-                            <p className="p-3 bg-muted rounded-lg">{reply.text}</p>
+           {currentThread ? (
+            <>
+                <CardHeader>
+                    <CardTitle>{currentThread.title}</CardTitle>
+                    <CardDescription>Posted by {currentThread.authorName}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 space-y-4 overflow-y-auto">
+                    {currentThread.replies.map((reply, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                            <Avatar><AvatarFallback>{getInitials(reply.authorName)}</AvatarFallback></Avatar>
+                            <div>
+                                <p className="font-semibold">{reply.authorName}</p>
+                                <p className="p-3 bg-muted rounded-lg">{reply.content}</p>
+                            </div>
                         </div>
+                    ))}
+                </CardContent>
+                <CardFooter className="border-t pt-4">
+                    <div className="flex gap-2 w-full">
+                        <Textarea placeholder="Type your reply..." value={newReply} onChange={e => setNewReply(e.target.value)} />
+                        <Button onClick={handlePostReply}><Send /></Button>
                     </div>
-                ))}
-            </CardContent>
-            <CardFooter className="border-t pt-4">
-                <div className="flex gap-2 w-full">
-                    <Textarea placeholder="Type your reply..." value={newReply} onChange={e => setNewReply(e.target.value)} />
-                    <Button onClick={handlePostReply}><Send /></Button>
-                </div>
-            </CardFooter>
+                </CardFooter>
+            </>
+            ) : (
+                 <CardContent className="flex items-center justify-center h-full">
+                    <p className="text-muted-foreground">Select a thread to view the discussion.</p>
+                 </CardContent>
+            )}
           </Card>
       </div>
     </div>

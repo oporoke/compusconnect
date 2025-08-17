@@ -5,16 +5,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Award, Star, BookOpen, Brain, Trophy } from 'lucide-react';
 import { useStudents } from '@/hooks/use-students';
-import { Badge } from '@/components/ui/badge';
+import { useLMS } from '@/hooks/use-lms';
 
-const mockBadges = [
-    { id: 'b1', name: "Academic Pioneer", icon: Star, description: "Achieved over 90% in an exam.", color: "text-yellow-500" },
-    { id: 'b2', name: "Perfect Attendance", icon: BookOpen, description: "100% attendance for a full month.", color: "text-green-500" },
-    { id: 'b3', name: "Quiz Master", icon: Brain, description: "Topped the weekly adaptive quiz.", color: "text-blue-500" },
-];
+const badgeIcons: Record<string, React.ElementType> = {
+    "Star": Star,
+    "BookOpen": BookOpen,
+    "Brain": Brain,
+    "Trophy": Trophy,
+    "Award": Award,
+}
 
 export default function GamificationPage() {
     const { students } = useStudents();
+    const { badges } = useLMS();
     const leaderboard = students.slice(0, 5).map((s, i) => ({ ...s, rank: i + 1, points: 1500 - i * 120 }));
   
   return (
@@ -56,15 +59,18 @@ export default function GamificationPage() {
                 <CardDescription>Achievements you have unlocked.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                {mockBadges.map(badge => (
-                    <div key={badge.id} className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
-                        <badge.icon className={`h-10 w-10 ${badge.color}`} />
-                        <div>
-                            <p className="font-semibold">{badge.name}</p>
-                            <p className="text-sm text-muted-foreground">{badge.description}</p>
+                {badges.map(badge => {
+                    const Icon = badgeIcons[badge.icon] || Award;
+                    return (
+                        <div key={badge.id} className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
+                            <Icon className={`h-10 w-10 text-yellow-500`} />
+                            <div>
+                                <p className="font-semibold">{badge.name}</p>
+                                <p className="text-sm text-muted-foreground">{badge.description}</p>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    )
+                })}
             </CardContent>
         </Card>
       </div>

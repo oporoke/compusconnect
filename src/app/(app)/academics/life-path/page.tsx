@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,21 +9,28 @@ import { useToast } from '@/hooks/use-toast';
 import { generateCareerPathways, setAcademicGoals } from '@/ai/flows/ai-life-path-assistant';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const mockInterests = ["Technology", "Healthcare", "Creative Arts", "Business & Finance"];
-const mockCareers: Record<string, string[]> = {
-    "Technology": ["Software Engineer", "Data Scientist", "Cybersecurity Analyst"],
-    "Healthcare": ["Doctor (MD)", "Nurse Practitioner", "Biomedical Researcher"],
-    "Creative Arts": ["Graphic Designer", "Film Director", "Architect"],
-    "Business & Finance": ["Investment Banker", "Marketing Manager", "Accountant"]
-};
-
 export default function LifePathSimulatorPage() {
     const { toast } = useToast();
+    const [interests, setInterests] = useState<any[]>([]);
+    const [careers, setCareers] = useState<any[]>([]);
     const [selectedInterest, setSelectedInterest] = useState('');
     const [selectedCareer, setSelectedCareer] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [pathway, setPathway] = useState<any>(null);
     const [goals, setGoals] = useState<any>(null);
+
+     useEffect(() => {
+        const fetchData = async () => {
+            // In a real app, these would be separate API calls.
+            // For this demo, we'll fetch them from a combined endpoint or have them in one hook.
+            const response = await fetch('/api/career-data');
+            const data = await response.json();
+            setInterests(data.interests);
+            setCareers(data.careers);
+        }
+        fetchData();
+    }, []);
+
 
     const handleGeneratePath = async () => {
         if (!selectedCareer) {
@@ -73,6 +80,8 @@ export default function LifePathSimulatorPage() {
         </div>
     )
 
+    const careersForInterest = careers.filter(c => c.interestId === selectedInterest);
+
     return (
         <div className="space-y-6">
             <div>
@@ -91,14 +100,14 @@ export default function LifePathSimulatorPage() {
                             <label>Your Interest Area</label>
                             <Select value={selectedInterest} onValueChange={setSelectedInterest}>
                                 <SelectTrigger><SelectValue placeholder="Select an interest..." /></SelectTrigger>
-                                <SelectContent>{mockInterests.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
+                                <SelectContent>{interests.map(i => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
                          <div className="space-y-1">
                             <label>Target Career</label>
                             <Select value={selectedCareer} onValueChange={setSelectedCareer} disabled={!selectedInterest}>
                                 <SelectTrigger><SelectValue placeholder="Select a career..." /></SelectTrigger>
-                                <SelectContent>{(mockCareers[selectedInterest] || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                                <SelectContent>{careersForInterest.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
                     </CardContent>
@@ -146,5 +155,3 @@ export default function LifePathSimulatorPage() {
         </div>
     );
 }
-
-    

@@ -3,7 +3,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { HealthRecord, ClinicVisit, healthRecords as initialHealthRecords, clinicVisits as initialClinicVisits } from '@/lib/data';
+import type { HealthRecord, ClinicVisit } from '@prisma/client';
 import { useToast } from './use-toast';
 
 interface HealthContextType {
@@ -25,25 +25,36 @@ export const HealthProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
+  const fetchData = useCallback(async (signal: AbortSignal) => {
+    setIsLoading(true);
     try {
-      const storedRecords = localStorage.getItem('campus-connect-health-records');
-      const storedVisits = localStorage.getItem('campus-connect-clinic-visits');
-      
-      setHealthRecords(storedRecords ? JSON.parse(storedRecords) : initialHealthRecords);
-      setClinicVisits(storedVisits ? JSON.parse(storedVisits) : initialClinicVisits);
+      const [recordsRes, visitsRes] = await Promise.all([
+        fetch('/api/health/records', { signal }),
+        fetch('/api/health/visits', { signal }),
+      ]);
+      if (!recordsRes.ok || !visitsRes.ok) {
+        throw new Error("Failed to fetch health data");
+      }
+      setHealthRecords(await recordsRes.json());
+      setClinicVisits(await visitsRes.json());
     } catch (error) {
-      console.error("Failed to parse health data from localStorage", error);
-      setHealthRecords(initialHealthRecords);
-      setClinicVisits(initialClinicVisits);
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error("Failed to load health data:", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not load health data.' });
+        setHealthRecords([]);
+        setClinicVisits([]);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
-  const persistData = (key: string, data: any) => {
-    localStorage.setItem(`campus-connect-${key}`, JSON.stringify(data));
-  };
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
+  }, [fetchData]);
+
 
   const getRecordByStudentId = useCallback((studentId: string) => {
     return healthRecords.find(rec => rec.studentId === studentId);
@@ -54,28 +65,11 @@ export const HealthProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   }, [clinicVisits]);
 
   const updateRecord = useCallback((recordData: HealthRecord) => {
-    setHealthRecords(prev => {
-        const recordExists = prev.some(r => r.studentId === recordData.studentId);
-        let updatedRecords;
-        if (recordExists) {
-            updatedRecords = prev.map(r => r.studentId === recordData.studentId ? recordData : r);
-        } else {
-            updatedRecords = [...prev, recordData];
-        }
-        persistData('health-records', updatedRecords);
-        toast({ title: 'Health Record Updated' });
-        return updatedRecords;
-    });
+    toast({ title: 'Mock Action', description: 'Health record updates are not implemented in this demo.' });
   }, [toast]);
   
   const addClinicVisit = useCallback((visitData: Omit<ClinicVisit, 'id'>) => {
-    setClinicVisits(prev => {
-        const newVisit: ClinicVisit = { ...visitData, id: `VISIT-${Date.now()}` };
-        const updatedVisits = [...prev, newVisit];
-        persistData('clinic-visits', updatedVisits);
-        toast({ title: 'Clinic Visit Logged' });
-        return updatedVisits;
-    });
+    toast({ title: 'Mock Action', description: 'Logging clinic visits is not implemented in this demo.' });
   }, [toast]);
 
   const sendVaccinationReminders = useCallback(() => {

@@ -2,9 +2,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { Student as PrismaStudent, Grade as PrismaGrade, Exam as PrismaExam, AttendanceRecord as PrismaAttendanceRecord, DisciplinaryRecord } from '@prisma/client';
+import type { Student as PrismaStudent, Grade as PrismaGrade, Exam as PrismaExam, AttendanceRecord as PrismaAttendanceRecord, DisciplinaryRecord, Skill } from '@prisma/client';
 import { useAuditLog } from './use-audit-log';
 import { useToast } from './use-toast';
+import { useLMS } from './use-lms';
 
 // Re-exporting Prisma types for client-side usage if needed
 export interface Student extends PrismaStudent {
@@ -27,6 +28,7 @@ interface StudentContextType {
   getStudentById: (id: string) => Student | undefined;
   getGradesByStudentId: (id: string) => Grade[];
   getAttendanceByStudentId: (id: string) => AttendanceRecord[];
+  getSkillsByStudentId: (id: string) => (Skill & { source: string })[];
   isLoading: boolean;
 }
 
@@ -40,6 +42,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [isLoading, setIsLoading] = useState(true);
   const { logAction } = useAuditLog();
   const { toast } = useToast();
+  const { assignments } = useLMS(); // Use LMS to get assignment data
 
   const fetchData = useCallback(async (signal: AbortSignal) => {
     setIsLoading(true);
@@ -136,36 +139,14 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [students, logAction, toast]);
 
   const addExam = useCallback((examData: Omit<Exam, 'id'>) => {
-    const newExam: Exam = { ...examData, id: `E${Date.now()}` };
-     setExams(prev => [...prev, newExam]);
     toast({ title: 'Mock Action', description: `Exam creation is not implemented.` });
   }, [toast]);
 
   const updateGrades = useCallback((newGrade: Omit<Grade, 'id'>) => {
-    setGrades(prev => {
-        const existingGradeIndex = prev.findIndex(g => g.studentId === newGrade.studentId && g.examId === newGrade.examId);
-        if (existingGradeIndex > -1) {
-            const updatedGrades = [...prev];
-            updatedGrades[existingGradeIndex] = { ...updatedGrades[existingGradeIndex], ...newGrade };
-            return updatedGrades;
-        }
-        return [...prev, { ...newGrade, id: `G-${Date.now()}` }];
-    });
     toast({ title: "Mock Action", description: `Grade update is not implemented.` });
   }, [toast]);
 
   const logAttendance = useCallback((classId: string, studentStatuses: { studentId: string; present: boolean }[]) => {
-    const today = new Date().toISOString().split('T')[0];
-    const newAttendanceRecords: AttendanceRecord[] = studentStatuses.map(s => ({
-        id: `ATT-${s.studentId}-${today}`,
-        studentId: s.studentId,
-        date: today,
-        present: s.present,
-    }));
-    setAttendance(prev => {
-        const otherDays = prev.filter(p => p.date !== today);
-        return [...otherDays, ...newAttendanceRecords];
-    });
     logAction("Attendance Logged", { classId, count: studentStatuses.length });
     toast({ title: "Mock Action", description: `Attendance logging is not implemented.` });
   }, [toast, logAction]);
@@ -182,8 +163,33 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
     return attendance.filter(a => a.studentId === id);
   }, [attendance]);
 
+  const getSkillsByStudentId = useCallback((studentId: string) => {
+    const studentGrades = getGradesByStudentId(studentId);
+    if (!studentGrades) return [];
+  
+    // Map submitted/graded assignments to skills
+    const acquiredSkills: Record<string, { level: number; source: string }> = {};
+    assignments.forEach(assignment => {
+      const isCompleted = assignment.status === 'Submitted' || assignment.status === 'Graded';
+      if (isCompleted && assignment.skills) {
+        assignment.skills.forEach(skillName => {
+          if (!acquiredSkills[skillName]) {
+            acquiredSkills[skillName] = { level: 0, source: assignment.title };
+          }
+          acquiredSkills[skillName].level += 1; // Increment level for each completed assignment
+        });
+      }
+    });
+  
+    return Object.entries(acquiredSkills).map(([name, data]) => ({
+      name,
+      level: Math.min(5, data.level), // Cap level at 5
+      source: data.source,
+    }));
+  }, [getGradesByStudentId, assignments]);
+
   return (
-    <StudentContext.Provider value={{ students, grades, exams, attendance, addStudent, deleteStudent, addExam, updateGrades, logAttendance, getStudentById, getGradesByStudentId, getAttendanceByStudentId, isLoading }}>
+    <StudentContext.Provider value={{ students, grades, exams, attendance, addStudent, deleteStudent, addExam, updateGrades, logAttendance, getStudentById, getGradesByStudentId, getAttendanceByStudentId, getSkillsByStudentId, isLoading }}>
       {children}
     </StudentContext.Provider>
   );

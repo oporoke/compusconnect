@@ -3,7 +3,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { AlumniProfile, Donation, Campaign, Pledge, Mentorship, alumniProfiles, donations, campaigns, pledges, mentorships } from '@/lib/data';
+import type { AlumniProfile, Donation, Campaign, Pledge, Mentorship } from '@prisma/client';
 import { useToast } from './use-toast';
 
 interface AlumniContextType {
@@ -13,11 +13,11 @@ interface AlumniContextType {
   pledges: Pledge[];
   mentorships: Mentorship[];
   isLoading: boolean;
-  addAlumni: (profile: Omit<AlumniProfile, 'id'>) => void;
+  addAlumni: (profile: Omit<AlumniProfile, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateAlumni: (profile: AlumniProfile) => void;
-  addDonation: (donation: Omit<Donation, 'id'>) => void;
+  addDonation: (donation: Omit<Donation, 'id' | 'createdAt' | 'updatedAt' | 'campaignId'> & { campaignId: string }) => void;
   getAlumniNameById: (id: string) => string;
-  addCampaign: (campaign: Omit<Campaign, 'id' | 'raised' | 'startDate' | 'endDate'>) => void;
+  addCampaign: (campaign: Omit<Campaign, 'id' | 'raised' | 'startDate' | 'endDate' | 'createdAt' | 'updatedAt'>) => void;
   addPledge: (pledge: Omit<Pledge, 'id' | 'status' | 'date'>) => void;
   addMentorship: (mentorship: Omit<Mentorship, 'id' | 'startDate' | 'status'>) => void;
 }
@@ -33,125 +33,75 @@ export const AlumniProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
+  const fetchData = useCallback(async (signal: AbortSignal) => {
+    setIsLoading(true);
     try {
-      const storedAlumni = localStorage.getItem('campus-connect-alumni');
-      const storedDonations = localStorage.getItem('campus-connect-donations');
-      const storedCampaigns = localStorage.getItem('campus-connect-campaigns');
-      const storedPledges = localStorage.getItem('campus-connect-pledges');
-      const storedMentorships = localStorage.getItem('campus-connect-mentorships');
-      
-      setAlumni(storedAlumni ? JSON.parse(storedAlumni) : alumniProfiles);
-      setDonations(storedDonations ? JSON.parse(storedDonations) : donations);
-      setCampaigns(storedCampaigns ? JSON.parse(storedCampaigns) : campaigns);
-      setPledges(storedPledges ? JSON.parse(storedPledges) : pledges);
-      setMentorships(storedMentorships ? JSON.parse(storedMentorships) : mentorships);
+        const [alumniRes, donationsRes, campaignsRes, pledgesRes, mentorshipsRes] = await Promise.all([
+            fetch('/api/alumni/profiles', { signal }),
+            fetch('/api/alumni/donations', { signal }),
+            fetch('/api/alumni/campaigns', { signal }),
+            fetch('/api/alumni/pledges', { signal }),
+            fetch('/api/alumni/mentorships', { signal }),
+        ]);
+
+        if (!alumniRes.ok || !donationsRes.ok || !campaignsRes.ok || !pledgesRes.ok || !mentorshipsRes.ok) {
+            throw new Error('Failed to fetch alumni data');
+        }
+
+        setAlumni(await alumniRes.json());
+        setDonations(await donationsRes.json());
+        setCampaigns(await campaignsRes.json());
+        setPledges(await pledgesRes.json());
+        setMentorships(await mentorshipsRes.json());
+        
     } catch (error) {
-      console.error("Failed to parse alumni data from localStorage", error);
-      setAlumni(alumniProfiles);
-      setDonations(donations);
-      setCampaigns(campaigns);
-      setPledges(pledges);
-      setMentorships(mentorships);
+       if (error instanceof Error && error.name !== 'AbortError') {
+          console.error("Failed to load alumni data:", error);
+          toast({ variant: 'destructive', title: 'Error', description: 'Could not load alumni data.' });
+          setAlumni([]);
+          setDonations([]);
+          setCampaigns([]);
+          setPledges([]);
+          setMentorships([]);
+       }
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
-  const persistData = (key: string, data: any) => {
-    localStorage.setItem(`campus-connect-${key}`, JSON.stringify(data));
-  };
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
+  }, [fetchData]);
 
-  const addAlumni = useCallback((profileData: Omit<AlumniProfile, 'id'>) => {
-    setAlumni(prev => {
-        const newProfile: AlumniProfile = { ...profileData, id: `ALUMNI-${Date.now()}` };
-        const updatedAlumni = [...prev, newProfile];
-        persistData('alumni', updatedAlumni);
-        toast({ title: 'Alumni Added', description: `${profileData.name} has been added to the database.` });
-        return updatedAlumni;
-    });
+
+  const addAlumni = useCallback((profileData: Omit<AlumniProfile, 'id' | 'createdAt' | 'updatedAt'>) => {
+    toast({ title: "Mock Action", description: "This action is not implemented in the demo."});
   }, [toast]);
   
   const updateAlumni = useCallback((profileData: AlumniProfile) => {
-    setAlumni(prev => {
-        const updatedAlumni = prev.map(p => p.id === profileData.id ? profileData : p);
-        persistData('alumni', updatedAlumni);
-        toast({ title: 'Alumni Profile Updated', description: `${profileData.name}'s profile has been updated.` });
-        return updatedAlumni;
-    });
+    toast({ title: "Mock Action", description: "This action is not implemented in the demo."});
   }, [toast]);
 
-  const addDonation = useCallback((donationData: Omit<Donation, 'id'>) => {
-    setDonations(prev => {
-        const newDonation: Donation = { ...donationData, id: `DON-${Date.now()}` };
-        const updatedDonations = [...prev, newDonation];
-        persistData('donations', updatedDonations);
-        
-        // Also update the campaign raised amount
-        setCampaigns(prevCampaigns => {
-            const updatedCampaigns = prevCampaigns.map(c => {
-                if (c.id === donationData.campaignId) {
-                    return { ...c, raised: c.raised + donationData.amount };
-                }
-                return c;
-            });
-            persistData('campaigns', updatedCampaigns);
-            return updatedCampaigns;
-        });
-
-        toast({ title: 'Donation Recorded', description: `A donation of $${donationData.amount} has been recorded.` });
-        return updatedDonations;
-    });
+  const addDonation = useCallback((donationData: Omit<Donation, 'id' | 'createdAt' | 'updatedAt' | 'campaignId'> & { campaignId: string }) => {
+    toast({ title: "Mock Action", description: "This action is not implemented in the demo."});
   }, [toast]);
 
   const getAlumniNameById = useCallback((id: string) => {
     return alumni.find(a => a.id === id)?.name || 'N/A';
   }, [alumni]);
 
-  const addCampaign = useCallback((campaignData: Omit<Campaign, 'id' | 'raised' | 'startDate' | 'endDate'>) => {
-    setCampaigns(prev => {
-        const newCampaign: Campaign = { 
-            ...campaignData, 
-            id: `CAMP-${Date.now()}`,
-            raised: 0,
-            startDate: new Date().toISOString().split('T')[0],
-            endDate: new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().split('T')[0], // 6 month duration
-        };
-        const updated = [...prev, newCampaign];
-        persistData('campaigns', updated);
-        toast({ title: 'Campaign Created' });
-        return updated;
-    });
+  const addCampaign = useCallback((campaignData: Omit<Campaign, 'id' | 'raised' | 'startDate' | 'endDate' | 'createdAt' | 'updatedAt'>) => {
+    toast({ title: "Mock Action", description: "This action is not implemented in the demo."});
   }, [toast]);
 
   const addPledge = useCallback((pledgeData: Omit<Pledge, 'id' | 'status' | 'date'>) => {
-    setPledges(prev => {
-        const newPledge: Pledge = {
-            ...pledgeData,
-            id: `PLG-${Date.now()}`,
-            status: 'Pledged',
-            date: new Date().toISOString().split('T')[0]
-        };
-        const updated = [...prev, newPledge];
-        persistData('pledges', updated);
-        toast({ title: 'Pledge Recorded' });
-        return updated;
-    });
+    toast({ title: "Mock Action", description: "This action is not implemented in the demo."});
   }, [toast]);
 
   const addMentorship = useCallback((mentorshipData: Omit<Mentorship, 'id' | 'startDate' | 'status'>) => {
-    setMentorships(prev => {
-        const newMentorship: Mentorship = {
-            ...mentorshipData,
-            id: `MENTOR-${Date.now()}`,
-            startDate: new Date().toISOString().split('T')[0],
-            status: 'Active'
-        };
-        const updated = [...prev, newMentorship];
-        persistData('mentorships', updated);
-        toast({ title: 'Mentorship Started' });
-        return updated;
-    })
+    toast({ title: "Mock Action", description: "This action is not implemented in the demo."});
   }, [toast]);
 
   return (
@@ -168,5 +118,3 @@ export const useAlumni = () => {
   }
   return context;
 };
-
-    

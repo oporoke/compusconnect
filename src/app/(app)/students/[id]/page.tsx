@@ -20,27 +20,23 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
-// Mocked data for the new Skills Portfolio
-const mockSkills = [
-    { name: "Critical Thinking", level: 4, source: "History Essay (Term 1)"},
-    { name: "Data Analysis", level: 3, source: "Science Fair Project" },
-    { name: "Creative Writing", level: 5, source: "English Short Story" },
-    { name: "Teamwork", level: 4, source: "Group Science Project" },
-];
-
 const skillIcons: Record<string, React.ElementType> = {
     "Critical Thinking": BrainCircuit,
     "Data Analysis": Wrench,
     "Creative Writing": Paintbrush,
     "Teamwork": UserIcon,
+    "Problem Solving": BrainCircuit,
+    "Scientific Writing": Wrench,
+    "Research": Wrench,
 }
 
 export default function StudentProfilePage({ params }: { params: { id: string } }) {
-    const { getStudentById, getGradesByStudentId, getAttendanceByStudentId, exams, isLoading } = useStudents();
+    const { getStudentById, getGradesByStudentId, getAttendanceByStudentId, getSkillsByStudentId, exams, isLoading } = useStudents();
     
     const student = getStudentById(params.id);
     const studentGrades = getGradesByStudentId(params.id);
     const studentAttendance = getAttendanceByStudentId(params.id);
+    const studentSkills = getSkillsByStudentId(params.id);
 
     if (isLoading) {
         return (
@@ -226,7 +222,7 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                             <CardDescription>A summary of skills demonstrated through coursework and activities.</CardDescription>
                         </CardHeader>
                         <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {mockSkills.map(skill => {
+                            {studentSkills.map(skill => {
                                 const Icon = skillIcons[skill.name] || Award;
                                 return (
                                 <Card key={skill.name} className="bg-muted/50">
@@ -240,6 +236,9 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                                     </CardContent>
                                 </Card>
                             )})}
+                             {studentSkills.length === 0 && (
+                                <div className="col-span-full text-center text-muted-foreground py-8">No skills verified yet.</div>
+                             )}
                         </CardContent>
                     </Card>
                 </TabsContent>

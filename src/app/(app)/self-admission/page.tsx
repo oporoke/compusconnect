@@ -1,25 +1,18 @@
 
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Printer, FileText, User, Home, Phone } from 'lucide-react';
+import { Check, Printer, FileText, User } from 'lucide-react';
 import { useAdmissions } from '@/hooks/use-admissions';
-
-const admissionRequirements = [
-    { id: 'birth_cert', label: 'Original Birth Certificate' },
-    { id: 'prev_report', label: 'Previous School Report Card' },
-    { id: 'photos', label: '2 Passport-sized Photographs' },
-    { id: 'transfer_cert', label: 'Transfer Certificate' },
-];
 
 export default function SelfAdmissionPage() {
     const { toast } = useToast();
-    const { addApplication } = useAdmissions();
+    const { addApplication, admissionRequirements, fetchAdmissionRequirements } = useAdmissions();
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         parentName: '',
@@ -28,6 +21,10 @@ export default function SelfAdmissionPage() {
         address: '',
     });
     const [checkedReqs, setCheckedReqs] = useState<Record<string, boolean>>({});
+
+    useEffect(() => {
+        fetchAdmissionRequirements();
+    }, [fetchAdmissionRequirements]);
 
     const allReqsChecked = admissionRequirements.every(req => checkedReqs[req.id]);
 
@@ -71,7 +68,7 @@ export default function SelfAdmissionPage() {
                         <p><strong>Contact Email:</strong> {formData.parentEmail}</p>
                         <h3 className="font-bold mt-4">Document Checklist:</h3>
                         <ul className="list-disc list-inside">
-                            {admissionRequirements.map(req => <li key={req.id}>Confirmed: {req.label}</li>)}
+                            {admissionRequirements.map(req => <li key={req.id}>Confirmed: {req.requirement}</li>)}
                         </ul>
                     </CardContent>
                     <CardFooter>
@@ -124,7 +121,7 @@ export default function SelfAdmissionPage() {
                         {admissionRequirements.map(req => (
                             <div key={req.id} className="flex items-center space-x-2">
                                 <Checkbox id={req.id} onCheckedChange={(checked) => handleCheckboxChange(req.id, !!checked)}/>
-                                <Label htmlFor={req.id}>{req.label}</Label>
+                                <Label htmlFor={req.id}>{req.requirement}</Label>
                             </div>
                         ))}
                     </CardContent>
@@ -145,4 +142,3 @@ export default function SelfAdmissionPage() {
         </div>
     );
 }
-
