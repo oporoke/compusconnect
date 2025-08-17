@@ -77,8 +77,8 @@ const navLinks = [
   { type: 'divider', roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN]},
   { href: '/analytics/ai-query', label: 'AI Query', icon: Bot, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/analytics/cross-school', label: 'Cross-School', icon: Columns, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
-  { href: '/security/permissions', label: 'Permissions', icon: ShieldCheck, roles: [ROLES.SUPER_ADMIN] },
   { href: '/security/data-privacy', label: 'Data & Privacy', icon: DatabaseZap, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
+  { href: '/security/permissions', label: 'Permissions', icon: ShieldCheck, roles: [ROLES.SUPER_ADMIN] },
   { href: '/security/audit-log', label: 'Audit Log', icon: History, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
 ];
 
