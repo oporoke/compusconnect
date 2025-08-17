@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, PlusCircle } from "lucide-react";
+import { Calendar, PlusCircle, ExternalLink } from "lucide-react";
 import { useCommunication } from "@/hooks/use-communication";
 import { addMonths, format, startOfMonth, eachDayOfInterval, endOfMonth, isSameMonth, isToday, isSameDay } from "date-fns";
 import React, { useState } from "react";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { ROLES } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
 
 function CreateEventDialog() {
     const { addEvent } = useCommunication();
@@ -66,6 +67,7 @@ function CreateEventDialog() {
 export default function EventsPage() {
     const { events, isLoading } = useCommunication();
     const { user } = useAuth();
+    const { toast } = useToast();
     const [currentMonth, setCurrentMonth] = useState(new Date());
 
     const firstDayOfMonth = startOfMonth(currentMonth);
@@ -78,6 +80,13 @@ export default function EventsPage() {
 
     const colStartClasses = ["", "col-start-2", "col-start-3", "col-start-4", "col-start-5", "col-start-6", "col-start-7"];
     
+    const handleAddToCalendar = (calendar: string, eventTitle: string) => {
+        toast({
+            title: `Adding to ${calendar}`,
+            description: `Event "${eventTitle}" has been added to your calendar. (This is a mock action)`,
+        });
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-start">
@@ -88,49 +97,73 @@ export default function EventsPage() {
                 {user?.role === ROLES.ADMIN && <CreateEventDialog />}
             </div>
 
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>{format(currentMonth, "MMMM yyyy")}</CardTitle>
-                    <div className="flex gap-2">
-                        <Button variant="outline" onClick={() => setCurrentMonth(addMonths(currentMonth, -1))}>Prev</Button>
-                        <Button variant="outline" onClick={() => setCurrentMonth(new Date())}>Today</Button>
-                        <Button variant="outline" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>Next</Button>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-7 text-xs leading-6 text-center text-muted-foreground">
-                        <div>Sun</div>
-                        <div>Mon</div>
-                        <div>Tue</div>
-                        <div>Wed</div>
-                        <div>Thu</div>
-                        <div>Fri</div>
-                        <div>Sat</div>
-                    </div>
-                    <div className="grid grid-cols-7 mt-2 text-sm">
-                        {days.map((day, dayIdx) => (
-                            <div key={day.toString()} className={cn(dayIdx === 0 && colStartClasses[day.getDay()], "py-2 border border-transparent")}>
-                                <button
-                                    type="button"
-                                    onClick={() => console.log(day)}
-                                    className={cn(
-                                        isToday(day) && "text-white bg-primary rounded-full font-semibold",
-                                        !isToday(day) && isSameMonth(day, firstDayOfMonth) ? "text-foreground" : "text-muted-foreground",
-                                        "mx-auto flex h-8 w-8 items-center justify-center rounded-full"
-                                    )}
-                                >
-                                    <time dateTime={format(day, "yyyy-MM-dd")}>{format(day, "d")}</time>
-                                </button>
-                                <div className="w-full">
-                                    {events.filter(event => isSameDay(new Date(event.date), day)).map(event => (
-                                        <Badge key={event.id} className="w-full mt-1 truncate" variant="secondary">{event.title}</Badge>
-                                    ))}
+            <div className="grid lg:grid-cols-3 gap-6">
+                <Card className="lg:col-span-2">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle>{format(currentMonth, "MMMM yyyy")}</CardTitle>
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => setCurrentMonth(addMonths(currentMonth, -1))}>Prev</Button>
+                            <Button variant="outline" onClick={() => setCurrentMonth(new Date())}>Today</Button>
+                            <Button variant="outline" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>Next</Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-7 text-xs leading-6 text-center text-muted-foreground">
+                            <div>Sun</div>
+                            <div>Mon</div>
+                            <div>Tue</div>
+                            <div>Wed</div>
+                            <div>Thu</div>
+                            <div>Fri</div>
+                            <div>Sat</div>
+                        </div>
+                        <div className="grid grid-cols-7 mt-2 text-sm">
+                            {days.map((day, dayIdx) => (
+                                <div key={day.toString()} className={cn(dayIdx === 0 && colStartClasses[day.getDay()], "py-2 border-t h-24")}>
+                                    <button
+                                        type="button"
+                                        className={cn(
+                                            isToday(day) && "text-white bg-primary rounded-full font-semibold",
+                                            !isToday(day) && isSameMonth(day, firstDayOfMonth) ? "text-foreground" : "text-muted-foreground",
+                                            "mx-auto flex h-8 w-8 items-center justify-center rounded-full"
+                                        )}
+                                    >
+                                        <time dateTime={format(day, "yyyy-MM-dd")}>{format(day, "d")}</time>
+                                    </button>
+                                    <div className="w-full text-center">
+                                        {events.filter(event => isSameDay(new Date(event.date), day)).map(event => (
+                                            <Badge key={event.id} className="w-[90%] mt-1 truncate" variant="secondary">{event.title}</Badge>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="lg:col-span-1">
+                    <CardHeader>
+                        <CardTitle>Upcoming Events</CardTitle>
+                        <CardDescription>A list of scheduled events.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {events.filter(e => new Date(e.date) >= new Date()).slice(0, 5).map(event => (
+                             <Card key={event.id} className="bg-muted/50">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-base">{event.title}</CardTitle>
+                                    <CardDescription>{new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm">{event.description}</p>
+                                </CardContent>
+                                <CardFooter className="gap-2">
+                                     <Button size="sm" variant="outline" onClick={() => handleAddToCalendar('Google Calendar', event.title)}><ExternalLink className="mr-2 h-4 w-4" /> Add to Google</Button>
+                                     <Button size="sm" variant="outline" onClick={() => handleAddToCalendar('Outlook', event.title)}><ExternalLink className="mr-2 h-4 w-4" /> Add to Outlook</Button>
+                                </CardFooter>
+                            </Card>
                         ))}
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }
