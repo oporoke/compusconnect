@@ -1,7 +1,6 @@
 
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AreaChart, GraduationCap, Users, UserCheck, TrendingUp } from "lucide-react";
+import { AreaChart, GraduationCap, Users, UserCheck, TrendingUp, Bot, Columns } from "lucide-react";
 import Link from "next/link";
 
 export default function AnalyticsHubPage() {
@@ -29,6 +28,18 @@ export default function AnalyticsHubPage() {
             description: "Forecast student performance and identify at-risk individuals.",
             icon: TrendingUp,
             href: "/analytics/predictive"
+        },
+        {
+            title: "AI Query",
+            description: "Use natural language to generate custom reports and insights.",
+            icon: Bot,
+            href: "/analytics/ai-query"
+        },
+        {
+            title: "Cross-School Benchmarks",
+            description: "Compare key metrics across different schools in your group.",
+            icon: Columns,
+            href: "/analytics/cross-school"
         }
     ];
 
@@ -58,5 +69,3 @@ export default function AnalyticsHubPage() {
         </div>
     );
 }
-
-    
