@@ -5,15 +5,18 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { 
     messages as initialMessages,
     events as initialEvents,
+    announcements as initialAnnouncements,
     Message,
     Event as SchoolEvent,
-    Conversation
+    Conversation,
+    Announcement,
 } from '@/lib/data';
 import { useToast } from './use-toast';
 
 interface CommunicationContextType {
   conversations: Record<string, Conversation>;
   events: SchoolEvent[];
+  announcements: Announcement[];
   isLoading: boolean;
   sendMessage: (sender: string, receiver: string, content: string) => void;
   addEvent: (event: Omit<SchoolEvent, 'id'>) => void;
@@ -24,6 +27,7 @@ const CommunicationContext = createContext<CommunicationContextType | undefined>
 export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [conversations, setConversations] = useState<Record<string, Conversation>>({});
   const [events, setEvents] = useState<SchoolEvent[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -31,13 +35,16 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
     try {
       const storedConversations = localStorage.getItem('campus-connect-conversations');
       const storedEvents = localStorage.getItem('campus-connect-events');
+      const storedAnnouncements = localStorage.getItem('campus-connect-announcements');
       
       setConversations(storedConversations ? JSON.parse(storedConversations) : initialMessages);
       setEvents(storedEvents ? JSON.parse(storedEvents) : initialEvents);
+      setAnnouncements(storedAnnouncements ? JSON.parse(storedAnnouncements) : initialAnnouncements);
     } catch (error) {
       console.error("Failed to parse communication data from localStorage", error);
       setConversations(initialMessages);
       setEvents(initialEvents);
+      setAnnouncements(initialAnnouncements);
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +84,7 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
 
 
   return (
-    <CommunicationContext.Provider value={{ conversations, events, isLoading, sendMessage, addEvent }}>
+    <CommunicationContext.Provider value={{ conversations, events, announcements, isLoading, sendMessage, addEvent }}>
       {children}
     </CommunicationContext.Provider>
   );

@@ -20,6 +20,7 @@ import { HealthProvider } from '@/hooks/use-health';
 export const metadata: Metadata = {
   title: 'CampusConnect Lite',
   description: 'A modern school management system.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({

@@ -1,8 +1,11 @@
-import { announcements } from "@/lib/data";
+
+"use client";
+import { useCommunication } from "@/hooks/use-communication";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Megaphone } from "lucide-react";
 
 export default function AnnouncementsPage() {
+    const { announcements } = useCommunication();
     return (
         <div className="space-y-6">
             <div>

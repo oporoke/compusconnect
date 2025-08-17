@@ -2,17 +2,24 @@
 "use client";
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Menu, School } from 'lucide-react';
+import { Menu, School, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet';
 import Link from 'next/link';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [activeSchool, setActiveSchool] = useState('school-a');
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -42,10 +49,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
         </div>
         <div className="flex flex-col">
-            <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 md:hidden">
+            <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
                 <Sheet>
                     <SheetTrigger asChild>
-                        <Button variant="outline" size="icon" className="shrink-0">
+                        <Button variant="outline" size="icon" className="shrink-0 md:hidden">
                             <Menu className="h-5 w-5" />
                             <span className="sr-only">Toggle navigation menu</span>
                         </Button>
@@ -54,12 +61,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         <AppSidebar user={user} />
                     </SheetContent>
                 </Sheet>
-                <div className="flex-1 text-center">
-                    <Link href="/dashboard" className="flex items-center justify-center gap-2 font-semibold">
-                         <School className="h-6 w-6 text-primary" />
-                         <span className="font-headline">CampusConnect Lite</span>
-                    </Link>
-                </div>
+                 <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="ml-auto">
+                      {activeSchool === 'school-a' ? 'Innovate International' : 'Global Prep Academy'}
+                      <ChevronsUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setActiveSchool('school-a')}>Innovate International</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setActiveSchool('school-b')}>Global Prep Academy</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
             </header>
             <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background overflow-y-auto">
                 {children}

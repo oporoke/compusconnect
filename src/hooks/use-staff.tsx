@@ -6,7 +6,7 @@ import { staff as initialStaff, Staff } from '@/lib/data';
 
 interface StaffContextType {
   staff: Staff[];
-  addStaff: (staffMember: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable'>) => void;
+  addStaff: (staffMember: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable' | 'schoolId'>) => void;
   updateStaff: (staffMember: Staff) => void;
   getStaffById: (id: string) => Staff | undefined;
   isLoading: boolean;
@@ -42,7 +42,7 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('campus-connect-staff', JSON.stringify(data));
   };
 
-  const addStaff = useCallback((staffData: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable' | 'performanceNotes'>) => {
+  const addStaff = useCallback((staffData: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable' | 'performanceNotes' | 'schoolId'>) => {
     setStaff(prevStaff => {
         const newStaffMember: Staff = {
             ...staffData,
@@ -50,6 +50,7 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             leavesTaken: 0,
             leavesAvailable: 20, // Default leave balance
             performanceNotes: '',
+            schoolId: 'school-a', // Default to one school
         };
         const newStaff = [...prevStaff, newStaffMember];
         persistStaff(newStaff);

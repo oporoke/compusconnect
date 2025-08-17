@@ -11,8 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAlumni } from '@/hooks/use-alumni';
-import { UserSquare, Search, PlusCircle, Pencil, Gift } from 'lucide-react';
-import type { AlumniProfile } from '@/lib/data';
+import { UserSquare, Search, PlusCircle, Pencil, Gift, TrendingUp, Handshake } from 'lucide-react';
+import type { AlumniProfile, Campaign, Pledge } from '@/lib/data';
+import { Progress } from '@/components/ui/progress';
 
 function AddAlumniDialog({ alumniToEdit, onComplete }: { alumniToEdit?: AlumniProfile, onComplete: () => void }) {
     const { addAlumni, updateAlumni } = useAlumni();
@@ -84,8 +85,63 @@ function AddDonationDialog() {
     )
 }
 
+function CreateCampaignDialog() {
+    const { addCampaign } = useAlumni();
+    const [open, setOpen] = useState(false);
+    const [title, setTitle] = useState('');
+    const [goal, setGoal] = useState('');
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        addCampaign({ title, goal: Number(goal) });
+        setOpen(false);
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button variant="outline"><TrendingUp className="mr-2"/>New Campaign</Button></DialogTrigger>
+            <DialogContent>
+                <DialogHeader><DialogTitle>Create Fundraising Campaign</DialogTitle></DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <Input placeholder="Campaign Title" value={title} onChange={e => setTitle(e.target.value)} required />
+                    <Input type="number" placeholder="Goal Amount" value={goal} onChange={e => setGoal(e.target.value)} required />
+                    <DialogFooter><Button type="submit">Create Campaign</Button></DialogFooter>
+                </form>
+            </DialogContent>
+        );
+}
+
+function AddPledgeDialog() {
+    const { alumni, campaigns, addPledge } = useAlumni();
+    const [open, setOpen] = useState(false);
+    const [campaignId, setCampaignId] = useState('');
+    const [alumniId, setAlumniId] = useState('');
+    const [amount, setAmount] = useState('');
+
+     const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        addPledge({ campaignId, alumniId, amount: Number(amount) });
+        setOpen(false);
+    }
+
+    return (
+         <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button><Handshake className="mr-2"/>Add Pledge</Button></DialogTrigger>
+            <DialogContent>
+                <DialogHeader><DialogTitle>Add a New Pledge</DialogTitle></DialogHeader>
+                 <form onSubmit={handleSubmit} className="space-y-4">
+                    <Select value={campaignId} onValueChange={setCampaignId} required><SelectTrigger><SelectValue placeholder="Select Campaign..." /></SelectTrigger><SelectContent>{campaigns.map(c => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent></Select>
+                    <Select value={alumniId} onValueChange={setAlumniId} required><SelectTrigger><SelectValue placeholder="Select Alumni..." /></SelectTrigger><SelectContent>{alumni.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent></Select>
+                    <Input type="number" placeholder="Pledge Amount" value={amount} onChange={e => setAmount(e.target.value)} required />
+                    <DialogFooter><Button type="submit">Log Pledge</Button></DialogFooter>
+                 </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 export default function AlumniPage() {
-    const { alumni, donations, isLoading } = useAlumni();
+    const { alumni, donations, campaigns, pledges, getAlumniNameById, isLoading } = useAlumni();
     const [searchTerm, setSearchTerm] = useState('');
     const [editingAlumni, setEditingAlumni] = useState<AlumniProfile | undefined>(undefined);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -96,8 +152,6 @@ export default function AlumniPage() {
         a.company.toLowerCase().includes(searchTerm.toLowerCase())
     );
     
-    const getAlumniName = (id: string) => alumni.find(a => a.id === id)?.name || 'N/A';
-
     return (
         <div className="space-y-6">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -113,15 +167,16 @@ export default function AlumniPage() {
                     <p className="text-muted-foreground">Manage the alumni database, networking, and donations.</p>
                 </div>
                  <div className="flex gap-2">
-                    <AddDonationDialog />
                     <Button variant="outline" onClick={() => { setEditingAlumni(undefined); setDialogOpen(true); }}><PlusCircle /> Add Alumni</Button>
                 </div>
             </div>
 
             <Tabs defaultValue="directory">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="directory"><UserSquare className="mr-2"/>Alumni Directory</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="directory"><UserSquare className="mr-2"/>Directory</TabsTrigger>
                     <TabsTrigger value="donations"><Gift className="mr-2"/>Donations</TabsTrigger>
+                    <TabsTrigger value="campaigns"><TrendingUp className="mr-2"/>Campaigns</TabsTrigger>
+                    <TabsTrigger value="pledges"><Handshake className="mr-2"/>Pledges</TabsTrigger>
                 </TabsList>
                 <TabsContent value="directory">
                     <Card>
@@ -153,7 +208,7 @@ export default function AlumniPage() {
                 </TabsContent>
                  <TabsContent value="donations">
                     <Card>
-                        <CardHeader><CardTitle>Donations History</CardTitle></CardHeader>
+                        <CardHeader className="flex justify-between items-center"><CardTitle>Donations History</CardTitle><AddDonationDialog/></CardHeader>
                         <CardContent>
                              <Table>
                                 <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Alumni</TableHead><TableHead>Purpose</TableHead><TableHead className="text-right">Amount</TableHead></TableRow></TableHeader>
@@ -161,9 +216,48 @@ export default function AlumniPage() {
                                     {donations.slice().reverse().map(donation => (
                                         <TableRow key={donation.id}>
                                             <TableCell>{donation.date}</TableCell>
-                                            <TableCell>{getAlumniName(donation.alumniId)}</TableCell>
+                                            <TableCell>{getAlumniNameById(donation.alumniId)}</TableCell>
                                             <TableCell>{donation.purpose}</TableCell>
                                             <TableCell className="text-right font-mono">${donation.amount.toFixed(2)}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                 <TabsContent value="campaigns">
+                     <Card>
+                        <CardHeader className="flex justify-between items-center"><CardTitle>Fundraising Campaigns</CardTitle><CreateCampaignDialog/></CardHeader>
+                        <CardContent className="grid md:grid-cols-2 gap-4">
+                            {campaigns.map(campaign => (
+                                <Card key={campaign.id}>
+                                    <CardHeader><CardTitle>{campaign.title}</CardTitle></CardHeader>
+                                    <CardContent className="space-y-2">
+                                        <Progress value={(campaign.raised / campaign.goal) * 100}/>
+                                        <div className="flex justify-between text-sm">
+                                            <span>${campaign.raised.toLocaleString()} raised</span>
+                                            <span className="text-muted-foreground">Goal: ${campaign.goal.toLocaleString()}</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="pledges">
+                     <Card>
+                        <CardHeader className="flex justify-between items-center"><CardTitle>Pledges</CardTitle><AddPledgeDialog/></CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader><TableRow><TableHead>Alumni</TableHead><TableHead>Campaign</TableHead><TableHead>Amount</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                                <TableBody>
+                                    {pledges.map(pledge => (
+                                        <TableRow key={pledge.id}>
+                                            <TableCell>{getAlumniNameById(pledge.alumniId)}</TableCell>
+                                            <TableCell>{campaigns.find(c=>c.id === pledge.campaignId)?.title || 'N/A'}</TableCell>
+                                            <TableCell>${pledge.amount.toLocaleString()}</TableCell>
+                                            <TableCell><Badge>{pledge.status}</Badge></TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>

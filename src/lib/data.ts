@@ -50,25 +50,34 @@ export const grades: Grade[] = [
     { studentId: 'S001', examId: 'E02', scores: { 'Math': 88, 'Science': 94, 'English': 81, 'History': 90, 'Art': 95 } },
 ];
 
-
-export const announcements = [
+export interface Announcement {
+    id: string;
+    title: string;
+    date: string;
+    content: string;
+    schoolId: 'all' | 'school-a' | 'school-b';
+}
+export const announcements: Announcement[] = [
     { 
         id: 'A01', 
         title: 'Annual Sports Day', 
         date: '2024-10-15', 
-        content: 'The annual sports day will be held on October 15th. All students are requested to participate in at least one event. The event list will be shared soon.' 
+        content: 'The annual sports day will be held on October 15th. All students are requested to participate in at least one event. The event list will be shared soon.',
+        schoolId: 'all'
     },
     { 
         id: 'A02', 
-        title: 'Parent-Teacher Meeting', 
+        title: 'Parent-Teacher Meeting (School A)', 
         date: '2024-09-25', 
-        content: 'A parent-teacher meeting is scheduled for September 25th to discuss the mid-term examination results. Please ensure your presence.' 
+        content: 'A parent-teacher meeting is scheduled for September 25th to discuss the mid-term examination results. Please ensure your presence.',
+        schoolId: 'school-a'
     },
     { 
         id: 'A03', 
-        title: 'Science Fair 2024', 
+        title: 'Science Fair 2024 (School B)', 
         date: '2024-11-05', 
-        content: 'Get ready for the annual Science Fair! Start preparing your projects. The registration deadline is October 20th.' 
+        content: 'Get ready for the annual Science Fair! Start preparing your projects. The registration deadline is October 20th.',
+        schoolId: 'school-b'
     },
 ];
 
@@ -156,13 +165,14 @@ export interface Staff {
   leavesAvailable: number;
   performanceNotes?: string;
   deductions: { tax: number; insurance: number };
+  schoolId: 'school-a' | 'school-b';
 }
 
 export const staff: Staff[] = [
-  { id: 'T01', name: 'Dr. Evelyn Reed', role: 'Principal', department: 'Administration', email: 'e.reed@example.com', phone: '123-456-7890', joiningDate: '2010-08-15', salary: 90000, leavesTaken: 5, leavesAvailable: 20, performanceNotes: 'Excellent leadership and administrative skills.', deductions: { tax: 15, insurance: 500 } },
-  { id: 'T02', name: 'Mr. Samuel Jones', role: 'Math Teacher', department: 'Academics', email: 's.jones@example.com', phone: '123-456-7891', joiningDate: '2015-09-01', salary: 65000, leavesTaken: 3, leavesAvailable: 15, performanceNotes: 'Consistently receives positive feedback from students. Encourages classroom participation.', deductions: { tax: 12, insurance: 400 } },
-  { id: 'T03', name: 'Ms. Clara Oswald', role: 'Science Teacher', department: 'Academics', email: 'c.oswald@example.com', phone: '123-456-7892', joiningDate: '2018-07-20', salary: 62000, leavesTaken: 8, leavesAvailable: 15, deductions: { tax: 12, insurance: 380 } },
-  { id: 'T04', name: 'Mr. Peter Capaldi', role: 'Librarian', department: 'Library', email: 'p.capaldi@example.com', phone: '123-456-7893', joiningDate: '2019-01-10', salary: 55000, leavesTaken: 2, leavesAvailable: 12, performanceNotes: 'Has done a great job organizing the new fiction section.', deductions: { tax: 10, insurance: 350 } },
+  { id: 'T01', name: 'Dr. Evelyn Reed', role: 'Principal', department: 'Administration', email: 'e.reed@example.com', phone: '123-456-7890', joiningDate: '2010-08-15', salary: 90000, leavesTaken: 5, leavesAvailable: 20, performanceNotes: 'Excellent leadership and administrative skills.', deductions: { tax: 15, insurance: 500 }, schoolId: 'school-a' },
+  { id: 'T02', name: 'Mr. Samuel Jones', role: 'Math Teacher', department: 'Academics', email: 's.jones@example.com', phone: '123-456-7891', joiningDate: '2015-09-01', salary: 65000, leavesTaken: 3, leavesAvailable: 15, performanceNotes: 'Consistently receives positive feedback from students. Encourages classroom participation.', deductions: { tax: 12, insurance: 400 }, schoolId: 'school-a' },
+  { id: 'T03', name: 'Ms. Clara Oswald', role: 'Science Teacher', department: 'Academics', email: 'c.oswald@example.com', phone: '123-456-7892', joiningDate: '2018-07-20', salary: 62000, leavesTaken: 8, leavesAvailable: 15, deductions: { tax: 12, insurance: 380 }, schoolId: 'school-b' },
+  { id: 'T04', name: 'Mr. Peter Capaldi', role: 'Librarian', department: 'Library', email: 'p.capaldi@example.com', phone: '123-456-7893', joiningDate: '2019-01-10', salary: 55000, leavesTaken: 2, leavesAvailable: 12, performanceNotes: 'Has done a great job organizing the new fiction section.', deductions: { tax: 10, insurance: 350 }, schoolId: 'school-b' },
 ];
 export const leaveRequests: LeaveRequest[] = [];
 
@@ -473,3 +483,40 @@ export const healthRecords: HealthRecord[] = [
     { studentId: 'S001', bloodGroup: 'O+', allergies: ['Peanuts'], vaccinations: [{ name: 'MMR', date: '2015-05-20' }] },
 ];
 export const clinicVisits: ClinicVisit[] = [];
+
+
+// Competitive Admin Module Mock Data
+export interface Asset {
+    id: string;
+    name: string;
+    type: 'Device' | 'Furniture' | 'Book' | 'Equipment';
+    status: 'Available' | 'In Use' | 'Maintenance';
+    assignedTo: string | null; // Staff or Student ID
+    purchaseDate: string;
+}
+
+export const assets: Asset[] = [
+    { id: 'ASSET001', name: 'Laptop A-01', type: 'Device', status: 'In Use', assignedTo: 'T02', purchaseDate: '2023-01-15' },
+    { id: 'ASSET002', name: 'Projector B-05', type: 'Equipment', status: 'Available', assignedTo: null, purchaseDate: '2022-11-20' },
+];
+
+export interface Campaign {
+    id: string;
+    title: string;
+    goal: number;
+    raised: number;
+    startDate: string;
+    endDate: string;
+}
+export interface Pledge {
+    id: string;
+    campaignId: string;
+    alumniId: string;
+    amount: number;
+    status: 'Pledged' | 'Paid';
+    date: string;
+}
+export const campaigns: Campaign[] = [
+    { id: 'CAMP01', title: 'New Library Wing', goal: 50000, raised: 12500, startDate: '2024-09-01', endDate: '2025-01-31' },
+];
+export const pledges: Pledge[] = [];
