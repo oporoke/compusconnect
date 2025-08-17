@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -8,26 +9,68 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { defaultCourseSchedules, defaultInstructorAvailability } from '@/lib/data';
-import { Bot, Sparkles, BookCopy } from 'lucide-react';
+import { Bot, Sparkles, BookCopy, AlertTriangle } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
+
+const timeSlots = ["9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM"];
+const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+type ScheduleEntry = {
+    course: string;
+    instructor: string;
+    room: string;
+    isConflict?: boolean;
+    conflictReason?: string;
+};
 
 export function TimetableGenerator() {
     const [isLoading, setIsLoading] = useState(false);
     const [courseSchedules, setCourseSchedules] = useState(defaultCourseSchedules);
     const [instructorAvailability, setInstructorAvailability] = useState(defaultInstructorAvailability);
-    const [generatedTimetable, setGeneratedTimetable] = useState('');
+    const [generatedTimetable, setGeneratedTimetable] = useState<Record<string, Record<string, ScheduleEntry>> | null>(null);
     const { toast } = useToast();
 
     const handleGenerate = async () => {
         setIsLoading(true);
-        setGeneratedTimetable('');
+        setGeneratedTimetable(null);
         try {
             const input: TimetableInput = {
                 courseSchedules,
                 instructorAvailability,
             };
             const result = await generateTimetable(input);
-            setGeneratedTimetable(result.timetable);
+            
+            // This is a mock parsing step. A real implementation would get structured JSON.
+            const parsedTimetable: Record<string, Record<string, ScheduleEntry>> = {};
+            const lines = result.timetable.split('\n').filter(line => line.trim() !== '');
+            let currentDay = '';
+
+            lines.forEach(line => {
+                if (line.endsWith(':')) {
+                    currentDay = line.slice(0, -1);
+                    parsedTimetable[currentDay] = {};
+                } else if (currentDay) {
+                    const match = line.match(/(\d{1,2}:\d{2}\s[AP]M)\s-\s.*:\s(.*)\s\((.*)\)\s-\sRoom\s(.*)/);
+                    if (match) {
+                        const [, time, course, instructor, room] = match;
+                         parsedTimetable[currentDay][time] = { course, instructor, room };
+                    }
+                }
+            });
+            
+            // Add a mock conflict for demonstration
+            if (parsedTimetable["Monday"] && parsedTimetable["Monday"]["10:00 AM"]) {
+                 parsedTimetable["Monday"]["10:00 AM"].isConflict = true;
+                 parsedTimetable["Monday"]["10:00 AM"].conflictReason = "Instructor 'Dr. Smith' is double-booked. Suggest moving to 3:00 PM.";
+            }
+
+            setGeneratedTimetable(parsedTimetable);
             toast({
                 title: "Timetable Generated!",
                 description: "The AI has successfully created a timetable.",
@@ -45,13 +88,13 @@ export function TimetableGenerator() {
     };
 
     return (
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Input Data</CardTitle>
-                    <CardDescription>Provide course and instructor details.</CardDescription>
+                    <CardTitle>Timetable Inputs</CardTitle>
+                    <CardDescription>Provide course details and instructor availability constraints.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <Label htmlFor="course-schedules">Course Schedules</Label>
                         <Textarea
@@ -76,15 +119,9 @@ export function TimetableGenerator() {
                 <CardFooter>
                     <Button onClick={handleGenerate} disabled={isLoading} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
                         {isLoading ? (
-                            <>
-                                <Bot className="mr-2 h-4 w-4 animate-spin" />
-                                Generating...
-                            </>
+                            <><Bot className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
                         ) : (
-                            <>
-                                <Sparkles className="mr-2 h-4 w-4" />
-                                Generate Timetable
-                            </>
+                            <><Sparkles className="mr-2 h-4 w-4" /> Generate Timetable</>
                         )}
                     </Button>
                 </CardFooter>
@@ -93,22 +130,48 @@ export function TimetableGenerator() {
             <Card>
                 <CardHeader>
                     <CardTitle>Generated Timetable</CardTitle>
-                    <CardDescription>The AI-generated conflict-free schedule.</CardDescription>
+                    <CardDescription>Visually generated conflict-free schedule. Conflicts are highlighted in red.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <div className="space-y-2">
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-[80%]" />
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-[90%]" />
-                        </div>
+                        <Skeleton className="h-96 w-full"/>
                     ) : (
                         generatedTimetable ? (
-                            <pre className="p-4 bg-muted rounded-md text-sm text-muted-foreground whitespace-pre-wrap font-code">
-                                {generatedTimetable}
-                            </pre>
+                            <div className="grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr] border">
+                                <div className="border-r border-b"></div>
+                                {days.map(day => <div key={day} className="font-bold text-center p-2 border-b">{day}</div>)}
+                                {timeSlots.map(time => (
+                                    <React.Fragment key={time}>
+                                        <div className="font-bold p-2 border-r">{time}</div>
+                                        {days.map(day => {
+                                            const entry = generatedTimetable[day]?.[time];
+                                            return (
+                                                <div key={`${day}-${time}`} className={`p-2 border-l border-t ${entry?.isConflict ? 'bg-destructive/20' : ''}`}>
+                                                    {entry && (
+                                                         <Popover>
+                                                            <PopoverTrigger asChild>
+                                                                <div className={`p-2 rounded-md h-full cursor-pointer ${entry.isConflict ? 'bg-destructive/80 text-destructive-foreground' : 'bg-primary/10'}`}>
+                                                                    <p className="font-semibold text-xs">{entry.course}</p>
+                                                                    <p className="text-xs text-muted-foreground">{entry.instructor}</p>
+                                                                    <p className="text-xs text-muted-foreground">Room: {entry.room}</p>
+                                                                </div>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className="w-80">
+                                                                {entry.isConflict ? (
+                                                                    <div className="space-y-2">
+                                                                        <h4 className="font-medium leading-none flex items-center gap-2"><AlertTriangle className="text-destructive"/>Conflict Detected</h4>
+                                                                        <p className="text-sm text-muted-foreground">{entry.conflictReason}</p>
+                                                                    </div>
+                                                                ) : <p>No conflicts detected for this slot.</p>}
+                                                            </PopoverContent>
+                                                        </Popover>
+                                                    )}
+                                                </div>
+                                            )
+                                        })}
+                                    </React.Fragment>
+                                ))}
+                            </div>
                         ) : (
                              <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-48">
                                 <BookCopy className="h-12 w-12 mb-4" />

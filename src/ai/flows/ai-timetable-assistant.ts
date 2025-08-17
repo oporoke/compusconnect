@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -22,7 +23,7 @@ const TimetableInputSchema = z.object({
 export type TimetableInput = z.infer<typeof TimetableInputSchema>;
 
 const TimetableOutputSchema = z.object({
-  timetable: z.string().describe('The generated conflict-free timetable.'),
+  timetable: z.string().describe('The generated conflict-free timetable, formatted as plain text. For each day, list the time slots and the scheduled class, including course, instructor, and room number.'),
 });
 export type TimetableOutput = z.infer<typeof TimetableOutputSchema>;
 
@@ -34,9 +35,23 @@ const prompt = ai.definePrompt({
   name: 'generateTimetablePrompt',
   input: {schema: TimetableInputSchema},
   output: {schema: TimetableOutputSchema},
-  prompt: `You are a timetable scheduling assistant. You are provided with a list of courses and their schedules, along with instructor availability.
+  prompt: `You are a highly efficient school timetable scheduling AI. You are provided with a list of courses, their schedules, room requirements, and instructor availability.
 
-  Your task is to generate a conflict-free timetable that accommodates all courses and instructors. If there are any courses that are difficult to schedule, include a warning message.
+  Your task is to generate a conflict-free weekly timetable from 9:00 AM to 5:00 PM, Monday to Friday.
+  
+  Assign a unique room number (e.g., 101, 102, 201) for each class session. Ensure that no instructor or room is booked for two different classes at the same time.
+
+  If there are any potential conflicts (e.g., an instructor is unavailable, or a course is hard to schedule), you MUST still schedule it but include a clear warning in your output.
+  
+  Format the output clearly with each day as a major heading. Under each day, list the time slots and the scheduled event.
+
+  Example Output Format:
+  Monday:
+    9:00 AM - 10:00 AM: Math 101 (Dr. Smith) - Room 101
+    10:00 AM - 11:00 AM: Physics 201 (Prof. Jones) - Room 203
+  Tuesday:
+    9:00 AM - 10:00 AM: English 101 (Ms. Davis) - Room 102
+  ...and so on for the rest of the week.
 
   Course Schedules:
   {{courseSchedules}}
@@ -44,7 +59,7 @@ const prompt = ai.definePrompt({
   Instructor Availability:
   {{instructorAvailability}}
 
-  Timetable:
+  Generate the full, formatted timetable now.
   `,
 });
 
