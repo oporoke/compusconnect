@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from '@/hooks/use-toast';
-import { Save, Search } from 'lucide-react';
+import { Save, Search, History } from 'lucide-react';
 import { useStudents } from '@/hooks/use-students';
 import type { Grade, Student, Exam } from '@/lib/data';
 import { Skeleton } from '../ui/skeleton';
@@ -94,10 +94,10 @@ export function GradebookTable() {
         return (total / subjectScores.length).toFixed(2);
     }
     
-    const handlePlagiarismCheck = () => {
+    const handleHistoryCheck = () => {
         toast({
-            title: "Plagiarism Scan Complete (Mock)",
-            description: "No plagiarism detected in student submissions.",
+            title: "Loading grade history... (mock action)",
+            description: "A log of all changes to this grade would be displayed here.",
         });
     }
 
@@ -134,7 +134,6 @@ export function GradebookTable() {
                                         <TableHead key={subject} className="text-center">{subject}</TableHead>
                                     ))}
                                     <TableHead className="text-center">Average</TableHead>
-                                    <TableHead className="text-center">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -143,25 +142,20 @@ export function GradebookTable() {
                                         <TableCell className="font-medium">{student.studentName}</TableCell>
                                         {selectedExam.subjects.map(subject => (
                                             <TableCell key={subject}>
+                                                <div className="flex items-center justify-center gap-1">
                                                 <Input 
                                                     type="number" 
                                                     value={student.scores[subject] || ''} 
                                                     onChange={(e) => handleGradeChange(student.studentId, subject, e.target.value)}
-                                                    className="w-20 text-center mx-auto"
+                                                    className="w-20 text-center"
                                                 />
+                                                <TooltipProvider>
+                                                    <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleHistoryCheck} className="h-8 w-8"><History className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent><p>View Grade History (Mock)</p></TooltipContent></Tooltip>
+                                                </TooltipProvider>
+                                                </div>
                                             </TableCell>
                                         ))}
                                         <TableCell className="text-center font-medium">{calculateAverage(student.scores)}</TableCell>
-                                        <TableCell className="text-center">
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button variant="ghost" size="icon" onClick={handlePlagiarismCheck}><Search className="h-4 w-4"/></Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent><p>Check for Plagiarism (Mock)</p></TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -178,4 +172,3 @@ export function GradebookTable() {
         </Card>
     );
 }
-

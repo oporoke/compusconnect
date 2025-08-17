@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { GraduationCap, User as UserIcon, CalendarCheck } from "lucide-react";
+import { GraduationCap, User as UserIcon, CalendarCheck, Award } from "lucide-react";
 import {
   ChartContainer,
   ChartTooltip,
@@ -79,7 +79,7 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
     return (
         <div className="space-y-6">
             <Card>
-                <CardHeader className="flex flex-row items-center gap-4">
+                <CardHeader className="flex flex-row items-center gap-6">
                     <Avatar className="h-20 w-20">
                         <AvatarImage src={`https://placehold.co/100x100.png`} alt={student.name} data-ai-hint="profile picture" />
                         <AvatarFallback>{getInitials(student.name)}</AvatarFallback>
@@ -93,8 +93,8 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                 </CardHeader>
             </Card>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 <Card>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                 <Card className="lg:col-span-2">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                          <CardTitle className="text-lg">Recent Performance</CardTitle>
                          <GraduationCap className="h-5 w-5 text-muted-foreground" />
@@ -127,7 +127,7 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                         <CardTitle className="text-lg">Attendance Overview</CardTitle>
                         <CalendarCheck className="h-5 w-5 text-muted-foreground" />
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 pt-6">
                         <div className="flex justify-between items-center">
                             <span>Overall Presence</span>
                             <span className="font-bold">{attendancePercentage}%</span>
@@ -136,19 +136,23 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                         <p className="text-xs text-muted-foreground text-center">Based on {studentAttendance.length} recorded day(s)</p>
                     </CardContent>
                 </Card>
-
-                <Card>
+                
+                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-lg">Contact Information</CardTitle>
-                        <UserIcon className="h-5 w-5 text-muted-foreground" />
+                        <CardTitle className="text-lg">Advanced Grading</CardTitle>
+                        <Award className="h-5 w-5 text-muted-foreground" />
                     </CardHeader>
-                    <CardContent className="text-sm">
-                        <p><strong>Email:</strong> {student.name.toLowerCase().replace(' ', '.')}@example.com</p>
-                        <p><strong>Parent/Guardian:</strong> Parent of {student.name}</p>
-                        <p><strong>Contact:</strong> (123) 456-7890</p>
+                    <CardContent className="space-y-2 pt-6">
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="font-medium">Cumulative GPA:</span>
+                             <span className="font-mono font-bold text-lg">3.8/4.0</span>
+                        </div>
+                         <div className="flex justify-between items-center text-sm">
+                            <span className="font-medium">Honor Roll Status:</span>
+                             <Badge variant="default">Highest Honors</Badge>
+                        </div>
                     </CardContent>
                 </Card>
-
             </div>
 
              <Card>
@@ -174,7 +178,7 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                                 return (
                                     <TableRow key={grade.examId}>
                                         <TableCell>{exam?.name || 'Unknown Exam'}</TableCell>
-                                        <TableCell>{exam?.date || 'N/A'}</TableCell>
+                                        <TableCell>{exam ? new Date(exam.date).toLocaleDateString() : 'N/A'}</TableCell>
                                         <TableCell>{average}%</TableCell>
                                         <TableCell>
                                             <Badge variant={status === "Promoted" ? "default" : "destructive"}>{status}</Badge>
