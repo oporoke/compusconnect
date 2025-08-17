@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAlumni } from '@/hooks/use-alumni';
 import { useStudents } from '@/hooks/use-students';
-import { UserSquare, Search, PlusCircle, Pencil, Gift, TrendingUp, Handshake, ShieldQuestion } from 'lucide-react';
+import { UserSquare, Search, PlusCircle, Pencil, Gift, TrendingUp, Handshake, ShieldQuestion, Linkedin } from 'lucide-react';
 import type { AlumniProfile, Campaign, Pledge } from '@/lib/data';
 import { Progress } from '@/components/ui/progress';
 
@@ -230,7 +230,8 @@ export default function AlumniPage() {
                                             <TableCell>{profile.graduationYear}</TableCell>
                                             <TableCell>{profile.occupation}</TableCell>
                                             <TableCell>{profile.company}</TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="text-right space-x-1">
+                                                <Button asChild variant="ghost" size="icon"><a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"><Linkedin className="h-4 w-4" /></a></Button>
                                                 <Button variant="ghost" size="icon" onClick={() => { setEditingAlumni(profile); setDialogOpen(true); }}><Pencil className="h-4 w-4" /></Button>
                                             </TableCell>
                                         </TableRow>
@@ -242,7 +243,7 @@ export default function AlumniPage() {
                 </TabsContent>
                  <TabsContent value="donations">
                     <Card>
-                        <CardHeader className="flex justify-between items-center"><CardTitle>Donations History</CardTitle><AddDonationDialog/></CardHeader>
+                        <CardHeader className="flex-row justify-between items-center"><CardTitle>Donations History</CardTitle><AddDonationDialog/></CardHeader>
                         <CardContent>
                              <Table>
                                 <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Alumni</TableHead><TableHead>Purpose</TableHead><TableHead className="text-right">Amount</TableHead></TableRow></TableHeader>
@@ -262,7 +263,7 @@ export default function AlumniPage() {
                 </TabsContent>
                  <TabsContent value="campaigns">
                      <Card>
-                        <CardHeader className="flex justify-between items-center"><CardTitle>Fundraising Campaigns</CardTitle><CreateCampaignDialog/></CardHeader>
+                        <CardHeader className="flex-row justify-between items-center"><CardTitle>Fundraising Campaigns</CardTitle><CreateCampaignDialog/></CardHeader>
                         <CardContent className="grid md:grid-cols-2 gap-4">
                             {campaigns.map(campaign => (
                                 <Card key={campaign.id}>
@@ -281,7 +282,7 @@ export default function AlumniPage() {
                 </TabsContent>
                 <TabsContent value="pledges">
                      <Card>
-                        <CardHeader className="flex justify-between items-center"><CardTitle>Pledges</CardTitle><AddPledgeDialog/></CardHeader>
+                        <CardHeader className="flex-row justify-between items-center"><CardTitle>Pledges</CardTitle><AddPledgeDialog/></CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader><TableRow><TableHead>Alumni</TableHead><TableHead>Campaign</TableHead><TableHead>Amount</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
@@ -301,7 +302,7 @@ export default function AlumniPage() {
                 </TabsContent>
                 <TabsContent value="mentorships">
                      <Card>
-                        <CardHeader className="flex justify-between items-center"><CardTitle>Mentorship Program</CardTitle><AddMentorshipDialog /></CardHeader>
+                        <CardHeader className="flex-row justify-between items-center"><CardTitle>Mentorship Program</CardTitle><AddMentorshipDialog /></CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader><TableRow><TableHead>Mentor (Alumni)</TableHead><TableHead>Mentee (Student)</TableHead><TableHead>Start Date</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
@@ -324,4 +325,3 @@ export default function AlumniPage() {
     );
 }
 
-    

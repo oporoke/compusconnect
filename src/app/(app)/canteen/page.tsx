@@ -13,9 +13,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useCanteen } from '@/hooks/use-canteen';
 import { useStudents } from '@/hooks/use-students';
-import { DollarSign, CreditCard, ShoppingCart, Utensils, Trash2, PlusCircle, Save } from 'lucide-react';
+import { DollarSign, CreditCard, ShoppingCart, Utensils, Trash2, PlusCircle, Save, Bot, Sparkles, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { CanteenMenuItem } from '@/lib/data';
+import { getCanteenSuggestion } from '@/ai/flows/ai-canteen-assistant';
 
 function AddFundsDialog() {
     const { addFunds } = useCanteen();
@@ -163,6 +164,65 @@ function MenuManager() {
     )
 }
 
+function CanteenAIAdvisor() {
+    const { students } = useStudents();
+    const { transactions } = useCanteen();
+    const { toast } = useToast();
+    const [selectedStudentId, setSelectedStudentId] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [suggestion, setSuggestion] = useState('');
+
+    const handleGetSuggestion = async () => {
+        if (!selectedStudentId) return;
+        const student = students.find(s => s.id === selectedStudentId);
+        if (!student) return;
+
+        const purchaseHistory = transactions
+            .filter(t => t.studentId === selectedStudentId && t.type === 'debit')
+            .map(t => t.description)
+            .join(', ');
+
+        if (!purchaseHistory) {
+            toast({ title: "No purchase history found for this student." });
+            return;
+        }
+
+        setIsLoading(true);
+        setSuggestion('');
+        try {
+            const result = await getCanteenSuggestion({ studentName: student.name, purchaseHistory });
+            setSuggestion(result.suggestion);
+        } catch (error) {
+            console.error(error);
+            toast({ variant: 'destructive', title: "AI Suggestion Failed" });
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Bot/> AI Health Advisor</CardTitle>
+                <CardDescription>Get AI-powered nutritional suggestions based on a student's purchase history.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <Select value={selectedStudentId} onValueChange={setSelectedStudentId}><SelectTrigger><SelectValue placeholder="Select Student..." /></SelectTrigger><SelectContent>{students.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>
+                {suggestion && (
+                    <div className="p-4 bg-muted rounded-md text-sm">{suggestion}</div>
+                )}
+            </CardContent>
+            <CardFooter>
+                <Button className="w-full" onClick={handleGetSuggestion} disabled={isLoading || !selectedStudentId}>
+                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                    Get Suggestion
+                </Button>
+            </CardFooter>
+        </Card>
+    )
+}
+
+
 export default function CanteenPage() {
     const { accounts, transactions, isLoading } = useCanteen();
     const { students } = useStudents();
@@ -182,10 +242,11 @@ export default function CanteenPage() {
             </div>
 
             <Tabs defaultValue="accounts">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="accounts"><DollarSign className="mr-2"/>Accounts</TabsTrigger>
                     <TabsTrigger value="transactions"><ShoppingCart className="mr-2"/>Transactions</TabsTrigger>
                     <TabsTrigger value="menu"><Utensils className="mr-2"/>Menu & Stock</TabsTrigger>
+                    <TabsTrigger value="ai"><Bot className="mr-2"/>AI Advisor</TabsTrigger>
                 </TabsList>
                 <TabsContent value="accounts">
                     <Card>
@@ -202,9 +263,11 @@ export default function CanteenPage() {
                 <TabsContent value="menu">
                    <MenuManager />
                 </TabsContent>
+                 <TabsContent value="ai">
+                   <CanteenAIAdvisor />
+                </TabsContent>
             </Tabs>
         </div>
     );
 }
 
-    

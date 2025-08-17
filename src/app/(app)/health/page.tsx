@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -12,7 +13,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Textarea } from '@/components/ui/textarea';
 import { useHealth } from '@/hooks/use-health';
 import { useStudents } from '@/hooks/use-students';
-import { HeartPulse, PlusCircle, Pill, Syringe, Save, Trash2, Microscope } from 'lucide-react';
+import { HeartPulse, PlusCircle, Pill, Syringe, Save, Trash2, Microscope, BellRing } from 'lucide-react';
 import type { HealthRecord } from '@/lib/data';
 
 function EditHealthRecordDialog({ record: initialRecord, studentId, studentName, onComplete }: { record: HealthRecord | undefined, studentId: string, studentName: string, onComplete: () => void }) {
@@ -89,7 +90,7 @@ function LogVisitDialog({ studentId, onComplete }: { studentId: string, onComple
 
 export default function HealthCenterPage() {
     const { students } = useStudents();
-    const { healthRecords, clinicVisits, getRecordByStudentId, getVisitsByStudentId, isLoading } = useHealth();
+    const { healthRecords, clinicVisits, getRecordByStudentId, getVisitsByStudentId, isLoading, sendVaccinationReminders } = useHealth();
     const [selectedStudentId, setSelectedStudentId] = useState('');
     const [recordDialogOpen, setRecordDialogOpen] = useState(false);
     const [visitDialogOpen, setVisitDialogOpen] = useState(false);
@@ -119,6 +120,7 @@ export default function HealthCenterPage() {
                     <p className="text-muted-foreground">Manage student medical records and clinic visits.</p>
                 </div>
                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={sendVaccinationReminders}><BellRing className="mr-2"/> Send Reminders</Button>
                     <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
                         <SelectTrigger className="w-64"><SelectValue placeholder="Select a student..." /></SelectTrigger>
                         <SelectContent>{students.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>

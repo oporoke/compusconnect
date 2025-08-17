@@ -13,6 +13,7 @@ interface HealthContextType {
   getVisitsByStudentId: (studentId: string) => ClinicVisit[];
   updateRecord: (record: HealthRecord) => void;
   addClinicVisit: (visit: Omit<ClinicVisit, 'id'>) => void;
+  sendVaccinationReminders: () => void;
 }
 
 const HealthContext = createContext<HealthContextType | undefined>(undefined);
@@ -76,8 +77,17 @@ export const HealthProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     });
   }, [toast]);
 
+  const sendVaccinationReminders = useCallback(() => {
+    // This is a mock function. In a real app, this would check vaccination dates
+    // against a schedule and send notifications for overdue or upcoming shots.
+    toast({
+        title: "Vaccination Reminders Sent (Mock)",
+        description: "Simulated reminders sent for upcoming vaccinations."
+    });
+  }, [toast]);
+
   return (
-    <HealthContext.Provider value={{ healthRecords, clinicVisits, isLoading, getRecordByStudentId, getVisitsByStudentId, updateRecord, addClinicVisit }}>
+    <HealthContext.Provider value={{ healthRecords, clinicVisits, isLoading, getRecordByStudentId, getVisitsByStudentId, updateRecord, addClinicVisit, sendVaccinationReminders }}>
       {children}
     </HealthContext.Provider>
   );
