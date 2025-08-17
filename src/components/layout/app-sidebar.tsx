@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { User, ROLES } from '@/lib/auth';
@@ -31,10 +32,6 @@ import {
   HeartPulse,
   Utensils,
   Hammer,
-  BrainCircuit,
-  Award,
-  BookOpen,
-  Route,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -49,10 +46,6 @@ const navLinks = [
   { href: '/staff', label: 'Staff', icon: Briefcase, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/students', label: 'Students', icon: Users, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { type: 'divider', roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN, ROLES.STUDENT, ROLES.PARENT]},
-  { href: '/academics/lesson-planner', label: 'Lesson Planner', icon: BookOpen, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
-  { href: '/academics/adaptive-learning', label: 'Adaptive Learning', icon: BrainCircuit, roles: [ROLES.STUDENT, ROLES.PARENT, ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
-  { href: '/academics/gamification', label: 'Achievements', icon: Award, roles: [ROLES.STUDENT, ROLES.PARENT, ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
-  { href: '/academics/life-path', label: 'Life Path', icon: Route, roles: [ROLES.STUDENT, ROLES.PARENT, ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { href: '/exams', label: 'Exams', icon: FilePen, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { href: '/attendance', label: 'Attendance', icon: CalendarCheck, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { href: '/gradebook', label: 'Gradebook', icon: GraduationCap, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
@@ -103,7 +96,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
             link.type === 'divider' ? (
               <div key={`divider-${index}`} className="my-2 border-t border-border/50" />
             ) : (
-            <Link key={link.href} href={link.href!} className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname.startsWith(link.href!) ? 'bg-muted text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+            <Link key={link.href} href={link.href!} className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname === link.href ? 'bg-muted text-primary' : 'text-muted-foreground hover:text-primary'}`}>
               <link.icon className="h-4 w-4" />
               {link.label}
             </Link>
