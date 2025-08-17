@@ -12,6 +12,7 @@ import {
   BookCopy,
   Megaphone,
   School,
+  GraduationCap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -24,6 +25,7 @@ const navLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/students', label: 'Students', icon: Users, roles: [ROLES.ADMIN, ROLES.TEACHER] },
   { href: '/attendance', label: 'Attendance', icon: CalendarCheck, roles: [ROLES.ADMIN, ROLES.TEACHER] },
+  { href: '/gradebook', label: 'Gradebook', icon: GraduationCap, roles: [ROLES.ADMIN, ROLES.TEACHER] },
   { href: '/timetable', label: 'Timetable', icon: BookCopy, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/announcements', label: 'Announcements', icon: Megaphone, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
 ];

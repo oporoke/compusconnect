@@ -43,3 +43,13 @@ export const defaultInstructorAvailability = `
 - Ms. Davis: Tue/Thu 8am-12pm
 - Mr. Lee: Mon-Fri 1pm-5pm
 `;
+
+export const grades = [
+    { studentId: 'S001', math: 85, science: 92, english: 78 },
+    { studentId: 'S002', math: 90, science: 88, english: 82 },
+    { studentId: 'S003', math: 72, science: 75, english: 80 },
+    { studentId: 'S004', math: 95, science: 98, english: 92 },
+    { studentId: 'S005', math: 88, science: 90, english: 85 },
+    { studentId: 'S006', math: 78, science: 82, english: 70 },
+    { studentId: 'S007', math: 92, science: 95, english: 88 },
+];
