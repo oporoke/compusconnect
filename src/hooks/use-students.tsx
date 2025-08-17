@@ -20,6 +20,7 @@ interface StudentContextType {
   exams: Exam[];
   attendance: AttendanceRecord[];
   addStudent: (student: Omit<Student, 'id' | 'createdAt' | 'updatedAt' | 'discipline' | 'hostelRoomId'>) => void;
+  deleteStudent: (id: string) => void;
   addExam: (exam: Omit<Exam, 'id'>) => void;
   updateGrades: (newGrade: Omit<Grade, 'id'>) => void;
   logAttendance: (classId: string, studentStatuses: { studentId: string; present: boolean }[]) => void;
@@ -77,21 +78,21 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const addStudent = useCallback(async (studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt'| 'discipline' | 'hostelRoomId'>) => {
     try {
+        const studentId = `S${Math.floor(1000 + Math.random() * 9000)}`;
         const response = await fetch('/api/students', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(studentData),
+            body: JSON.stringify({ ...studentData, id: studentId }),
         });
         if (!response.ok) throw new Error('Failed to create student');
-        const newStudent = await response.json();
         
         // Refetch student data to ensure UI is in sync with the database
         await fetchData();
 
-        logAction('Student Created', { studentId: newStudent.id, studentName: newStudent.name });
+        logAction('Student Created', { studentId: studentId, studentName: studentData.name });
         toast({
             title: "Student Created",
-            description: `The profile for ${newStudent.name} has been successfully created.`,
+            description: `The profile for ${studentData.name} has been successfully created.`,
         });
     } catch (error) {
         console.error(error);
@@ -103,6 +104,30 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   }, [logAction, toast, fetchData]);
   
+  const deleteStudent = useCallback(async (id: string) => {
+    try {
+      const response = await fetch(`/api/students/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete student');
+      
+      await fetchData(); // Refetch data to update the UI
+      
+      logAction('Student Deleted', { studentId: id });
+      toast({
+        title: "Student Deleted",
+        description: `The student profile has been successfully deleted.`,
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: 'destructive',
+        title: "Deletion Failed",
+        description: "Could not delete the student profile.",
+      });
+    }
+  }, [logAction, toast, fetchData]);
+
   const addExam = useCallback(async (examData: Omit<Exam, 'id'>) => {
     // This should be a POST to /api/exams
     toast({ title: "Mock Action", description: `Exam creation is not implemented.` });
@@ -132,7 +157,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
 
   return (
-    <StudentContext.Provider value={{ students, grades, exams, attendance, addStudent, addExam, updateGrades, logAttendance, getStudentById, getGradesByStudentId, getAttendanceByStudentId, isLoading }}>
+    <StudentContext.Provider value={{ students, grades, exams, attendance, addStudent, deleteStudent, addExam, updateGrades, logAttendance, getStudentById, getGradesByStudentId, getAttendanceByStudentId, isLoading }}>
       {children}
     </StudentContext.Provider>
   );
