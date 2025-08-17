@@ -1,3 +1,4 @@
+
 import { PrismaClient } from "@prisma/client";
 import {
   students,
@@ -27,6 +28,8 @@ import {
   onlineClasses,
   assignments,
   courseMaterials,
+  admissionRequirements,
+  skills,
 } from "../src/lib/data";
 
 const prisma = new PrismaClient();
@@ -53,6 +56,15 @@ async function main() {
           })),
         },
       },
+    });
+  }
+
+  // Seed Skills
+  for (const skill of skills) {
+    await prisma.skill.upsert({
+      where: { id: skill.id },
+      update: {},
+      create: { ...skill },
     });
   }
 
@@ -126,6 +138,10 @@ async function main() {
   }
 
   // Seed Admissions
+  for(const req of admissionRequirements) {
+    await prisma.admissionRequirement.upsert({ where: { id: req.id }, update: {}, create: req });
+  }
+
   for (const admission of admissions) {
     await prisma.admission.upsert({
       where: { id: admission.id },
@@ -169,6 +185,14 @@ async function main() {
       },
     });
   }
+  
+  for(const payment of payments) {
+      await prisma.payment.upsert({ where: { id: payment.id }, update: {}, create: { ...payment, date: new Date(payment.date) }});
+  }
+  
+  for(const payroll of payrollRecords) {
+    await prisma.payrollRecord.upsert({where: { id: payroll.id }, update: {}, create: payroll});
+  }
 
   // Seed Communication
   for (const a of announcements) {
@@ -191,7 +215,7 @@ async function main() {
     await prisma.assignment.upsert({
       where: { id: a.id },
       update: {},
-      create: { ...a, dueDate: new Date(a.dueDate) },
+      create: { ...a, dueDate: new Date(a.dueDate), skills: a.skills || [] },
     });
   }
   for (const m of courseMaterials) {
@@ -345,34 +369,36 @@ async function main() {
       },
     });
   }
-
-  // Health
+  
+  // Health Records
   for (const hr of healthRecords) {
-    const student = await prisma.student.findUnique({
-      where: { id: hr.studentId },
+    await prisma.healthRecord.upsert({
+      where: { studentId: hr.studentId },
+      update: {},
+      create: {
+        studentId: hr.studentId,
+        bloodGroup: hr.bloodGroup,
+        allergies: hr.allergies,
+        vaccinations: hr.vaccinations,
+      },
     });
-    if (student) {
-      await prisma.healthRecord.upsert({
-        where: { studentId: hr.studentId },
-        update: {},
-        create: {
-          studentId: hr.studentId,
-          bloodGroup: hr.bloodGroup,
-          allergies: hr.allergies,
-          vaccinations: hr.vaccinations,
-          clinicVisits: {
-            create: clinicVisits
-              .filter((cv) => cv.studentId === hr.studentId)
-              .map((cv) => ({
-                id: cv.id,
-                studentId: cv.studentId, // Denormalized field
-                reason: cv.reason,
-                treatment: cv.treatment,
-                date: new Date(cv.date),
-              })),
-          },
-        },
-      });
+  }
+  
+  // Clinic Visits
+  for (const cv of clinicVisits) {
+    const healthRecord = await prisma.healthRecord.findUnique({where: { studentId: cv.studentId }})
+    if (healthRecord) {
+        await prisma.clinicVisit.upsert({
+            where: { id: cv.id },
+            update: {},
+            create: {
+              id: cv.id,
+              reason: cv.reason,
+              treatment: cv.treatment,
+              date: new Date(cv.date),
+              healthRecordId: healthRecord.id, // Connect to health record
+            },
+        });
     }
   }
 
@@ -388,3 +414,5 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
+
+    
