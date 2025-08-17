@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CanteenProvider } from '@/hooks/use-canteen';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -75,7 +76,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenu>
             </header>
             <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background overflow-y-auto">
-                {children}
+                <CanteenProvider>
+                    {children}
+                </CanteenProvider>
             </main>
         </div>
     </div>
