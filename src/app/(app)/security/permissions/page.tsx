@@ -55,7 +55,7 @@ export default function PermissionsPage() {
                                         <TableCell className="font-medium">{feature}</TableCell>
                                         {Object.values(ROLES).map(role => (
                                             <TableCell key={role} className="text-center">
-                                                <Checkbox checked={permissions[role]?.includes(feature)} />
+                                                <Checkbox checked={permissions[role]?.includes(feature)} disabled />
                                             </TableCell>
                                         ))}
                                     </TableRow>

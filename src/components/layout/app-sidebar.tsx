@@ -32,6 +32,7 @@ import {
   Utensils,
   UserSquare,
   FileArchive,
+  DatabaseZap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -67,6 +68,7 @@ const navLinks = [
   { href: '/academics/document-vault', label: 'Document Vault', icon: FileArchive, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN]},
   { type: 'divider', roles: [ROLES.SUPER_ADMIN]},
   { href: '/security/permissions', label: 'Permissions', icon: ShieldCheck, roles: [ROLES.SUPER_ADMIN] },
+  { href: '/security/data-privacy', label: 'Data & Privacy', icon: DatabaseZap, roles: [ROLES.SUPER_ADMIN] },
   { href: '/security/audit-log', label: 'Audit Log', icon: History, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
 ];
 
@@ -125,5 +127,3 @@ export function AppSidebar({ user }: AppSidebarProps) {
     </>
   );
 }
-
-    
