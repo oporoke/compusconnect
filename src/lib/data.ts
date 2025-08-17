@@ -1,5 +1,5 @@
 
-export type { DisciplinaryRecord, Student, Exam, Grade, Announcement, CourseMaterial, Assignment, OnlineClass, AdmissionDocument, Admission, LeaveRequest, Staff, Book, StudentFee, LibraryTransaction, Vehicle, Driver, Route, TransportFeeRecord, Room, Hostel, HostelFeeRecord, MessMenu, FeeStructure, Invoice, InvoiceItem, Payment, PayrollRecord, Expense, CanteenAccount, CanteenTransaction, CanteenMenuItem, CanteenMenu, AlumniProfile, Donation, Mentorship, HealthRecord, ClinicVisit, Asset, Campaign, Pledge } from '@prisma/client';
+export type { DisciplinaryRecord, Student, Exam, Grade, Announcement, CourseMaterial, Assignment, OnlineClass, AdmissionDocument, Admission, LeaveRequest, Staff, Book, StudentFee, LibraryTransaction, Vehicle, Driver, Route, TransportFeeRecord, Room, Hostel, HostelFeeRecord, MessMenu, FeeStructure, Invoice, InvoiceItem, Payment, PayrollRecord, Expense, CanteenAccount, CanteenTransaction, CanteenMenuItem, AlumniProfile, Donation, Mentorship, HealthRecord, ClinicVisit, Asset, Campaign, Pledge } from '@prisma/client';
 export type { User, Role } from './auth';
 
 export const defaultCourseSchedules = `
@@ -23,3 +23,10 @@ export interface Message {
     timestamp: string; // ISO 8601
 }
 export type Conversation = Message[];
+
+// This type is now defined in the use-canteen hook, but we keep a reference here if needed elsewhere.
+export interface CanteenMenu {
+    id: string;
+    day: string;
+    items: any[]; // Use a more specific type if available, e.g., CanteenMenuItem[]
+}

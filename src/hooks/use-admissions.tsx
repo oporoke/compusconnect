@@ -25,6 +25,7 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
   const { authState } = useAuth();
 
   const fetchAdmissions = useCallback(async (signal: AbortSignal) => {
+    if (authState !== 'authenticated') return;
     setIsLoading(true);
     try {
       const response = await fetch('/api/admissions', { signal });
@@ -42,7 +43,7 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, authState]);
   
   const fetchAdmissionRequirements = useCallback(async () => {
      try {
@@ -57,20 +58,15 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
-    if (authState === 'authenticated') {
-      const abortController = new AbortController();
-      fetchAdmissions(abortController.signal);
-      return () => {
-        abortController.abort();
-      };
-    } else {
-        setApplications([]);
-        setIsLoading(false);
-    }
-  }, [fetchAdmissions, authState]);
+    const abortController = new AbortController();
+    fetchAdmissions(abortController.signal);
+    return () => {
+      abortController.abort();
+    };
+  }, [fetchAdmissions]);
 
   const addApplication = useCallback(async (applicationData: Omit<Admission, 'id' | 'status' | 'date' | 'documents'>) => {
-    const optimisticApp = { ...applicationData, id: `temp-${Date.now()}`, status: 'Pending' as const, date: new Date().toISOString(), documents: [] };
+    const optimisticApp = { ...applicationData, id: `temp-${Date.now()}`, status: 'Pending' as const, date: new Date(), documents: [] };
     setApplications(prev => [optimisticApp, ...prev]);
     try {
         const response = await fetch('/api/admissions', {

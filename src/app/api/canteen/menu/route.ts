@@ -7,16 +7,26 @@ export async function GET(request: Request) {
     // In a real app, the menu would be more structured in the DB.
     // For this demo, we'll just fetch all items and group them by a mock "day".
     const items = await prisma.canteenMenuItem.findMany();
-    const menu = [
-        { id: '1', day: 'Monday', items: items.slice(0, 3) },
-        { id: '2', day: 'Tuesday', items: items.slice(3, 6) },
-        { id: '3', day: 'Wednesday', items: items.slice(6, 9) },
-        { id: '4', day: 'Thursday', items: items.slice(0, 3) },
-        { id: '5', day: 'Friday', items: items.slice(3, 6) }
-    ];
+    // A simple way to create a weekly menu from a flat list of items
+    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+    const menu = days.map((day, index) => {
+      // Create a slice of items for each day, cycling through the list
+      const start = (index * 3) % items.length;
+      const end = start + 3;
+      const dayItems = items.slice(start, end);
+      if (end > items.length && items.length > 0) {
+        dayItems.push(...items.slice(0, end - items.length));
+      }
+      return {
+        id: (index + 1).toString(),
+        day: day,
+        items: dayItems
+      };
+    });
+
     return NextResponse.json(menu);
   } catch (error) {
     console.error('Failed to fetch canteen menu:', error);
-    return NextResponse.json({ error: 'Failed to fetch canteen menu' }, { status: 500 });
+    return new NextResponse('Failed to fetch canteen menu', { status: 500 });
   }
 }

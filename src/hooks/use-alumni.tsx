@@ -15,7 +15,7 @@ interface AlumniContextType {
   isLoading: boolean;
   addAlumni: (profile: Omit<AlumniProfile, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateAlumni: (profile: AlumniProfile) => void;
-  addDonation: (donation: Omit<Donation, 'id' | 'createdAt' | 'updatedAt' | 'campaignId'> & { campaignId: string }) => void;
+  addDonation: (donation: Omit<Donation, 'id' | 'createdAt' | 'updatedAt' | 'campaignId'> & { campaignId: string | null }) => void;
   getAlumniNameById: (id: string) => string;
   addCampaign: (campaign: Omit<Campaign, 'id' | 'raised' | 'startDate' | 'endDate' | 'createdAt' | 'updatedAt'>) => void;
   addPledge: (pledge: Omit<Pledge, 'id' | 'status' | 'date'>) => void;
@@ -35,6 +35,7 @@ export const AlumniProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const { authState } = useAuth();
 
   const fetchData = useCallback(async (signal: AbortSignal) => {
+    if (authState !== 'authenticated') return;
     setIsLoading(true);
     try {
         const [alumniRes, donationsRes, campaignsRes, pledgesRes, mentorshipsRes] = await Promise.all([
@@ -68,22 +69,13 @@ export const AlumniProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     } finally {
         setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, authState]);
 
   useEffect(() => {
-    if (authState === 'authenticated') {
-      const controller = new AbortController();
-      fetchData(controller.signal);
-      return () => controller.abort();
-    } else {
-        setAlumni([]);
-        setDonations([]);
-        setCampaigns([]);
-        setPledges([]);
-        setMentorships([]);
-        setIsLoading(false);
-    }
-  }, [fetchData, authState]);
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
+  }, [fetchData]);
 
 
   const addAlumni = useCallback((profileData: Omit<AlumniProfile, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -94,7 +86,7 @@ export const AlumniProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     toast({ title: "Mock Action", description: "This action is not implemented in the demo."});
   }, [toast]);
 
-  const addDonation = useCallback((donationData: Omit<Donation, 'id' | 'createdAt' | 'updatedAt' | 'campaignId'> & { campaignId: string }) => {
+  const addDonation = useCallback((donationData: Omit<Donation, 'id' | 'createdAt' | 'updatedAt' | 'campaignId'> & { campaignId: string | null }) => {
     toast({ title: "Mock Action", description: "This action is not implemented in the demo."});
   }, [toast]);
 

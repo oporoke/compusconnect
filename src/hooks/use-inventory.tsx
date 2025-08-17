@@ -22,6 +22,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
   const { authState } = useAuth();
 
   const fetchData = useCallback(async (signal: AbortSignal) => {
+    if (authState !== 'authenticated') return;
     setIsLoading(true);
     try {
       const response = await fetch('/api/inventory/assets', { signal });
@@ -39,18 +40,13 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, authState]);
 
   useEffect(() => {
-    if (authState === 'authenticated') {
-      const controller = new AbortController();
-      fetchData(controller.signal);
-      return () => controller.abort();
-    } else {
-        setAssets([]);
-        setIsLoading(false);
-    }
-  }, [fetchData, authState]);
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
+  }, [fetchData]);
 
 
   const addAsset = useCallback((assetData: Omit<Asset, 'id' | 'status' | 'assignedToId' | 'purchaseDate'>) => {

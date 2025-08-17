@@ -2,9 +2,12 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { CanteenAccount, CanteenTransaction, CanteenMenuItem } from '@prisma/client';
+import type { CanteenAccount, CanteenTransaction, CanteenMenuItem as PrismaCanteenMenuItem } from '@prisma/client';
 import { useToast } from './use-toast';
 import { useAuth } from './use-auth';
+
+// Renamed Prisma type to avoid conflict
+type CanteenMenuItem = PrismaCanteenMenuItem;
 
 // Define the CanteenMenu type as it is no longer imported
 export interface CanteenMenu {
@@ -35,6 +38,7 @@ export const CanteenProvider: React.FC<{ children: ReactNode }> = ({ children })
   const { authState } = useAuth();
 
   const fetchData = useCallback(async (signal: AbortSignal) => {
+    if (authState !== 'authenticated') return;
     setIsLoading(true);
     try {
         const [accRes, transRes, menuRes] = await Promise.all([
@@ -62,20 +66,13 @@ export const CanteenProvider: React.FC<{ children: ReactNode }> = ({ children })
     } finally {
         setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, authState]);
 
   useEffect(() => {
-    if (authState === 'authenticated') {
-      const controller = new AbortController();
-      fetchData(controller.signal);
-      return () => controller.abort();
-    } else {
-        setAccounts([]);
-        setTransactions([]);
-        setMenu([]);
-        setIsLoading(false);
-    }
-  }, [fetchData, authState]);
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
+  }, [fetchData]);
 
 
   const getAccountByStudentId = useCallback((studentId: string) => {
