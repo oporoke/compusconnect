@@ -2,14 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { 
-    assignments as initialAssignments, 
-    courseMaterials as initialCourseMaterials, 
-    onlineClasses as initialOnlineClasses, 
-    Assignment, 
-    CourseMaterial, 
-    OnlineClass 
-} from '@/lib/data';
+import type { Assignment, CourseMaterial, OnlineClass } from '@prisma/client';
 import { useToast } from './use-toast';
 
 interface LMSContextType {
@@ -32,34 +25,73 @@ export const LMSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // This hook will now fetch from an API route
-  useEffect(() => {
-    const fetchLMSData = async () => {
-        setIsLoading(true);
-        // ... API calls to fetch assignments, materials, etc.
-        setAssignments(initialAssignments);
-        setCourseMaterials(initialCourseMaterials);
-        setOnlineClasses(initialOnlineClasses);
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+        const { assignments, courseMaterials, onlineClasses } = await import('@/lib/data');
+        const storedAssignments = localStorage.getItem('campus-connect-assignments');
+        const storedCourseMaterials = localStorage.getItem('campus-connect-courseMaterials');
+        const storedOnlineClasses = localStorage.getItem('campus-connect-onlineClasses');
+
+        setAssignments(storedAssignments ? JSON.parse(storedAssignments) : assignments);
+        setCourseMaterials(storedCourseMaterials ? JSON.parse(storedCourseMaterials) : courseMaterials);
+        setOnlineClasses(storedOnlineClasses ? JSON.parse(storedOnlineClasses) : onlineClasses);
+    } catch(e) {
+        console.error("Failed to load LMS data", e);
+    } finally {
         setIsLoading(false);
     }
-    fetchLMSData();
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+  
+  const persistData = (key: string, data: any) => {
+    localStorage.setItem(`campus-connect-${key}`, JSON.stringify(data));
+  };
   
   const submitAssignment = useCallback(async (assignmentId: string) => {
-    // API call to POST /api/assignments/:id/submit
-  }, []);
+    setAssignments(prev => {
+        const updated = prev.map(a => a.id === assignmentId ? { ...a, status: 'Submitted' } : a);
+        persistData('assignments', updated);
+        return updated;
+    });
+    toast({
+        title: "Assignment Submitted",
+        description: "Your assignment has been submitted successfully.",
+    });
+  }, [toast]);
 
   const addAssignment = useCallback(async (data: Omit<Assignment, 'id' | 'status'>) => {
-    // API call to POST /api/assignments
-  }, []);
+    setAssignments(prev => {
+        const newAssignment: Assignment = { ...data, id: `AS${Date.now()}`, status: 'Pending' };
+        const updated = [...prev, newAssignment];
+        persistData('assignments', updated);
+        toast({ title: 'Assignment Created', description: `The assignment "${data.title}" has been created.` });
+        return updated;
+    })
+  }, [toast]);
 
   const addCourseMaterial = useCallback(async (data: Omit<CourseMaterial, 'id'>) => {
-    // API call to POST /api/materials
-  }, []);
+    setCourseMaterials(prev => {
+        const newMaterial: CourseMaterial = { ...data, id: `CM${Date.now()}`};
+        const updated = [...prev, newMaterial];
+        persistData('courseMaterials', updated);
+        toast({ title: 'Course Material Added' });
+        return updated;
+    });
+  }, [toast]);
 
   const addOnlineClass = useCallback(async (data: Omit<OnlineClass, 'id'>) => {
-    // API call to POST /api/online-classes
-  }, []);
+    setOnlineClasses(prev => {
+        const newClass: OnlineClass = { ...data, id: `OC${Date.now()}`};
+        const updated = [...prev, newClass];
+        persistData('onlineClasses', updated);
+        toast({ title: 'Online Class Scheduled' });
+        return updated;
+    });
+  }, [toast]);
 
 
   return (
@@ -76,3 +108,5 @@ export const useLMS = () => {
   }
   return context;
 };
+
+    

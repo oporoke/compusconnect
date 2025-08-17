@@ -2,11 +2,11 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { staff as initialStaff, Staff } from '@/lib/data';
+import type { Staff } from '@prisma/client';
 
 interface StaffContextType {
   staff: Staff[];
-  addStaff: (staffMember: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable' | 'performanceNotes' | 'schoolId' | 'deductions'>) => void;
+  addStaff: (staffMember: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable' | 'performanceNotes' | 'schoolId' | 'taxDeduction' | 'insuranceDeduction' >) => void;
   updateStaff: (staffMember: Staff) => void;
   getStaffById: (id: string) => Staff | undefined;
   isLoading: boolean;
@@ -18,25 +18,52 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [staff, setStaff] = useState<Staff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // This hook will now fetch from an API route
-  useEffect(() => {
-    const fetchStaff = async () => {
-        setIsLoading(true);
-        // const response = await fetch('/api/staff');
-        // const data = await response.json();
-        // setStaff(data);
-        setStaff(initialStaff);
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+        const { staff } = await import('@/lib/data');
+        const storedStaff = localStorage.getItem('campus-connect-staff');
+        setStaff(storedStaff ? JSON.parse(storedStaff) : staff);
+    } catch(e) {
+        console.error("Failed to load staff data", e);
+    } finally {
         setIsLoading(false);
     }
-    fetchStaff();
   }, []);
 
-  const addStaff = useCallback(async (staffData: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable' | 'performanceNotes' | 'schoolId' | 'deductions'>) => {
-    // API call to POST /api/staff
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const persistData = (data: Staff[]) => {
+    localStorage.setItem('campus-connect-staff', JSON.stringify(data));
+  };
+
+  const addStaff = useCallback(async (staffData: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable' | 'performanceNotes' | 'schoolId' | 'taxDeduction' | 'insuranceDeduction'>) => {
+    setStaff(prev => {
+        const newStaff: Staff = {
+            ...staffData,
+            joiningDate: new Date(staffData.joiningDate),
+            id: `T${(prev.length + 1).toString().padStart(2, '0')}`,
+            leavesTaken: 0,
+            leavesAvailable: 15,
+            performanceNotes: '',
+            taxDeduction: 12, // default
+            insuranceDeduction: 400, // default
+            schoolId: 'school-a' // default
+        };
+        const updatedStaff = [...prev, newStaff];
+        persistData(updatedStaff);
+        return updatedStaff;
+    });
   }, []);
   
   const updateStaff = useCallback(async (updatedStaffMember: Staff) => {
-    // API call to PUT /api/staff/:id
+    setStaff(prev => {
+        const updatedStaff = prev.map(s => s.id === updatedStaffMember.id ? updatedStaffMember : s);
+        persistData(updatedStaff);
+        return updatedStaff;
+    });
   }, []);
 
   const getStaffById = useCallback((id: string) => {
@@ -57,3 +84,5 @@ export const useStaff = () => {
   }
   return context;
 };
+
+    
