@@ -16,6 +16,7 @@ import { AuditLogProvider } from '@/hooks/use-audit-log';
 import { CanteenProvider } from '@/hooks/use-canteen';
 import { AlumniProvider } from '@/hooks/use-alumni';
 import { HealthProvider } from '@/hooks/use-health';
+import { InventoryProvider } from '@/hooks/use-inventory';
 
 export const metadata: Metadata = {
   title: 'CampusConnect Lite',
@@ -37,33 +38,35 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuditLogProvider>
-            <AuthProvider>
-                <StudentProvider>
-                    <LMSProvider>
-                      <AdmissionsProvider>
-                        <StaffProvider>
-                            <LibraryProvider>
-                              <TransportProvider>
-                                <HostelProvider>
-                                    <FinanceProvider>
-                                        <CommunicationProvider>
-                                          <CanteenProvider>
-                                            <AlumniProvider>
-                                              <HealthProvider>
-                                                {children}
-                                              </HealthProvider>
-                                            </AlumniProvider>
-                                          </CanteenProvider>
-                                        </CommunicationProvider>
-                                    </FinanceProvider>
-                                </HostelProvider>
-                              </TransportProvider>
-                            </LibraryProvider>
-                        </StaffProvider>
-                      </AdmissionsProvider>
-                    </LMSProvider>
-                </StudentProvider>
-            </AuthProvider>
+          <AuthProvider>
+            <StudentProvider>
+                <LMSProvider>
+                  <AdmissionsProvider>
+                    <StaffProvider>
+                        <LibraryProvider>
+                          <TransportProvider>
+                            <HostelProvider>
+                                <FinanceProvider>
+                                    <CommunicationProvider>
+                                      <InventoryProvider>
+                                        <CanteenProvider>
+                                          <AlumniProvider>
+                                            <HealthProvider>
+                                              {children}
+                                            </HealthProvider>
+                                          </AlumniProvider>
+                                        </CanteenProvider>
+                                      </InventoryProvider>
+                                    </CommunicationProvider>
+                                </FinanceProvider>
+                            </HostelProvider>
+                          </TransportProvider>
+                        </LibraryProvider>
+                    </StaffProvider>
+                  </AdmissionsProvider>
+                </LMSProvider>
+            </StudentProvider>
+          </AuthProvider>
         </AuditLogProvider>
         <Toaster />
       </body>

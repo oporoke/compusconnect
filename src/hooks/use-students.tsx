@@ -5,6 +5,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { students as initialStudents, grades as initialGrades, Student, Grade, exams as initialExams, Exam } from '@/lib/data';
 import { generateMockStudents } from '@/lib/mockData';
+import { useAuditLog } from './use-audit-log';
 
 export interface AttendanceRecord {
     studentId: string;
@@ -53,6 +54,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [exams, setExams] = useState<Exam[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { logAction } = useAuditLog();
 
   useEffect(() => {
     try {
@@ -112,9 +114,10 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
         };
         const newStudents = [...prevStudents, newStudent];
         persistStudents(newStudents);
+        logAction('Student Created', { studentId: newStudent.id, studentName: newStudent.name });
         return newStudents;
     });
-  }, []);
+  }, [logAction]);
   
   const addExam = useCallback((examData: Omit<Exam, 'id'>) => {
     setExams(prevExams => {

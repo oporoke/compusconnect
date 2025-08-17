@@ -2,6 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { useAuth } from './use-auth';
 
 export interface AuditLog {
   id: string;
@@ -59,7 +60,7 @@ export const AuditLogProvider: React.FC<{ children: ReactNode }> = ({ children }
             user: userName,
             details,
         };
-        const updatedLogs = [newLog, ...prev];
+        const updatedLogs = [newLog, ...prev].slice(0, 100); // Keep last 100 logs
         persistLogs(updatedLogs);
         return updatedLogs;
     });

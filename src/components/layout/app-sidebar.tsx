@@ -72,9 +72,9 @@ const navLinks = [
   { href: '/alumni', label: 'Alumni', icon: UserSquare, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/health', label: 'Health Center', icon: HeartPulse, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/academics/document-vault', label: 'Document Vault', icon: FileArchive, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN]},
-  { type: 'divider', roles: [ROLES.SUPER_ADMIN]},
+  { type: 'divider', roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN]},
   { href: '/security/permissions', label: 'Permissions', icon: ShieldCheck, roles: [ROLES.SUPER_ADMIN] },
-  { href: '/security/data-privacy', label: 'Data & Privacy', icon: DatabaseZap, roles: [ROLES.SUPER_ADMIN] },
+  { href: '/security/data-privacy', label: 'Data & Privacy', icon: DatabaseZap, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/security/audit-log', label: 'Audit Log', icon: History, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
 ];
 
