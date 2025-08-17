@@ -13,7 +13,6 @@ export interface Grade {
     english: number;
 }
 
-
 export const students: Student[] = [
     { id: 'S001', name: 'Alice Johnson', grade: '10', section: 'A' },
     { id: 'S002', name: 'Bob Williams', grade: '10', section: 'A' },
@@ -70,21 +69,24 @@ export const grades: Grade[] = [
     { studentId: 'S007', math: 92, science: 95, english: 88 },
 ];
 
-export const courseMaterials = [
+export type CourseMaterial = { id: string; subject: string; title: string; type: string; link: string; };
+export const courseMaterials: CourseMaterial[] = [
     { id: 'CM01', subject: 'Math', title: 'Algebra Basics', type: 'PDF', link: '#' },
     { id: 'CM02', subject: 'Science', title: 'Cellular Biology', type: 'Video', link: '#' },
     { id: 'CM03', subject: 'English', title: 'Shakespeare\'s Sonnets', type: 'Document', link: '#' },
     { id: 'CM04', subject: 'History', title: 'The World Wars', type: 'Slides', link: '#' },
 ];
 
-export const assignments = [
+export type Assignment = { id: string; title: string; subject: string; dueDate: string; status: 'Pending' | 'Submitted' | 'Graded'; };
+export const assignments: Assignment[] = [
     { id: 'AS01', title: 'Algebra Worksheet', subject: 'Math', dueDate: '2024-10-20', status: 'Pending' },
     { id: 'AS02', title: 'Lab Report', subject: 'Science', dueDate: '2024-10-22', status: 'Submitted' },
     { id: 'AS03', title: 'Essay on Macbeth', subject: 'English', dueDate: '2024-10-25', status: 'Graded' },
     { id: 'AS04', title: 'Research Paper', subject: 'History', dueDate: '2024-11-01', status: 'Pending' },
 ];
 
-export const onlineClasses = [
+export type OnlineClass = { id: string; subject: string; topic: string; time: string; link: string; };
+export const onlineClasses: OnlineClass[] = [
     { id: 'OC01', subject: 'Math', topic: 'Geometry', time: 'Mon, 10:00 AM', link: '#' },
     { id: 'OC02', subject: 'Science', topic: 'Photosynthesis', time: 'Tue, 11:00 AM', link: '#' },
     { id: 'OC03', subject: 'English', topic: 'Grammar Review', time: 'Wed, 9:00 AM', link: '#' },

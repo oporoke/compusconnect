@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/hooks/use-auth';
 import { StudentProvider } from '@/hooks/use-students';
+import { LMSProvider } from '@/hooks/use-lms';
 
 export const metadata: Metadata = {
   title: 'CampusConnect Lite',
@@ -25,7 +26,9 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <AuthProvider>
             <StudentProvider>
-                {children}
+                <LMSProvider>
+                    {children}
+                </LMSProvider>
             </StudentProvider>
         </AuthProvider>
         <Toaster />
