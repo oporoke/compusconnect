@@ -10,6 +10,6 @@ export async function GET(request: Request) {
     return NextResponse.json(transactions);
   } catch (error) {
     console.error('Failed to fetch canteen transactions:', error);
-    return NextResponse.json([], { status: 200 });
+    return NextResponse.json({ error: 'Failed to fetch canteen transactions' }, { status: 500 });
   }
 }

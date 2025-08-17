@@ -8,6 +8,6 @@ export async function GET(request: Request) {
     return NextResponse.json(profiles);
   } catch (error) {
     console.error('Failed to fetch alumni profiles:', error);
-    return NextResponse.json([], { status: 200 });
+    return NextResponse.json({ error: 'Failed to fetch alumni profiles' }, { status: 500 });
   }
 }

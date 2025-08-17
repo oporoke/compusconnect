@@ -17,6 +17,6 @@ export async function GET(request: Request) {
     return NextResponse.json(menu);
   } catch (error) {
     console.error('Failed to fetch canteen menu:', error);
-    return NextResponse.json([], { status: 200 });
+    return NextResponse.json({ error: 'Failed to fetch canteen menu' }, { status: 500 });
   }
 }

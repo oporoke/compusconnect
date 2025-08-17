@@ -10,6 +10,6 @@ export async function GET(request: Request) {
     return NextResponse.json(pledges);
   } catch (error) {
     console.error('Failed to fetch pledges:', error);
-    return NextResponse.json([], { status: 200 });
+    return NextResponse.json({ error: 'Failed to fetch pledges' }, { status: 500 });
   }
 }

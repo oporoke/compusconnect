@@ -8,6 +8,6 @@ export async function GET(request: Request) {
     return NextResponse.json(classes);
   } catch (error) {
     console.error('Failed to fetch online classes:', error);
-    return NextResponse.json([], { status: 200 });
+    return NextResponse.json({ error: 'Failed to fetch online classes' }, { status: 500 });
   }
 }

@@ -10,6 +10,6 @@ export async function GET(request: Request) {
     return NextResponse.json(donations);
   } catch (error) {
     console.error('Failed to fetch donations:', error);
-    return NextResponse.json([], { status: 200 });
+    return NextResponse.json({ error: 'Failed to fetch donations' }, { status: 500 });
   }
 }

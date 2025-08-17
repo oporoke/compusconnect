@@ -10,7 +10,6 @@ export async function GET(request: Request) {
     return NextResponse.json(invoices);
   } catch (error) {
     console.error('Failed to fetch invoices:', error);
-    // Return 200 OK with an empty array to prevent client-side errors
-    return NextResponse.json([], { status: 200 });
+    return NextResponse.json({ error: 'Failed to fetch invoices' }, { status: 500 });
   }
 }

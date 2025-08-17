@@ -8,6 +8,6 @@ export async function GET(request: Request) {
     return NextResponse.json(healthRecords);
   } catch (error) {
     console.error('Failed to fetch health records:', error);
-    return NextResponse.json([], { status: 200 });
+    return NextResponse.json({ error: 'Failed to fetch health records' }, { status: 500 });
   }
 }
