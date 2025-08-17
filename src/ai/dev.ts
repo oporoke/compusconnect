@@ -9,4 +9,5 @@ import '@/ai/flows/ai-canteen-assistant.ts';
 import '@/ai/flows/ai-chatbot.ts';
 import '@/ai/flows/ai-lesson-planner.ts';
 import '@/ai/flows/ai-differentiator.ts';
+import '@/ai/flows/ai-life-path-assistant.ts';
     
