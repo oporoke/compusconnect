@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,60 +11,77 @@ import { Skeleton } from '../ui/skeleton';
 import { generateReportCard, ReportCardInput } from '@/ai/flows/ai-report-card-generator';
 import { useStudents } from '@/hooks/use-students';
 
-export function ReportCardGenerator() {
+interface ReportCardGeneratorProps {
+    onDownload: (reportContent: string, studentName: string) => void;
+}
+
+export function ReportCardGenerator({ onDownload }: ReportCardGeneratorProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedStudentId, setSelectedStudentId] = useState('');
+    const [selectedExamId, setSelectedExamId] = useState('');
     const [generatedReport, setGeneratedReport] = useState<{ summary: string, reportCard: string } | null>(null);
     const { toast } = useToast();
-    const { students, grades, isLoading: areStudentsLoading } = useStudents();
+    const { students, grades, exams, isLoading: areStudentsLoading } = useStudents();
+
+    const selectedStudent = useMemo(() => students.find(s => s.id === selectedStudentId), [students, selectedStudentId]);
 
     const handleGenerate = async () => {
-        if (!selectedStudentId) {
+        if (!selectedStudentId || !selectedExamId) {
             toast({
                 variant: 'destructive',
-                title: "No Student Selected",
-                description: "Please select a student to generate a report card.",
+                title: "Selection Missing",
+                description: "Please select a student and an exam to generate a report.",
             });
             return;
         }
         setIsLoading(true);
         setGeneratedReport(null);
         try {
-            const student = students.find(s => s.id === selectedStudentId);
-            const studentGrades = grades.find(g => g.studentId === selectedStudentId);
+            const studentGrades = grades.find(g => g.studentId === selectedStudentId && g.examId === selectedExamId);
 
-            if (!student || !studentGrades) {
-                throw new Error('Student data not found');
+            if (!selectedStudent || !studentGrades) {
+                throw new Error('Student data or grades not found for the selected exam.');
             }
+            
+            const gradesString = Object.entries(studentGrades.scores)
+                .map(([subject, score]) => `${subject}: ${score}`)
+                .join(', ');
 
             const input: ReportCardInput = {
-                studentName: student.name,
-                grades: `Math: ${studentGrades.math}, Science: ${studentGrades.science}, English: ${studentGrades.english}`,
+                studentName: selectedStudent.name,
+                grades: gradesString,
             };
             const result = await generateReportCard(input);
             setGeneratedReport(result);
             toast({
                 title: "Report Card Generated!",
-                description: `AI has successfully created a report card for ${student.name}.`,
+                description: `AI has successfully created a report card for ${selectedStudent.name}.`,
             });
         } catch (error) {
             console.error(error);
+            const errorMessage = error instanceof Error ? error.message : "Something went wrong.";
             toast({
                 variant: 'destructive',
                 title: "Generation Failed",
-                description: "Something went wrong while generating the report card.",
+                description: errorMessage,
             });
         } finally {
             setIsLoading(false);
         }
     };
+    
+    const studentExams = useMemo(() => {
+        if (!selectedStudentId) return [];
+        const studentGradeExams = grades.filter(g => g.studentId === selectedStudentId).map(g => g.examId);
+        return exams.filter(e => studentGradeExams.includes(e.id));
+    }, [selectedStudentId, grades, exams]);
 
     return (
         <div className="grid md:grid-cols-2 gap-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Select Student</CardTitle>
-                    <CardDescription>Choose a student to generate their report card.</CardDescription>
+                    <CardTitle>Select Student & Exam</CardTitle>
+                    <CardDescription>Choose a student and an exam to generate their report card.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {areStudentsLoading ? (
@@ -83,9 +100,23 @@ export function ReportCardGenerator() {
                             </SelectContent>
                         </Select>
                     )}
+                     <Select value={selectedExamId} onValueChange={setSelectedExamId} disabled={!selectedStudentId}>
+                        <SelectTrigger id="exam-select" className="w-full">
+                            <SelectValue placeholder="Select an exam..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {studentExams.length > 0 ? studentExams.map(exam => (
+                                <SelectItem key={exam.id} value={exam.id}>
+                                    {exam.name}
+                                </SelectItem>
+                            )) : (
+                                <div className="p-4 text-center text-sm text-muted-foreground">No graded exams for this student.</div>
+                            )}
+                        </SelectContent>
+                    </Select>
                 </CardContent>
                 <CardFooter>
-                    <Button onClick={handleGenerate} disabled={isLoading || !selectedStudentId} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+                    <Button onClick={handleGenerate} disabled={isLoading || !selectedStudentId || !selectedExamId} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
                         {isLoading ? (
                             <>
                                 <Bot className="mr-2 h-4 w-4 animate-spin" />
@@ -131,7 +162,7 @@ export function ReportCardGenerator() {
                                         {generatedReport.reportCard}
                                     </pre>
                                 </div>
-                                <Button className="w-full">
+                                <Button className="w-full" onClick={() => onDownload(generatedReport.reportCard, selectedStudent?.name || 'student')}>
                                     <Download className="mr-2 h-4 w-4" />
                                     Download as PDF
                                 </Button>

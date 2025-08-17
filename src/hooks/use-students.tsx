@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { students as initialStudents, grades as initialGrades, Student, Grade } from '@/lib/data';
+import { students as initialStudents, grades as initialGrades, Student, Grade, exams as initialExams, Exam } from '@/lib/data';
 
 export interface AttendanceRecord {
     studentId: string;
@@ -13,19 +13,20 @@ export interface AttendanceRecord {
 interface StudentContextType {
   students: Student[];
   grades: Grade[];
+  exams: Exam[];
   attendance: AttendanceRecord[];
   addStudent: (student: Omit<Student, 'id'>) => void;
-  updateGrades: (newGrades: Grade[]) => void;
+  addExam: (exam: Omit<Exam, 'id'>) => void;
+  updateGrades: (newGrade: Grade) => void;
   logAttendance: (classId: string, studentStatuses: { studentId: string; present: boolean }[]) => void;
   getStudentById: (id: string) => Student | undefined;
-  getGradesByStudentId: (id: string) => Grade | undefined;
+  getGradesByStudentId: (id: string) => Grade[];
   getAttendanceByStudentId: (id: string) => AttendanceRecord[];
   isLoading: boolean;
 }
 
 const StudentContext = createContext<StudentContextType | undefined>(undefined);
 
-// Helper to generate a unique ID for new students
 const generateStudentId = (existingStudents: Student[]): string => {
     const maxId = existingStudents.reduce((max, student) => {
         const idNum = parseInt(student.id.replace('S', ''), 10);
@@ -34,9 +35,18 @@ const generateStudentId = (existingStudents: Student[]): string => {
     return `S${(maxId + 1).toString().padStart(3, '0')}`;
 }
 
+const generateExamId = (existingExams: Exam[]): string => {
+    const maxId = existingExams.reduce((max, exam) => {
+        const idNum = parseInt(exam.id.replace('E', ''), 10);
+        return idNum > max ? idNum : max;
+    }, 0);
+    return `E${(maxId + 1).toString().padStart(2, '0')}`;
+}
+
 export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
+  const [exams, setExams] = useState<Exam[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -44,16 +54,19 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
     try {
       const storedStudents = localStorage.getItem('campus-connect-students');
       const storedGrades = localStorage.getItem('campus-connect-grades');
+      const storedExams = localStorage.getItem('campus-connect-exams');
       const storedAttendance = localStorage.getItem('campus-connect-attendance');
       
       setStudents(storedStudents ? JSON.parse(storedStudents) : initialStudents);
       setGrades(storedGrades ? JSON.parse(storedGrades) : initialGrades);
+      setExams(storedExams ? JSON.parse(storedExams) : initialExams);
       setAttendance(storedAttendance ? JSON.parse(storedAttendance) : []);
 
     } catch (error) {
       console.error("Failed to parse data from localStorage", error);
       setStudents(initialStudents);
       setGrades(initialGrades);
+      setExams(initialExams);
       setAttendance([]);
     } finally {
       setIsLoading(false);
@@ -68,6 +81,10 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
     localStorage.setItem('campus-connect-grades', JSON.stringify(data));
   };
 
+  const persistExams = (data: Exam[]) => {
+    localStorage.setItem('campus-connect-exams', JSON.stringify(data));
+  };
+
   const persistAttendance = (data: AttendanceRecord[]) => {
     localStorage.setItem('campus-connect-attendance', JSON.stringify(data));
   };
@@ -80,29 +97,32 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
         };
         const newStudents = [...prevStudents, newStudent];
         persistStudents(newStudents);
-
-        setGrades(prevGrades => {
-            const newGradeEntry: Grade = {
-                studentId: newStudent.id,
-                math: 0,
-                science: 0,
-                english: 0,
-            };
-            const newGrades = [...prevGrades, newGradeEntry];
-            persistGrades(newGrades);
-            return newGrades;
-        });
-
         return newStudents;
     });
   }, []);
   
-  const updateGrades = useCallback((newGrades: Grade[]) => {
+  const addExam = useCallback((examData: Omit<Exam, 'id'>) => {
+    setExams(prevExams => {
+        const newExam: Exam = {
+            ...examData,
+            id: generateExamId(prevExams),
+        };
+        const newExams = [...prevExams, newExam];
+        persistExams(newExams);
+        return newExams;
+    });
+  }, []);
+
+  const updateGrades = useCallback((newGrade: Grade) => {
     setGrades(currentGrades => {
-        const updatedGrades = currentGrades.map(cg => {
-            const incoming = newGrades.find(ng => ng.studentId === cg.studentId);
-            return incoming ? incoming : cg;
-        });
+        const index = currentGrades.findIndex(g => g.studentId === newGrade.studentId && g.examId === newGrade.examId);
+        let updatedGrades;
+        if (index > -1) {
+            updatedGrades = [...currentGrades];
+            updatedGrades[index] = newGrade;
+        } else {
+            updatedGrades = [...currentGrades, newGrade];
+        }
         persistGrades(updatedGrades);
         return updatedGrades;
     });
@@ -123,13 +143,12 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
   }, []);
 
-
   const getStudentById = useCallback((id: string) => {
     return students.find(s => s.id === id);
   }, [students]);
 
   const getGradesByStudentId = useCallback((id: string) => {
-    return grades.find(g => g.studentId === id);
+    return grades.filter(g => g.studentId === id);
   }, [grades]);
 
   const getAttendanceByStudentId = useCallback((id: string) => {
@@ -138,7 +157,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
 
   return (
-    <StudentContext.Provider value={{ students, grades, attendance, addStudent, updateGrades, logAttendance, getStudentById, getGradesByStudentId, getAttendanceByStudentId, isLoading }}>
+    <StudentContext.Provider value={{ students, grades, exams, attendance, addStudent, addExam, updateGrades, logAttendance, getStudentById, getGradesByStudentId, getAttendanceByStudentId, isLoading }}>
       {children}
     </StudentContext.Provider>
   );

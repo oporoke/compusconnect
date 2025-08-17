@@ -1,4 +1,5 @@
 
+
 export interface Student {
     id: string;
     name: string;
@@ -6,11 +7,17 @@ export interface Student {
     section: string;
 }
 
+export interface Exam {
+    id: string;
+    name: string;
+    date: string; // YYYY-MM-DD
+    subjects: string[];
+}
+
 export interface Grade {
     studentId: string;
-    math: number;
-    science: number;
-    english: number;
+    examId: string;
+    scores: Record<string, number>; // subject: score
 }
 
 export const students: Student[] = [
@@ -22,6 +29,19 @@ export const students: Student[] = [
     { id: 'S006', name: 'Fiona Garcia', grade: '12', section: 'C' },
     { id: 'S007', name: 'George Rodriguez', grade: '12', section: 'A' },
 ];
+
+export const exams: Exam[] = [
+    { id: 'E01', name: 'Mid-Term Examination', date: '2024-10-15', subjects: ['Math', 'Science', 'English', 'History'] },
+    { id: 'E02', name: 'Final Examination', date: '2024-12-10', subjects: ['Math', 'Science', 'English', 'History', 'Art'] },
+];
+
+export const grades: Grade[] = [
+    { studentId: 'S001', examId: 'E01', scores: { 'Math': 85, 'Science': 92, 'English': 78, 'History': 88 } },
+    { studentId: 'S002', examId: 'E01', scores: { 'Math': 90, 'Science': 88, 'English': 82, 'History': 91 } },
+    { studentId: 'S003', examId: 'E01', scores: { 'Math': 72, 'Science': 75, 'English': 80, 'History': 68 } },
+    { studentId: 'S001', examId: 'E02', scores: { 'Math': 88, 'Science': 94, 'English': 81, 'History': 90, 'Art': 95 } },
+];
+
 
 export const announcements = [
     { 
@@ -58,16 +78,6 @@ export const defaultInstructorAvailability = `
 - Ms. Davis: Tue/Thu 8am-12pm
 - Mr. Lee: Mon-Fri 1pm-5pm
 `;
-
-export const grades: Grade[] = [
-    { studentId: 'S001', math: 85, science: 92, english: 78 },
-    { studentId: 'S002', math: 90, science: 88, english: 82 },
-    { studentId: 'S003', math: 72, science: 75, english: 80 },
-    { studentId: 'S004', math: 95, science: 98, english: 92 },
-    { studentId: 'S005', math: 88, science: 90, english: 85 },
-    { studentId: 'S006', math: 78, science: 82, english: 70 },
-    { studentId: 'S007', math: 92, science: 95, english: 88 },
-];
 
 export type CourseMaterial = { id: string; subject: string; title: string; type: string; link: string; };
 export const courseMaterials: CourseMaterial[] = [

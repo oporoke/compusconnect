@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import React from 'react';
 
 export default function StudentProfilePage({ params }: { params: { id: string } }) {
-    const { getStudentById, getGradesByStudentId, getAttendanceByStudentId, isLoading } = useStudents();
+    const { getStudentById, getGradesByStudentId, getAttendanceByStudentId, exams, isLoading } = useStudents();
     
     const student = getStudentById(params.id);
     const studentGrades = getGradesByStudentId(params.id);
@@ -39,7 +39,7 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
         )
     }
 
-    if (!student || !studentGrades) {
+    if (!student) {
         notFound();
     }
 
@@ -50,12 +50,18 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
         }
         return name.substring(0, 2);
     };
+    
+    const latestExamGrades = React.useMemo(() => {
+        if (studentGrades.length === 0 || exams.length === 0) return null;
+        const sortedExams = [...exams].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const latestExam = sortedExams[0];
+        return studentGrades.find(g => g.examId === latestExam.id);
+    }, [studentGrades, exams]);
 
-    const gradeData = [
-        { subject: "Math", grade: studentGrades.math },
-        { subject: "Science", grade: studentGrades.science },
-        { subject: "English", grade: studentGrades.english },
-    ];
+    const gradeData = React.useMemo(() => {
+        if (!latestExamGrades) return [];
+        return Object.entries(latestExamGrades.scores).map(([subject, grade]) => ({ subject, grade }));
+    }, [latestExamGrades]);
     
     const chartConfig = {
       grade: {
@@ -90,25 +96,29 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                  <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                         <CardTitle className="text-lg">Academic Performance</CardTitle>
+                         <CardTitle className="text-lg">Recent Performance</CardTitle>
                          <GraduationCap className="h-5 w-5 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                       <ChartContainer config={chartConfig} className="w-full h-[200px]">
-                          <BarChart accessibilityLayer data={gradeData}>
-                            <CartesianGrid vertical={false} />
-                            <XAxis
-                              dataKey="subject"
-                              tickLine={false}
-                              tickMargin={10}
-                              axisLine={false}
-                              tickFormatter={(value) => value.slice(0, 3)}
-                            />
-                            <YAxis domain={[0, 100]} />
-                            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                            <Bar dataKey="grade" fill="var(--color-grade)" radius={4} />
-                          </BarChart>
-                        </ChartContainer>
+                       {gradeData.length > 0 ? (
+                            <ChartContainer config={chartConfig} className="w-full h-[200px]">
+                                <BarChart accessibilityLayer data={gradeData}>
+                                    <CartesianGrid vertical={false} />
+                                    <XAxis
+                                    dataKey="subject"
+                                    tickLine={false}
+                                    tickMargin={10}
+                                    axisLine={false}
+                                    tickFormatter={(value) => value.slice(0, 3)}
+                                    />
+                                    <YAxis domain={[0, 100]} />
+                                    <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                                    <Bar dataKey="grade" fill="var(--color-grade)" radius={4} />
+                                </BarChart>
+                            </ChartContainer>
+                       ) : (
+                           <div className="flex items-center justify-center h-[200px] text-muted-foreground">No grades recorded yet.</div>
+                       )}
                     </CardContent>
                 </Card>
 
@@ -149,25 +159,34 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Term</TableHead>
-                                <TableHead>Year</TableHead>
+                                <TableHead>Examination</TableHead>
+                                <TableHead>Date</TableHead>
                                 <TableHead>Overall Grade</TableHead>
                                 <TableHead>Status</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow>
-                                <TableCell>Fall</TableCell>
-                                <TableCell>2023</TableCell>
-                                <TableCell>A-</TableCell>
-                                <TableCell><Badge>Promoted</Badge></TableCell>
-                            </TableRow>
-                             <TableRow>
-                                <TableCell>Spring</TableCell>
-                                <TableCell>2023</TableCell>
-                                <TableCell>B+</TableCell>
-                                <TableCell><Badge>Promoted</Badge></TableCell>
-                            </TableRow>
+                            {studentGrades.map(grade => {
+                                const exam = exams.find(e => e.id === grade.examId);
+                                const scores = Object.values(grade.scores);
+                                const average = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2) : 'N/A';
+                                const status = parseFloat(average) >= 40 ? "Promoted" : "Failed";
+                                return (
+                                    <TableRow key={grade.examId}>
+                                        <TableCell>{exam?.name || 'Unknown Exam'}</TableCell>
+                                        <TableCell>{exam?.date || 'N/A'}</TableCell>
+                                        <TableCell>{average}%</TableCell>
+                                        <TableCell>
+                                            <Badge variant={status === "Promoted" ? "default" : "destructive"}>{status}</Badge>
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            })}
+                              {studentGrades.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="text-center text-muted-foreground">No academic history found.</TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>
@@ -176,4 +195,3 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
         </div>
     );
 }
-

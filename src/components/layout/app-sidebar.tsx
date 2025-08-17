@@ -1,3 +1,4 @@
+
 "use client";
 
 import { User, ROLES } from '@/lib/auth';
@@ -15,6 +16,7 @@ import {
   GraduationCap,
   ClipboardCheck,
   BookOpenCheck,
+  FilePen,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -26,6 +28,7 @@ interface AppSidebarProps {
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/students', label: 'Students', icon: Users, roles: [ROLES.ADMIN, ROLES.TEACHER] },
+  { href: '/exams', label: 'Exams', icon: FilePen, roles: [ROLES.ADMIN, ROLES.TEACHER] },
   { href: '/attendance', label: 'Attendance', icon: CalendarCheck, roles: [ROLES.ADMIN, ROLES.TEACHER] },
   { href: '/gradebook', label: 'Gradebook', icon: GraduationCap, roles: [ROLES.ADMIN, ROLES.TEACHER] },
   { href: '/timetable', label: 'Timetable', icon: BookCopy, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
@@ -57,7 +60,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
       <div className="flex-1">
         <nav className="grid items-start px-2 text-sm font-medium lg:px-4 py-4 gap-1">
           {navLinks.filter(link => link.roles.includes(user.role)).map(link => (
-            <Link key={link.href} href={link.href} className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname === link.href ? 'bg-muted text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+            <Link key={link.href} href={link.href} className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname.startsWith(link.href) ? 'bg-muted text-primary' : 'text-muted-foreground hover:text-primary'}`}>
               <link.icon className="h-4 w-4" />
               {link.label}
             </Link>
