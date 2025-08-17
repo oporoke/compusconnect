@@ -6,16 +6,17 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Briefcase, Building, Calendar, DollarSign, Mail, Phone, MinusCircle, PlusCircle, Pencil } from "lucide-react";
+import { Briefcase, Calendar, DollarSign, Mail, Phone, MinusCircle, PlusCircle, Pencil, ClipboardEdit } from "lucide-react";
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import type { Staff } from "@/lib/data";
 
-function EditPerformanceDialog({ staffMember, onSave }: { staffMember: any, onSave: (notes: string) => void }) {
+function EditPerformanceDialog({ staffMember, onSave }: { staffMember: Staff, onSave: (notes: string) => void }) {
     const [open, setOpen] = useState(false);
     const [notes, setNotes] = useState(staffMember.performanceNotes || "");
 
@@ -71,15 +72,21 @@ export default function StaffProfilePage({ params }: { params: { id: string } })
     }
     
     const handleLeaveChange = (amount: number) => {
+        if (!staffMember) return;
         let { leavesTaken, leavesAvailable } = staffMember;
         
-        if (amount > 0 && leavesAvailable <= 0) return;
-        if (amount < 0 && leavesTaken <= 0) return;
+        if (amount > 0 && leavesTaken >= leavesAvailable) {
+            toast({ variant: 'destructive', title: "No Leaves Left", description: "Cannot take more leaves than available." });
+            return;
+        }
+        if (amount < 0 && leavesTaken <= 0) {
+             toast({ variant: 'destructive', title: "Invalid Action", description: "Leaves taken cannot be negative." });
+            return;
+        }
 
         leavesTaken += amount;
-        leavesAvailable -= amount;
         
-        updateStaff({ ...staffMember, leavesTaken, leavesAvailable });
+        updateStaff({ ...staffMember, leavesTaken });
 
         toast({
             title: "Leave Balance Updated",
@@ -88,6 +95,7 @@ export default function StaffProfilePage({ params }: { params: { id: string } })
     }
 
     const handlePerformanceSave = (notes: string) => {
+        if (!staffMember) return;
         updateStaff({ ...staffMember, performanceNotes: notes });
         toast({
             title: "Performance Notes Saved",
@@ -151,7 +159,8 @@ export default function StaffProfilePage({ params }: { params: { id: string } })
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
                         <p><strong>Salary:</strong> ${staffMember.salary.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">Note: Payroll processing features are under development.</p>
+                        <Button variant="outline" size="sm" className="w-full mt-2">Generate Payslip</Button>
+                        <p className="text-xs text-muted-foreground text-center">Note: Payroll processing is a demo feature.</p>
                     </CardContent>
                 </Card>
                 
@@ -169,7 +178,10 @@ export default function StaffProfilePage({ params }: { params: { id: string } })
                            </div>
                        </div>
                        <Progress value={leavePercentage} />
-                       <p className="text-xs text-muted-foreground text-center">{staffMember.leavesAvailable - staffMember.leavesTaken} days remaining</p>
+                       <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                            <span>{staffMember.leavesAvailable - staffMember.leavesTaken} days remaining</span>
+                            <Button variant="link" className="h-auto p-0 text-xs">Request Leave</Button>
+                       </div>
                     </CardContent>
                 </Card>
 
@@ -178,12 +190,12 @@ export default function StaffProfilePage({ params }: { params: { id: string } })
                         <CardTitle className="text-lg">Performance Review</CardTitle>
                          <div className="flex items-center gap-2">
                             <EditPerformanceDialog staffMember={staffMember} onSave={handlePerformanceSave} />
-                            <Pencil className="h-5 w-5 text-muted-foreground" />
+                            <ClipboardEdit className="h-5 w-5 text-muted-foreground" />
                         </div>
                     </CardHeader>
                      <CardContent>
-                        <p className="text-sm text-muted-foreground">
-                            {staffMember.performanceNotes || "No performance notes available."}
+                        <p className="text-sm text-muted-foreground italic">
+                            {staffMember.performanceNotes || "No performance notes available. Click the pencil to add notes."}
                         </p>
                     </CardContent>
                 </Card>

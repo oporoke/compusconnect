@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { books as initialBooks, libraryTransactions as initialTransactions, Book, LibraryTransaction, Student } from '@/lib/data';
 import { useToast } from './use-toast';
+import { differenceInDays } from 'date-fns';
 
 interface LibraryContextType {
   books: Book[];
@@ -115,12 +116,27 @@ export const LibraryProvider: React.FC<{ children: ReactNode }> = ({ children })
         return newBooks;
     });
     
+    // Late fee logic
+    let lateFee = 0;
+    if (transaction.dueDate) {
+        const overdueDays = differenceInDays(new Date(), new Date(transaction.dueDate));
+        if (overdueDays > 0) {
+            lateFee = overdueDays * 0.50; // $0.50 per day
+        }
+    }
+
     // Remove transaction from active borrows
     setTransactions(prev => {
         const newTransactions = prev.filter(t => t.id !== transactionId);
         persistTransactions(newTransactions);
         const book = books.find(b => b.id === transaction.bookId);
-        toast({ title: "Book Returned", description: `"${book?.title}" has been returned.` });
+        
+        let toastDescription = `"${book?.title}" has been returned.`;
+        if (lateFee > 0) {
+            toastDescription += ` A late fee of $${lateFee.toFixed(2)} has been applied.`;
+        }
+        
+        toast({ title: "Book Returned", description: toastDescription });
         return newTransactions;
     });
 

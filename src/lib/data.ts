@@ -133,13 +133,14 @@ export interface Staff {
   salary: number;
   leavesTaken: number;
   leavesAvailable: number;
+  performanceNotes?: string;
 }
 
 export const staff: Staff[] = [
-  { id: 'T01', name: 'Dr. Evelyn Reed', role: 'Principal', department: 'Administration', email: 'e.reed@example.com', phone: '123-456-7890', joiningDate: '2010-08-15', salary: 90000, leavesTaken: 5, leavesAvailable: 20 },
-  { id: 'T02', name: 'Mr. Samuel Jones', role: 'Math Teacher', department: 'Academics', email: 's.jones@example.com', phone: '123-456-7891', joiningDate: '2015-09-01', salary: 65000, leavesTaken: 3, leavesAvailable: 15 },
+  { id: 'T01', name: 'Dr. Evelyn Reed', role: 'Principal', department: 'Administration', email: 'e.reed@example.com', phone: '123-456-7890', joiningDate: '2010-08-15', salary: 90000, leavesTaken: 5, leavesAvailable: 20, performanceNotes: 'Excellent leadership and administrative skills.' },
+  { id: 'T02', name: 'Mr. Samuel Jones', role: 'Math Teacher', department: 'Academics', email: 's.jones@example.com', phone: '123-456-7891', joiningDate: '2015-09-01', salary: 65000, leavesTaken: 3, leavesAvailable: 15, performanceNotes: 'Consistently receives positive feedback from students. Encourages classroom participation.' },
   { id: 'T03', name: 'Ms. Clara Oswald', role: 'Science Teacher', department: 'Academics', email: 'c.oswald@example.com', phone: '123-456-7892', joiningDate: '2018-07-20', salary: 62000, leavesTaken: 8, leavesAvailable: 15 },
-  { id: 'T04', name: 'Mr. Peter Capaldi', role: 'Librarian', department: 'Library', email: 'p.capaldi@example.com', phone: '123-456-7893', joiningDate: '2019-01-10', salary: 55000, leavesTaken: 2, leavesAvailable: 12 },
+  { id: 'T04', name: 'Mr. Peter Capaldi', role: 'Librarian', department: 'Library', email: 'p.capaldi@example.com', phone: '123-456-7893', joiningDate: '2019-01-10', salary: 55000, leavesTaken: 2, leavesAvailable: 12, performanceNotes: 'Has done a great job organizing the new fiction section.' },
 ];
 
 
@@ -173,4 +174,67 @@ export const books: Book[] = [
 export const libraryTransactions: LibraryTransaction[] = [
     { id: 'L001', studentId: 'S001', bookId: 'B001', type: 'borrow', date: '2024-09-01', dueDate: '2024-09-15' },
     { id: 'L002', studentId: 'S003', bookId: 'B003', type: 'borrow', date: '2024-09-05', dueDate: '2024-09-19' },
+];
+
+export interface Vehicle {
+    id: string;
+    model: string;
+    capacity: number;
+    driverName: string;
+    driverContact: string;
+    routeId: string;
+}
+
+export interface Route {
+    id: string;
+    name: string;
+    stops: string[];
+    vehicleId: string;
+}
+
+export const vehicles: Vehicle[] = [
+    { id: 'V01', model: 'Blue Bird Vision', capacity: 48, driverName: 'John Doe', driverContact: '555-1234', routeId: 'R01' },
+    { id: 'V02', model: 'Thomas Saf-T-Liner', capacity: 54, driverName: 'Jane Smith', driverContact: '555-5678', routeId: 'R02' },
+];
+
+export const routes: Route[] = [
+    { id: 'R01', name: 'Uptown Express', stops: ['Central Station', 'Oak Street', 'Maple Avenue', 'School'], vehicleId: 'V01' },
+    { id: 'R02', name: 'Downtown Local', stops: ['City Hall', 'Pine Street', 'Elm Street', 'School'], vehicleId: 'V02' },
+];
+
+export interface Hostel {
+    id: string;
+    name: string;
+    capacity: number;
+    rooms: Room[];
+}
+
+export interface Room {
+    id: string;
+    number: string;
+    capacity: number;
+    occupants: string[]; // student IDs
+}
+
+export const hostels: Hostel[] = [
+    {
+        id: 'H01',
+        name: 'Boys Hostel A',
+        capacity: 10,
+        rooms: [
+            { id: 'R101', number: '101', capacity: 2, occupants: ['S002', 'S005'] },
+            { id: 'R102', number: '102', capacity: 2, occupants: ['S007'] },
+            { id: 'R103', number: '103', capacity: 2, occupants: [] },
+        ]
+    },
+    {
+        id: 'H02',
+        name: 'Girls Hostel B',
+        capacity: 10,
+        rooms: [
+            { id: 'R201', number: '201', capacity: 2, occupants: ['S001', 'S004'] },
+            { id: 'R202', number: '202', capacity: 2, occupants: ['S006'] },
+             { id: 'R203', number: '203', capacity: 2, occupants: ['S003'] },
+        ]
+    }
 ];

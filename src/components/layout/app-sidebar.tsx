@@ -20,6 +20,8 @@ import {
   UserPlus,
   Briefcase,
   Library,
+  Bus,
+  BedDouble,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -39,6 +41,8 @@ const navLinks = [
   { href: '/timetable', label: 'Timetable', icon: BookCopy, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/lms', label: 'LMS', icon: BookOpenCheck, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/library', label: 'Library', icon: Library, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/transport', label: 'Transport', icon: Bus, roles: [ROLES.ADMIN] },
+  { href: '/hostel', label: 'Hostel', icon: BedDouble, roles: [ROLES.ADMIN] },
   { href: '/announcements', label: 'Announcements', icon: Megaphone, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/report-cards', label: 'Report Cards', icon: ClipboardCheck, roles: [ROLES.ADMIN, ROLES.TEACHER] }
 ];
@@ -63,7 +67,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
           <span className="font-headline">CampusConnect Lite</span>
         </Link>
       </div>
-      <div className="flex-1">
+      <div className="flex-1 overflow-y-auto">
         <nav className="grid items-start px-2 text-sm font-medium lg:px-4 py-4 gap-1">
           {navLinks.filter(link => link.roles.includes(user.role)).map(link => (
             <Link key={link.href} href={link.href} className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname.startsWith(link.href) ? 'bg-muted text-primary' : 'text-muted-foreground hover:text-primary'}`}>

@@ -1,3 +1,4 @@
+
 "use client";
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
@@ -60,7 +61,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </Link>
                 </div>
             </header>
-            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background overflow-y-auto">
                 {children}
             </main>
         </div>

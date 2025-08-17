@@ -42,13 +42,14 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('campus-connect-staff', JSON.stringify(data));
   };
 
-  const addStaff = useCallback((staffData: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable'>) => {
+  const addStaff = useCallback((staffData: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable' | 'performanceNotes'>) => {
     setStaff(prevStaff => {
         const newStaffMember: Staff = {
             ...staffData,
             id: generateStaffId(prevStaff),
             leavesTaken: 0,
             leavesAvailable: 20, // Default leave balance
+            performanceNotes: '',
         };
         const newStaff = [...prevStaff, newStaffMember];
         persistStaff(newStaff);
