@@ -4,13 +4,22 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { students as initialStudents, grades as initialGrades, Student, Grade } from '@/lib/data';
 
+export interface AttendanceRecord {
+    studentId: string;
+    date: string; // YYYY-MM-DD
+    present: boolean;
+}
+
 interface StudentContextType {
   students: Student[];
   grades: Grade[];
+  attendance: AttendanceRecord[];
   addStudent: (student: Omit<Student, 'id'>) => void;
   updateGrades: (newGrades: Grade[]) => void;
+  logAttendance: (classId: string, studentStatuses: { studentId: string; present: boolean }[]) => void;
   getStudentById: (id: string) => Student | undefined;
   getGradesByStudentId: (id: string) => Grade | undefined;
+  getAttendanceByStudentId: (id: string) => AttendanceRecord[];
   isLoading: boolean;
 }
 
@@ -28,28 +37,24 @@ const generateStudentId = (existingStudents: Student[]): string => {
 export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
+  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     try {
       const storedStudents = localStorage.getItem('campus-connect-students');
       const storedGrades = localStorage.getItem('campus-connect-grades');
+      const storedAttendance = localStorage.getItem('campus-connect-attendance');
       
-      if (storedStudents) {
-        setStudents(JSON.parse(storedStudents));
-      } else {
-        setStudents(initialStudents);
-      }
+      setStudents(storedStudents ? JSON.parse(storedStudents) : initialStudents);
+      setGrades(storedGrades ? JSON.parse(storedGrades) : initialGrades);
+      setAttendance(storedAttendance ? JSON.parse(storedAttendance) : []);
 
-      if (storedGrades) {
-        setGrades(JSON.parse(storedGrades));
-      } else {
-        setGrades(initialGrades);
-      }
     } catch (error) {
       console.error("Failed to parse data from localStorage", error);
       setStudents(initialStudents);
       setGrades(initialGrades);
+      setAttendance([]);
     } finally {
       setIsLoading(false);
     }
@@ -63,6 +68,10 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
     localStorage.setItem('campus-connect-grades', JSON.stringify(data));
   };
 
+  const persistAttendance = (data: AttendanceRecord[]) => {
+    localStorage.setItem('campus-connect-attendance', JSON.stringify(data));
+  };
+
   const addStudent = useCallback((studentData: Omit<Student, 'id'>) => {
     setStudents(prevStudents => {
         const newStudent: Student = {
@@ -72,7 +81,6 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
         const newStudents = [...prevStudents, newStudent];
         persistStudents(newStudents);
 
-        // Also add a default grade entry for the new student
         setGrades(prevGrades => {
             const newGradeEntry: Grade = {
                 studentId: newStudent.id,
@@ -90,9 +98,31 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
   
   const updateGrades = useCallback((newGrades: Grade[]) => {
-    setGrades(newGrades);
-    persistGrades(newGrades);
+    setGrades(currentGrades => {
+        const updatedGrades = currentGrades.map(cg => {
+            const incoming = newGrades.find(ng => ng.studentId === cg.studentId);
+            return incoming ? incoming : cg;
+        });
+        persistGrades(updatedGrades);
+        return updatedGrades;
+    });
   }, []);
+
+  const logAttendance = useCallback((classId: string, studentStatuses: { studentId: string; present: boolean }[]) => {
+    const today = new Date().toISOString().split('T')[0]; // Get YYYY-MM-DD
+    setAttendance(prevAttendance => {
+      const otherDaysAttendance = prevAttendance.filter(att => att.date !== today);
+      const newAttendanceForToday = studentStatuses.map(s => ({
+        studentId: s.studentId,
+        date: today,
+        present: s.present,
+      }));
+      const updatedAttendance = [...otherDaysAttendance, ...newAttendanceForToday];
+      persistAttendance(updatedAttendance);
+      return updatedAttendance;
+    });
+  }, []);
+
 
   const getStudentById = useCallback((id: string) => {
     return students.find(s => s.id === id);
@@ -102,9 +132,13 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
     return grades.find(g => g.studentId === id);
   }, [grades]);
 
+  const getAttendanceByStudentId = useCallback((id: string) => {
+    return attendance.filter(a => a.studentId === id);
+  }, [attendance]);
+
 
   return (
-    <StudentContext.Provider value={{ students, grades, addStudent, updateGrades, getStudentById, getGradesByStudentId, isLoading }}>
+    <StudentContext.Provider value={{ students, grades, attendance, addStudent, updateGrades, logAttendance, getStudentById, getGradesByStudentId, getAttendanceByStudentId, isLoading }}>
       {children}
     </StudentContext.Provider>
   );

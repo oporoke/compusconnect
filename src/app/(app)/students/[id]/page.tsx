@@ -16,12 +16,14 @@ import {
 } from "@/components/ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
+import React from 'react';
 
 export default function StudentProfilePage({ params }: { params: { id: string } }) {
-    const { getStudentById, getGradesByStudentId, isLoading } = useStudents();
+    const { getStudentById, getGradesByStudentId, getAttendanceByStudentId, isLoading } = useStudents();
     
     const student = getStudentById(params.id);
     const studentGrades = getGradesByStudentId(params.id);
+    const studentAttendance = getAttendanceByStudentId(params.id);
 
     if (isLoading) {
         return (
@@ -61,6 +63,12 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
         color: "hsl(var(--primary))",
       },
     }
+
+    const attendancePercentage = React.useMemo(() => {
+        if (studentAttendance.length === 0) return 100;
+        const presentDays = studentAttendance.filter(a => a.present).length;
+        return Math.round((presentDays / studentAttendance.length) * 100);
+    }, [studentAttendance]);
 
     return (
         <div className="space-y-6">
@@ -112,10 +120,10 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                     <CardContent className="space-y-4">
                         <div className="flex justify-between items-center">
                             <span>Overall Presence</span>
-                            <span className="font-bold">95%</span>
+                            <span className="font-bold">{attendancePercentage}%</span>
                         </div>
-                        <Progress value={95} />
-                        <p className="text-xs text-muted-foreground text-center">Last 30 days</p>
+                        <Progress value={attendancePercentage} />
+                        <p className="text-xs text-muted-foreground text-center">Based on {studentAttendance.length} recorded day(s)</p>
                     </CardContent>
                 </Card>
 
@@ -168,3 +176,4 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
         </div>
     );
 }
+

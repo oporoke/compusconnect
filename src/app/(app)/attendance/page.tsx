@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,23 +14,50 @@ import { useStudents } from '@/hooks/use-students';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AttendancePage() {
-    const { students, isLoading } = useStudents();
+    const { students, logAttendance, isLoading } = useStudents();
     const [selectedClass, setSelectedClass] = useState('10-A');
     const { toast } = useToast();
+    
+    const studentsInClass = useMemo(() => students.filter(s => `${s.grade}-${s.section}` === selectedClass), [students, selectedClass]);
+    
+    const [attendanceStatus, setAttendanceStatus] = useState<Record<string, boolean>>(() => {
+        const status: Record<string, boolean> = {};
+        studentsInClass.forEach(s => {
+            status[s.id] = true; // Default all to present
+        });
+        return status;
+    });
+
+    // Update attendance status when class changes
+    useState(() => {
+        const newStatus: Record<string, boolean> = {};
+        studentsInClass.forEach(s => {
+            newStatus[s.id] = true;
+        });
+        setAttendanceStatus(newStatus);
+    });
+
+    const handleCheckboxChange = (studentId: string, checked: boolean) => {
+        setAttendanceStatus(prev => ({ ...prev, [studentId]: checked }));
+    };
 
     const handleSubmit = () => {
+        const studentStatuses = Object.entries(attendanceStatus).map(([studentId, present]) => ({
+            studentId,
+            present
+        }));
+        
+        logAttendance(selectedClass, studentStatuses);
+
         toast({
             title: "Attendance Submitted",
             description: `Attendance for class ${selectedClass} has been recorded.`,
-            // Note: In a real app, this data would be sent to a backend.
         });
     }
     
     if (isLoading) {
         return <Skeleton className="h-96 w-full" />;
     }
-
-    const studentsInClass = students.filter(s => `${s.grade}-${s.section}` === selectedClass);
 
     return (
         <div className="space-y-6">
@@ -73,7 +100,11 @@ export default function AttendancePage() {
                                     <TableRow key={student.id}>
                                         <TableCell className="font-medium">{student.name}</TableCell>
                                         <TableCell className="text-right">
-                                            <Checkbox id={`att-${student.id}`} defaultChecked />
+                                            <Checkbox 
+                                                id={`att-${student.id}`} 
+                                                checked={attendanceStatus[student.id] ?? true}
+                                                onCheckedChange={(checked) => handleCheckboxChange(student.id, !!checked)}
+                                            />
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -91,3 +122,4 @@ export default function AttendancePage() {
         </div>
     );
 }
+
