@@ -87,7 +87,43 @@ These server-side functions handle AI-powered features using Genkit.
 8.  **AI Feature Interaction**: On pages like "Timetable" or "Report Cards", the user interacts with a generator component (e.g., `TimetableGenerator`). This component collects input and calls the relevant server-side Genkit flow (e.g., `generateTimetable`) to get an AI-generated result, which is then displayed to the user.
 9.  **Logout**: The user clicks the logout button in the `AppSidebar`. The `logout` function from `useAuth` is called, clearing `localStorage` and redirecting the user back to the `/login` page.
 
-## 4. Dependencies / External Modules
+## 4. Backend Integration Strategy (Next Steps)
+
+The current implementation uses `localStorage` and mocked data to simulate a fully functional application. The next phase of development would involve replacing these mocks with a real backend. Here is a recommended strategy:
+
+1.  **Database Setup**:
+    *   **Action**: Choose and configure a production-grade database (e.g., Firebase Firestore, Supabase/PostgreSQL).
+    *   **Purpose**: To replace `localStorage` and provide a persistent, scalable, and secure data store for all application data (students, staff, grades, invoices, etc.).
+
+2.  **API Layer Development**:
+    *   **Action**: Create API endpoints using Next.js API Routes or Server Actions for each data model. For example:
+        *   `GET /api/students`
+        *   `POST /api/students`
+        *   `PUT /api/students/[id]`
+        *   `DELETE /api/students/[id]`
+    *   **Purpose**: These endpoints will serve as the bridge between the frontend and the database, handling all data manipulation (CRUD) operations.
+
+3.  **Refactor Frontend Hooks**:
+    *   **Action**: Modify the custom hooks in `src/hooks/*.tsx` (e.g., `useStudents`, `useFinance`) to replace `localStorage` calls with `fetch` requests to the new API endpoints.
+    *   **Purpose**: This will connect the frontend components to the live backend data, making the application data-dynamic. The `isLoading` states in these hooks will now reflect real network request statuses.
+
+4.  **Implement Real Authentication**:
+    *   **Action**: Replace the mocked `useAuth` logic with a real authentication provider (e.g., Firebase Authentication, NextAuth.js).
+    *   **Purpose**: To handle secure user sign-up, sign-in, session management, and password/MFA verification.
+
+5.  **Integrate Third-Party Services**:
+    *   **Action**: Connect the backend to external APIs for services that cannot be handled on the client-side.
+        *   **Payments**: Integrate Stripe, PayPal, or M-Pesa APIs within your backend. The frontend payment dialogs would trigger calls to your API, which then securely communicates with the payment gateway.
+        *   **Notifications**: Use services like Twilio (for SMS) or SendGrid (for email) to send automated notifications. A backend cron job could trigger these (e.g., for daily attendance alerts or weekly fee reminders).
+    *   **Purpose**: To enable real-world transactions and communications.
+
+6.  **Enhance AI Flows**:
+    *   **Action**: Modify the Genkit flows in `src/ai/flows/*.ts` to query the live database for context.
+    *   **Purpose**: To move from generating plausible mock data to providing real, data-driven AI insights. For example, the `getAnalyticsQuery` flow would execute a real database query based on the user's natural language question.
+
+By following this strategy, the fully mocked frontend can be systematically connected to a robust and scalable backend architecture.
+
+## 5. Dependencies / External Modules
 
 - **next**: The core React framework for server-side rendering, routing, and application structure.
 - **react** & **react-dom**: Libraries for building the user interface.
@@ -99,7 +135,7 @@ These server-side functions handle AI-powered features using Genkit.
 - **react-hook-form**: Used for managing form state and validation, although its usage is minimal in the current implementation.
 - **clsx** & **tailwind-merge**: Utility libraries for conditionally combining Tailwind CSS classes without style conflicts.
 
-## 5. Usage Guide (Local Development)
+## 6. Usage Guide (Local Development)
 
 1.  **Install Dependencies**:
     ```bash
