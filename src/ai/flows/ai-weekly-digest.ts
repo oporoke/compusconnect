@@ -5,25 +5,18 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-export const WeeklyDigestInputSchema = z.object({
-  studentName: z.string().describe("The student's name."),
-  logEntries: z.string().describe('A newline-separated list of log entries for the week.'),
-});
-export type WeeklyDigestInput = z.infer<typeof WeeklyDigestInputSchema>;
-
-export const WeeklyDigestOutputSchema = z.object({
-  kudos: z.array(z.string()).describe('A list of positive highlights or achievements.'),
-  concerns: z.array(z.string()).describe('A list of areas that may need attention, framed constructively.'),
-});
-export type WeeklyDigestOutput = z.infer<typeof WeeklyDigestOutputSchema>;
+import {
+  WeeklyDigestInputSchema,
+  WeeklyDigestOutputSchema,
+  WeeklyDigestInput,
+  WeeklyDigestOutput,
+} from './digest.types';
 
 const weeklyDigestPrompt = ai.definePrompt({
-    name: 'weeklyDigestPrompt',
-    input: { schema: WeeklyDigestInputSchema },
-    output: { schema: WeeklyDigestOutputSchema },
-    prompt: `You are a helpful and positive school AI assistant. Your task is to analyze a week's worth of log entries for a student and create a summary for their parent.
+  name: 'weeklyDigestPrompt',
+  input: {schema: WeeklyDigestInputSchema},
+  output: {schema: WeeklyDigestOutputSchema},
+  prompt: `You are a helpful and positive school AI assistant. Your task is to analyze a week's worth of log entries for a student and create a summary for their parent.
 
 Student: {{{studentName}}}
 Weekly Log Entries:
@@ -37,7 +30,9 @@ Extract 2-3 items for each category if available. If a category has no items, re
 `,
 });
 
-export async function generateWeeklyDigest(input: WeeklyDigestInput): Promise<WeeklyDigestOutput> {
+export async function generateWeeklyDigest(
+  input: WeeklyDigestInput
+): Promise<WeeklyDigestOutput> {
   const {output} = await weeklyDigestPrompt(input);
   return output!;
 }
