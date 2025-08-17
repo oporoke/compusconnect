@@ -6,6 +6,7 @@ This directory contains all the professional and technical documentation for the
 
 - **[Software Requirements Specification (SRS)](./SRS.md)**: Detailed breakdown of all functional and non-functional requirements.
 - **[System Architecture & Design (SADD)](./System_Architecture_Design.md)**: Overview of the system architecture, technology stack, and module design.
+- **[System Architecture (Detailed)](../SYSTEM_ARCHITECTURE.md)**: A comprehensive, in-depth document detailing the complete system architecture.
 - **[Developer Documentation](./Developer_Documentation.md)**: In-depth guide to the codebase, component structure, and development flow.
 - **[API Documentation](./API_DOCUMENTATION.md)**: Conceptual blueprint for the backend RESTful API.
 - **[User Manual](./User_Manual.md)**: A user-friendly guide for end-users (admins, teachers, parents).
