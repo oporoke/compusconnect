@@ -2,16 +2,18 @@
 "use client";
 
 import { LoginForm } from '@/components/auth/login-form';
+import { SignupForm } from '@/components/auth/signup-form';
 import { MfaForm } from '@/components/auth/mfa-form';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { School } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function LoginPage() {
   const { user, isLoading, authState } = useAuth();
   const router = useRouter();
+  const [isLoginView, setIsLoginView] = useState(true);
 
   useEffect(() => {
     if (!isLoading && authState === 'authenticated') {
@@ -42,10 +44,20 @@ export default function LoginPage() {
           </div>
           <h1 className="text-3xl font-headline font-bold text-foreground">CampusConnect Lite</h1>
            <p className="text-muted-foreground mt-2">
-             {authState === 'awaitingMfa' ? "Just one more step to secure your account." : "Create your account to get started."}
+             {authState === 'awaitingMfa' 
+                ? "Just one more step to secure your account." 
+                : isLoginView 
+                ? "Welcome back! Please log in to your account."
+                : "Create your account to get started."
+             }
           </p>
         </div>
-        {authState === 'awaitingMfa' ? <MfaForm /> : <LoginForm />}
+        {authState === 'awaitingMfa' 
+            ? <MfaForm /> 
+            : isLoginView 
+            ? <LoginForm onToggleView={() => setIsLoginView(false)} /> 
+            : <SignupForm onToggleView={() => setIsLoginView(true)} />
+        }
       </div>
       <footer className="absolute bottom-4 text-center text-sm text-muted-foreground">
         © {new Date().getFullYear()} CampusConnect Lite. All Rights Reserved.
