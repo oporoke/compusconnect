@@ -27,11 +27,15 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
   const fetchData = useCallback(async () => {
     setIsLoading(true);
       try {
-        const [eventRes, announcementRes, messagesRes] = await Promise.all([
-          fetch('/api/events'),
-          fetch('/api/announcements'),
-          fetch('/api/messages'),
-        ]);
+        const eventRes = await fetch('/api/events');
+        console.log('Events response status:', eventRes.status, 'ok:', eventRes.ok);
+
+        const announcementRes = await fetch('/api/announcements');
+        console.log('Announcements response status:', announcementRes.status, 'ok:', announcementRes.ok);
+
+        const messagesRes = await fetch('/api/messages');
+        console.log('Messages response status:', messagesRes.status, 'ok:', messagesRes.ok);
+
 
         if(!eventRes.ok || !announcementRes.ok || !messagesRes.ok) {
             console.error("Failed to fetch one or more communication resources.");
