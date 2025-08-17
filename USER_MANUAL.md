@@ -21,12 +21,13 @@ This guide is for all users of the system:
 ### 2.1. How to Log In
 Getting into the system is your first step.
 1.  Navigate to the login page.
-2.  **Select Your Role**: Use the dropdown menu to choose your role (e.g., Admin, Teacher, Student).
-3.  **Enter Your Password**: Type your password into the field.
-4.  **Multi-Factor Authentication (MFA)**: For security, you will be asked to enter a 6-digit code from your authenticator app or a code sent via SMS.
-5.  Click **Sign In** or **Verify Code** to access your dashboard.
+2.  **Enter Your Details**: Fill in your full name and email address.
+3.  **Select Your Role**: Use the dropdown menu to choose your role (e.g., Admin, Teacher, Student).
+4.  **Enter Your Password**: Type your password into the field.
+5.  **Multi-Factor Authentication (MFA)**: For security, you will be asked to enter a 6-digit code from your authenticator app or a code sent via SMS.
+6.  Click **Create Account** or **Verify Code** to access your dashboard.
 
-> **Note**: For this demonstration version, you can enter any password and any 6-digit code to log in.
+> **Note**: For this demonstration version, you can enter any details and any 6-digit code to log in.
 
 ### 2.2. Your Dashboard
 The dashboard is your personalized home page. It gives you a quick overview of the most important information relevant to your role.
@@ -49,11 +50,9 @@ The main menu is located on the **left-hand sidebar**. This menu contains links 
 4.  In the "Action" column, use the dropdown menu to select "Approve" or "Reject".
 
 #### **Exams & Grading: Automated Marking**
-1.  Navigate to **Academics > Automated Marking**.
-2.  In the **Solution Entry** card, select an exam and enter the correct answers (e.g., A, B, C).
-3.  In the **Automated Marking** card, select the same exam and a student. Enter the student's answers.
-4.  Click **Auto-Mark**. The system will grade the exam instantly and display a detailed report.
-5.  Click **Print Results** to get a copy of the performance report.
+1.  Navigate to **Gradebook**.
+2.  Select an exam. For "High School" level, you can expand each subject to enter marks for individual questions.
+3.  The system also supports a more advanced **Automated Marking** workflow on the `/academics/automated-marking` page (accessible via direct navigation for this demo), where you can input answer keys and have the system grade student responses automatically.
 
 #### **Finance: Using the Payment Gateway**
 1.  Navigate to **Finance** > **Invoices**.
@@ -79,13 +78,14 @@ The main menu is located on the **left-hand sidebar**. This menu contains links 
 Your **Dashboard** is the best place to understand your child's progress. It contains:
 -   **Live Feed**: A real-time log of important events, such as when a grade is posted or attendance is marked.
 -   **AI Weekly Digest**: Click the "Generate" button in this tab to get an AI-powered summary of the week's highlights ("Kudos") and areas that need attention ("Concerns").
--   **Chatbot**: A chat widget is available on the dashboard to ask questions about your child's grades and attendance.
+-   **Chatbot**: A chat widget is available on the dashboard to ask questions like "What were my latest grades?" or "What's my attendance percentage?".
 
 #### **Academic Progression Tools**
 -   **Adaptive Learning**: Navigate to **Academics > Adaptive Learning** for a mock quiz that adjusts its difficulty based on your answers.
 -   **Gamification**: Go to **Academics > Gamification** to see a mock leaderboard and a list of earned achievement badges.
 -   **LMS Discussions**: In the **LMS** module, visit **Discussions** to participate in mock class forums.
 -   **Life Path Simulator**: Navigate to **Academics > Life Path** to explore potential career paths and get an AI-generated academic roadmap.
+-   **Self-Admission**: Students can use the `/self-admission` page to fill out their admission forms online.
 
 ---
 
