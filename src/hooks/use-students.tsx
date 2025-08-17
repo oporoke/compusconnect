@@ -52,7 +52,13 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
         ]);
 
         if(!studentsRes.ok || !gradesRes.ok || !examsRes.ok || !attendanceRes.ok) {
-            throw new Error('Failed to fetch initial student-related data');
+            console.error('Failed to fetch one or more student-related resources.');
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not load student data.' });
+            setStudents([]);
+            setGrades([]);
+            setExams([]);
+            setAttendance([]);
+            return;
         }
 
         const studentsData = await studentsRes.json();
@@ -68,6 +74,10 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
     } catch (error) {
       console.error("Failed to fetch data from API", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Could not load student data.' });
+      setStudents([]);
+      setGrades([]);
+      setExams([]);
+      setAttendance([]);
     } finally {
       setIsLoading(false);
     }

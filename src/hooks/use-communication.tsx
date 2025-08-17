@@ -32,7 +32,16 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
           fetch('/api/announcements'),
           fetch('/api/messages'),
         ]);
-        if(!eventRes.ok || !announcementRes.ok || !messagesRes.ok) throw new Error("Failed to fetch communication data");
+
+        if(!eventRes.ok || !announcementRes.ok || !messagesRes.ok) {
+            console.error("Failed to fetch one or more communication resources.");
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not load communication data.' });
+            // Set empty states to prevent crashing
+            setEvents([]);
+            setAnnouncements([]);
+            setConversations({});
+            return;
+        }
 
         setEvents(await eventRes.json());
         setAnnouncements(await announcementRes.json());

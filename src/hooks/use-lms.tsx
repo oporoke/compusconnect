@@ -34,7 +34,14 @@ export const LMSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 fetch('/api/lms/materials'),
                 fetch('/api/lms/classes'),
             ]);
-            if(!assRes.ok || !matRes.ok || !clsRes.ok) throw new Error('Failed to fetch LMS data');
+            if(!assRes.ok || !matRes.ok || !clsRes.ok) {
+                console.error('Failed to fetch LMS data');
+                toast({ variant: 'destructive', title: 'Error', description: 'Could not load LMS data.' });
+                setAssignments([]);
+                setCourseMaterials([]);
+                setOnlineClasses([]);
+                return;
+            }
             
             const assData = await assRes.json();
             const matData = await matRes.json();
@@ -46,6 +53,9 @@ export const LMSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         } catch(e) {
             console.error("Failed to load LMS data", e);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not load LMS data.' });
+            setAssignments([]);
+            setCourseMaterials([]);
+            setOnlineClasses([]);
         } finally {
             setIsLoading(false);
         }

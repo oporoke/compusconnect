@@ -9,6 +9,8 @@ export async function GET(request: Request) {
     });
     return NextResponse.json(expenses);
   } catch (error) {
+    console.error('Failed to fetch expenses:', error);
     return NextResponse.json({ error: 'Failed to fetch expenses' }, { status: 500 });
   }
 }
+

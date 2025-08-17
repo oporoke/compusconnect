@@ -67,6 +67,11 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
         } catch(e) {
             console.error("Failed to load finance data", e);
             toast({ variant: 'destructive', title: 'Error', description: 'Could not load finance data.' });
+            setFeeStructures([]);
+            setInvoices([]);
+            setPayments([]);
+            setPayrollRecords([]);
+            setExpenses([]);
         } finally {
             setIsLoading(false);
         }

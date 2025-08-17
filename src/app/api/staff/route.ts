@@ -7,6 +7,8 @@ export async function GET(request: Request) {
     const staff = await prisma.staff.findMany();
     return NextResponse.json(staff);
   } catch (error) {
+    console.error('Failed to fetch staff:', error);
     return NextResponse.json({ error: 'Failed to fetch staff' }, { status: 500 });
   }
 }
+

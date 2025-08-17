@@ -7,6 +7,8 @@ export async function GET(request: Request) {
     const feeStructures = await prisma.feeStructure.findMany();
     return NextResponse.json(feeStructures);
   } catch (error) {
+    console.error('Failed to fetch fee structures:', error);
     return NextResponse.json({ error: 'Failed to fetch fee structures' }, { status: 500 });
   }
 }
+

@@ -9,6 +9,8 @@ export async function GET(request: Request) {
     });
     return NextResponse.json(invoices);
   } catch (error) {
+    console.error('Failed to fetch invoices:', error);
     return NextResponse.json({ error: 'Failed to fetch invoices' }, { status: 500 });
   }
 }
+
