@@ -25,72 +25,53 @@ export const LMSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-        const { assignments, courseMaterials, onlineClasses } = await import('@/lib/data');
-        const storedAssignments = localStorage.getItem('campus-connect-assignments');
-        const storedCourseMaterials = localStorage.getItem('campus-connect-courseMaterials');
-        const storedOnlineClasses = localStorage.getItem('campus-connect-onlineClasses');
-
-        setAssignments(storedAssignments ? JSON.parse(storedAssignments) : assignments);
-        setCourseMaterials(storedCourseMaterials ? JSON.parse(storedCourseMaterials) : courseMaterials);
-        setOnlineClasses(storedOnlineClasses ? JSON.parse(storedOnlineClasses) : onlineClasses);
-    } catch(e) {
-        console.error("Failed to load LMS data", e);
-    } finally {
-        setIsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const [assRes, matRes, clsRes] = await Promise.all([
+                fetch('/api/lms/assignments'),
+                fetch('/api/lms/materials'),
+                fetch('/api/lms/classes'),
+            ]);
+            if(!assRes.ok || !matRes.ok || !clsRes.ok) throw new Error('Failed to fetch LMS data');
+            
+            const assData = await assRes.json();
+            const matData = await matRes.json();
+            const clsData = await clsRes.json();
+            
+            setAssignments(assData);
+            setCourseMaterials(matData);
+            setOnlineClasses(clsData);
+        } catch(e) {
+            console.error("Failed to load LMS data", e);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not load LMS data.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
     fetchData();
-  }, [fetchData]);
-  
-  const persistData = (key: string, data: any) => {
-    localStorage.setItem(`campus-connect-${key}`, JSON.stringify(data));
-  };
+  }, [toast]);
   
   const submitAssignment = useCallback(async (assignmentId: string) => {
-    setAssignments(prev => {
-        const updated = prev.map(a => a.id === assignmentId ? { ...a, status: 'Submitted' } : a);
-        persistData('assignments', updated);
-        return updated;
-    });
-    toast({
-        title: "Assignment Submitted",
-        description: "Your assignment has been submitted successfully.",
-    });
+    // This should be a POST to /api/lms/assignments/[id]/submit
+    setAssignments(prev => prev.map(a => a.id === assignmentId ? { ...a, status: 'Submitted' } : a));
+    toast({ title: "Assignment Submitted (Mock)", description: "Your assignment has been submitted." });
   }, [toast]);
 
   const addAssignment = useCallback(async (data: Omit<Assignment, 'id' | 'status'>) => {
-    setAssignments(prev => {
-        const newAssignment: Assignment = { ...data, id: `AS${Date.now()}`, status: 'Pending' };
-        const updated = [...prev, newAssignment];
-        persistData('assignments', updated);
-        toast({ title: 'Assignment Created', description: `The assignment "${data.title}" has been created.` });
-        return updated;
-    })
+    // This should be a POST to /api/lms/assignments
+     toast({ title: 'Assignment Created (Mock)', description: `The assignment "${data.title}" has been created.` });
   }, [toast]);
 
   const addCourseMaterial = useCallback(async (data: Omit<CourseMaterial, 'id'>) => {
-    setCourseMaterials(prev => {
-        const newMaterial: CourseMaterial = { ...data, id: `CM${Date.now()}`};
-        const updated = [...prev, newMaterial];
-        persistData('courseMaterials', updated);
-        toast({ title: 'Course Material Added' });
-        return updated;
-    });
+    // This should be a POST to /api/lms/materials
+     toast({ title: 'Course Material Added (Mock)' });
   }, [toast]);
 
   const addOnlineClass = useCallback(async (data: Omit<OnlineClass, 'id'>) => {
-    setOnlineClasses(prev => {
-        const newClass: OnlineClass = { ...data, id: `OC${Date.now()}`};
-        const updated = [...prev, newClass];
-        persistData('onlineClasses', updated);
-        toast({ title: 'Online Class Scheduled' });
-        return updated;
-    });
+    // This should be a POST to /api/lms/classes
+    toast({ title: 'Online Class Scheduled (Mock)' });
   }, [toast]);
 
 
@@ -108,5 +89,3 @@ export const useLMS = () => {
   }
   return context;
 };
-
-    

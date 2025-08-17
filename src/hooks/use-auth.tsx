@@ -6,13 +6,12 @@ import { useRouter } from 'next/navigation';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuditLog } from './use-audit-log';
 
-type AuthState = 'unauthenticated' | 'mfa_required' | 'authenticated';
+type AuthState = 'unauthenticated' | 'authenticated';
 
 interface AuthContextType {
   user: User | null;
   authState: AuthState;
-  login: (role: Role, password?: string) => void;
-  submitMfa: (code: string) => void;
+  login: (role: Role) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -22,62 +21,76 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [authState, setAuthState] = useState<AuthState>('unauthenticated');
-  const [pendingUser, setPendingUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const { logAction } = useAuditLog();
 
-  useEffect(() => {
+  const checkUser = useCallback(async () => {
     try {
-      const storedUser = localStorage.getItem('campus-connect-user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-        setAuthState('authenticated');
+      const res = await fetch('/api/auth/session');
+      if (res.ok) {
+        const { user: sessionUser } = await res.json();
+        if (sessionUser) {
+            setUser(sessionUser);
+            setAuthState('authenticated');
+        } else {
+            setUser(null);
+            setAuthState('unauthenticated');
+        }
+      } else {
+        setAuthState('unauthenticated');
       }
     } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
-      localStorage.removeItem('campus-connect-user');
+      console.error("Failed to fetch session", error);
       setAuthState('unauthenticated');
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   }, []);
 
-  const login = useCallback((role: Role, password?: string) => {
-    const userToLogin = USERS.find(u => u.role === role);
-    if (userToLogin) {
-      // Mock password check - in a real app, this would be a secure check
-      // For now, any password works. The existence of the password field triggers MFA.
-      setPendingUser(userToLogin);
-      setAuthState('mfa_required');
+  useEffect(() => {
+    checkUser();
+  }, [checkUser]);
+
+  const login = useCallback(async (role: Role) => {
+    setIsLoading(true);
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role }),
+        });
+        if(res.ok) {
+            const { user: loggedInUser } = await res.json();
+            setUser(loggedInUser);
+            setAuthState('authenticated');
+            logAction('User Logged In', { userId: loggedInUser.name, role: loggedInUser.role });
+            router.push('/dashboard');
+        }
+    } catch (error) {
+        console.error("Login failed", error);
+    } finally {
+        setIsLoading(false);
     }
-  }, []);
+  }, [router, logAction]);
   
-  const submitMfa = useCallback((code: string) => {
-      // Mock MFA check - any 6-digit code works
-      if(pendingUser && code.length === 6) {
-        localStorage.setItem('campus-connect-user', JSON.stringify(pendingUser));
-        setUser(pendingUser);
-        setAuthState('authenticated');
-        logAction('User Logged In', { userId: pendingUser.name, role: pendingUser.role });
-        router.push('/dashboard');
-        setPendingUser(null);
-      }
-  }, [pendingUser, router, logAction]);
-
-  const logout = useCallback(() => {
-    if(user) {
-        logAction('User Logged Out', { userId: user.name });
+  const logout = useCallback(async () => {
+    try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        if(user) {
+            logAction('User Logged Out', { userId: user.name });
+        }
+    } catch(error) {
+        console.error("Logout failed", error);
+    } finally {
+        setUser(null);
+        setAuthState('unauthenticated');
+        router.push('/login');
     }
-    localStorage.removeItem('campus-connect-user');
-    setUser(null);
-    setPendingUser(null);
-    setAuthState('unauthenticated');
-    router.push('/login');
   }, [router, user, logAction]);
 
   return (
-    <AuthContext.Provider value={{ user, authState, login, submitMfa, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, authState, login, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

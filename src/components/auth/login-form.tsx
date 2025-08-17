@@ -14,10 +14,10 @@ import { Input } from '../ui/input';
 export function LoginForm() {
   const { login, isLoading } = useAuth();
   const [selectedRole, setSelectedRole] = useState<Role>(ROLES.STUDENT);
-  const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    login(selectedRole, password);
+    // Password is not used in this simplified session auth, but kept for UI demo
+    login(selectedRole);
   };
 
   return (
@@ -49,10 +49,8 @@ export function LoginForm() {
                 <Input 
                     id="password" 
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder="Enter any password"
                     className="pl-10"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
                 />
             </div>
         </div>

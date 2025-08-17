@@ -2,7 +2,6 @@
 "use client";
 
 import { LoginForm } from '@/components/auth/login-form';
-import { MfaForm } from '@/components/auth/mfa-form';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -42,13 +41,10 @@ export default function LoginPage() {
           </div>
           <h1 className="text-3xl font-headline font-bold text-foreground">CampusConnect Lite</h1>
            <p className="text-muted-foreground mt-2">
-            {authState === 'mfa_required' 
-              ? "Enter the code from your authenticator app." 
-              : "Welcome! Please sign in to your account."
-            }
+             Welcome! Please sign in to your account.
           </p>
         </div>
-        {authState === 'mfa_required' ? <MfaForm /> : <LoginForm />}
+        <LoginForm />
       </div>
       <footer className="absolute bottom-4 text-center text-sm text-muted-foreground">
         © {new Date().getFullYear()} CampusConnect Lite. All Rights Reserved.

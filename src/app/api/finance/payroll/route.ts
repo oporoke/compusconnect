@@ -1,0 +1,14 @@
+
+import { NextResponse } from 'next/server'
+import prisma from '@/lib/db'
+
+export async function GET(request: Request) {
+  try {
+    const payroll = await prisma.payrollRecord.findMany({
+        orderBy: { month: 'desc' }
+    });
+    return NextResponse.json(payroll);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch payroll records' }, { status: 500 });
+  }
+}
