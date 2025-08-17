@@ -24,7 +24,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(conversationMap);
   } catch (error) {
-    console.error(error);
+    console.error('Failed to fetch messages:', error);
     // Return 200 OK with an empty object to prevent client-side errors
     return NextResponse.json({}, { status: 200 });
   }
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
         
         return NextResponse.json({ message: "Message sent successfully" }, { status: 201 });
     } catch (error) {
-        console.error(error);
+        console.error('Failed to send message:', error);
         return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
     }
 }
