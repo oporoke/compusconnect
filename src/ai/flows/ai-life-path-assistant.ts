@@ -1,3 +1,4 @@
+
 "use server";
 /**
  * @fileOverview AI flows for generating career pathways and academic goals.
@@ -87,3 +88,5 @@ export async function setAcademicGoals(input: z.infer<typeof AcademicGoalInputSc
     const {output} = await academicGoalPrompt(input);
     return output!;
 }
+
+    
