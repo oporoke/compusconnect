@@ -1,35 +1,44 @@
 
 import { PrismaClient } from "@prisma/client";
 import {
-  students,
+  students as mockStudents,
   exams as mockExams,
-  grades,
-  staff,
-  admissions,
-  feeStructures,
-  invoices,
-  announcements,
-  events,
-  books,
-  libraryTransactions,
-  vehicles,
-  drivers,
-  routes,
-  hostels,
-  canteenAccounts,
-  canteenTransactions,
-  canteenMenu,
-  alumniProfiles,
-  mentorships,
-  healthRecords,
-  clinicVisits,
-  assets,
+  grades as mockGrades,
+  staff as mockStaff,
+  admissions as mockAdmissions,
+  feeStructures as mockFeeStructures,
+  invoices as mockInvoices,
+  payments as mockPayments,
+  payrollRecords as mockPayrollRecords,
+  announcements as mockAnnouncements,
+  events as mockEvents,
+  books as mockBooks,
+  libraryTransactions as mockLibraryTransactions,
+  vehicles as mockVehicles,
+  drivers as mockDrivers,
+  routes as mockRoutes,
+  hostels as mockHostels,
+  canteenAccounts as mockCanteenAccounts,
+  canteenTransactions as mockCanteenTransactions,
+  canteenMenu as mockCanteenMenu,
+  alumniProfiles as mockAlumniProfiles,
+  campaigns as mockCampaigns,
+  pledges as mockPledges,
+  donations as mockDonations,
+  mentorships as mockMentorships,
+  healthRecords as mockHealthRecords,
+  clinicVisits as mockClinicVisits,
+  assets as mockAssets,
   messages as mockMessages,
-  onlineClasses,
-  assignments,
-  courseMaterials,
-  admissionRequirements,
-  skills,
+  onlineClasses as mockOnlineClasses,
+  assignments as mockAssignments,
+  courseMaterials as mockCourseMaterials,
+  admissionRequirements as mockAdmissionRequirements,
+  skills as mockSkills,
+  threads as mockThreads,
+  badges as mockBadges,
+  careerInterests as mockCareerInterests,
+  careerPaths as mockCareerPaths,
 } from "../src/lib/data";
 
 const prisma = new PrismaClient();
@@ -37,8 +46,86 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Start seeding ...");
 
-  // Seed Students and their related records
-  for (const student of students) {
+  // --- INDEPENDENT DATA FIRST ---
+
+  for (const skill of mockSkills) {
+    await prisma.skill.upsert({ where: { id: skill.id }, update: {}, create: skill });
+  }
+
+  for (const badge of mockBadges) {
+    await prisma.badge.upsert({ where: { id: badge.id }, update: {}, create: badge });
+  }
+  
+  for (const req of mockAdmissionRequirements) {
+    await prisma.admissionRequirement.upsert({ where: { id: req.id }, update: {}, create: req });
+  }
+
+  for (const fs of mockFeeStructures) {
+    await prisma.feeStructure.upsert({ where: { id: fs.id }, update: {}, create: fs });
+  }
+
+  for (const announcement of mockAnnouncements) {
+    await prisma.announcement.upsert({ where: { id: announcement.id }, update: {}, create: { ...announcement, date: new Date(announcement.date) } });
+  }
+
+  for (const event of mockEvents) {
+    await prisma.event.upsert({ where: { id: event.id }, update: {}, create: { ...event, date: new Date(event.date) } });
+  }
+
+  for (const material of mockCourseMaterials) {
+    await prisma.courseMaterial.upsert({ where: { id: material.id }, update: {}, create: material });
+  }
+  
+  for (const onlineClass of mockOnlineClasses) {
+    await prisma.onlineClass.upsert({ where: { id: onlineClass.id }, update: {}, create: onlineClass });
+  }
+  
+  for (const assignment of mockAssignments) {
+    await prisma.assignment.upsert({ where: { id: assignment.id }, update: {}, create: { ...assignment, dueDate: new Date(assignment.dueDate), skills: assignment.skills || [] } });
+  }
+  
+  for (const book of mockBooks) {
+    await prisma.book.upsert({ where: { id: book.id }, update: {}, create: book });
+  }
+
+  for (const driver of mockDrivers) {
+    await prisma.driver.upsert({ where: { id: driver.id }, update: {}, create: driver });
+  }
+
+  for (const vehicle of mockVehicles) {
+    await prisma.vehicle.upsert({ where: { id: vehicle.id }, update: {}, create: { ...vehicle, lat: vehicle.location.lat, lng: vehicle.location.lng } });
+  }
+
+  for (const item of mockCanteenMenu) {
+      for (const menuItem of item.items) {
+          await prisma.canteenMenuItem.upsert({ where: { name: menuItem.name }, update: {}, create: menuItem });
+      }
+  }
+
+  for (const interest of mockCareerInterests) {
+      await prisma.careerInterest.upsert({ where: { id: interest.id }, update: {}, create: interest });
+  }
+
+  for (const path of mockCareerPaths) {
+      await prisma.careerPath.upsert({ where: { id: path.id }, update: {}, create: path });
+  }
+
+  for (const thread of mockThreads) {
+      await prisma.discussionThread.upsert({ where: {id: thread.id }, update: {}, create: {
+          id: thread.id,
+          title: thread.title,
+          authorName: thread.authorName,
+          createdAt: new Date(thread.createdAt),
+          replies: {
+              create: thread.replies.map(r => ({...r, createdAt: new Date(r.createdAt)}))
+          }
+      }})
+  }
+
+
+  // --- DEPENDENT DATA ---
+  
+  for (const student of mockStudents) {
     await prisma.student.upsert({
       where: { id: student.id },
       update: {},
@@ -59,188 +146,163 @@ async function main() {
     });
   }
 
-  // Seed Skills
-  for (const skill of skills) {
-    await prisma.skill.upsert({
-      where: { id: skill.id },
+  for (const staff of mockStaff) {
+    await prisma.staff.upsert({
+      where: { id: staff.id },
       update: {},
-      create: { ...skill },
+      create: {
+        id: staff.id,
+        name: staff.name,
+        role: staff.role,
+        department: staff.department,
+        email: staff.email,
+        phone: staff.phone,
+        joiningDate: new Date(staff.joiningDate),
+        salary: staff.salary,
+        leavesTaken: staff.leavesTaken,
+        leavesAvailable: staff.leavesAvailable,
+        performanceNotes: staff.performanceNotes,
+        taxDeduction: staff.deductions.tax,
+        insuranceDeduction: staff.deductions.insurance,
+        schoolId: staff.schoolId,
+      },
     });
   }
 
-  // Seed Exams
   for (const exam of mockExams) {
     await prisma.exam.upsert({
       where: { id: exam.id },
       update: {},
-      create: {
-        id: exam.id,
-        name: exam.name,
-        date: new Date(exam.date),
-        subjects: exam.subjects,
-      },
-    });
-  }
-
-  // Seed Grades
-  for (const grade of grades) {
-    await prisma.grade.upsert({
-      where: {
-        studentId_examId: { studentId: grade.studentId, examId: grade.examId },
-      },
-      update: { scores: grade.scores },
-      create: {
-        studentId: grade.studentId,
-        examId: grade.examId,
-        scores: grade.scores,
-      },
-    });
-  }
-
-  // Seed Staff
-  for (const s of staff) {
-    await prisma.staff.upsert({
-      where: { id: s.id },
-      update: {},
-      create: {
-        id: s.id,
-        name: s.name,
-        role: s.role,
-        department: s.department,
-        email: s.email,
-        phone: s.phone,
-        joiningDate: new Date(s.joiningDate),
-        salary: s.salary,
-        leavesTaken: s.leavesTaken,
-        leavesAvailable: s.leavesAvailable,
-        performanceNotes: s.performanceNotes,
-        taxDeduction: s.deductions.tax,
-        insuranceDeduction: s.deductions.insurance,
-        schoolId: s.schoolId,
-      },
-    });
-  }
-
-  // Seed Assets
-  for (const asset of assets) {
-    await prisma.asset.upsert({
-      where: { id: asset.id },
-      update: {},
-      create: {
-        id: asset.id,
-        name: asset.name,
-        type: asset.type,
-        status: asset.status,
-        assignedToId: asset.assignedTo,
-        purchaseDate: new Date(asset.purchaseDate),
-      },
-    });
-  }
-
-  // Seed Admissions
-  for(const req of admissionRequirements) {
-    await prisma.admissionRequirement.upsert({ where: { id: req.id }, update: {}, create: req });
-  }
-
-  for (const admission of admissions) {
-    await prisma.admission.upsert({
-      where: { id: admission.id },
-      update: {},
-      create: {
-        id: admission.id,
-        name: admission.name,
-        age: admission.age,
-        previousSchool: admission.previousSchool,
-        grade: admission.grade,
-        parentName: admission.parentName,
-        parentEmail: admission.parentEmail,
-        date: new Date(admission.date),
-        status: admission.status,
-        documents: admission.documents || [],
-      },
-    });
-  }
-
-  // Seed Finance
-  for (const fs of feeStructures) {
-    await prisma.feeStructure.upsert({
-      where: { id: fs.id },
-      update: {},
-      create: { ...fs, grades: fs.grades },
-    });
-  }
-
-  for (const invoice of invoices) {
-    await prisma.invoice.upsert({
-      where: { id: invoice.id },
-      update: {},
-      create: {
-        id: invoice.id,
-        studentId: invoice.studentId,
-        date: new Date(invoice.date),
-        dueDate: new Date(invoice.dueDate),
-        items: invoice.items,
-        total: invoice.total,
-        status: invoice.status,
-      },
+      create: { ...exam, date: new Date(exam.date) },
     });
   }
   
-  for(const payment of payments) {
+  for (const grade of mockGrades) {
+      await prisma.grade.upsert({
+          where: { studentId_examId: { studentId: grade.studentId, examId: grade.examId } },
+          update: {},
+          create: grade
+      })
+  }
+
+  for (const route of mockRoutes) {
+      await prisma.route.upsert({ where: {id: route.id}, update: {}, create: route});
+  }
+  
+  for(const admission of mockAdmissions) {
+      await prisma.admission.upsert({ where: {id: admission.id}, update: {}, create: {...admission, date: new Date(admission.date), documents: admission.documents || []}})
+  }
+  
+  for(const invoice of mockInvoices) {
+      await prisma.invoice.upsert({where: {id: invoice.id}, update:{}, create: {...invoice, date: new Date(invoice.date), dueDate: new Date(invoice.dueDate), items: invoice.items}})
+  }
+
+  for(const payment of mockPayments) {
       await prisma.payment.upsert({ where: { id: payment.id }, update: {}, create: { ...payment, date: new Date(payment.date) }});
   }
-  
-  for(const payroll of payrollRecords) {
+
+  for(const payroll of mockPayrollRecords) {
     await prisma.payrollRecord.upsert({where: { id: payroll.id }, update: {}, create: payroll});
   }
-
-  // Seed Communication
-  for (const a of announcements) {
-    await prisma.announcement.upsert({
-      where: { id: a.id },
-      update: {},
-      create: { ...a, date: new Date(a.date) },
-    });
-  }
-  for (const e of events) {
-    await prisma.event.upsert({
-      where: { id: e.id },
-      update: {},
-      create: { ...e, date: new Date(e.date) },
-    });
+  
+  for (const lt of mockLibraryTransactions) {
+      await prisma.libraryTransaction.upsert({ where: {id: lt.id}, update: {}, create: {...lt, date: new Date(lt.date), dueDate: lt.dueDate ? new Date(lt.dueDate) : null}})
   }
 
-  // Seed LMS
-  for (const a of assignments) {
-    await prisma.assignment.upsert({
-      where: { id: a.id },
-      update: {},
-      create: { ...a, dueDate: new Date(a.dueDate), skills: a.skills || [] },
-    });
+  for(const hostel of mockHostels) {
+      await prisma.hostel.upsert({ where: {id: hostel.id }, update: {}, create: {
+          id: hostel.id,
+          name: hostel.name,
+          capacity: hostel.capacity,
+          rooms: {
+              create: hostel.rooms.map(r => ({
+                  id: r.id,
+                  number: r.number,
+                  capacity: r.capacity,
+                  occupants: { connect: r.occupants.map(studentId => ({id: studentId})) }
+              }))
+          }
+      }})
   }
-  for (const m of courseMaterials) {
-    await prisma.courseMaterial.upsert({
-      where: { id: m.id },
-      update: {},
-      create: m,
-    });
-  }
-  for (const c of onlineClasses) {
-    await prisma.onlineClass.upsert({
-      where: { id: c.id },
-      update: {},
-      create: c,
-    });
+  
+  for (const asset of mockAssets) {
+    await prisma.asset.upsert({ where: { id: asset.id }, update: {}, create: { ...asset, assignedToId: asset.assignedTo, purchaseDate: new Date(asset.purchaseDate) } });
   }
 
-  // Seed Messages and Conversations
+   for (const acc of mockCanteenAccounts) {
+    await prisma.canteenAccount.upsert({ where: { studentId: acc.studentId }, update: {}, create: acc });
+  }
+  
+  for (const trans of mockCanteenTransactions) {
+    const account = await prisma.canteenAccount.findUnique({ where: { studentId: trans.studentId } });
+    if (account) {
+      await prisma.canteenTransaction.upsert({
+        where: { id: trans.id },
+        update: {},
+        create: {
+          id: trans.id,
+          type: trans.type,
+          amount: trans.amount,
+          description: trans.description,
+          date: new Date(trans.date),
+          canteenAccountId: account.id,
+        },
+      });
+    }
+  }
+
+  for(const alumni of mockAlumniProfiles) {
+      await prisma.alumniProfile.upsert({ where: {id: alumni.id }, update: {}, create: alumni });
+  }
+
+  for(const campaign of mockCampaigns) {
+      await prisma.campaign.upsert({ where: { id: campaign.id }, update: {}, create: {...campaign, startDate: new Date(campaign.startDate), endDate: campaign.endDate ? new Date(campaign.endDate) : null}})
+  }
+
+  for(const pledge of mockPledges) {
+      await prisma.pledge.upsert({
+        where: {id: pledge.id},
+        update:{},
+        create: {...pledge, date: new Date(pledge.date)}
+      })
+  }
+
+  for(const donation of mockDonations) {
+      await prisma.donation.upsert({
+          where: {id: donation.id},
+          update:{},
+          create: {...donation, date: new Date(donation.date)}
+      })
+  }
+
+   for (const record of mockHealthRecords) {
+    await prisma.healthRecord.upsert({ where: { studentId: record.studentId }, update: {}, create: {...record, vaccinations: record.vaccinations || []} });
+  }
+
+  for (const visit of mockClinicVisits) {
+    const healthRecord = await prisma.healthRecord.findUnique({ where: { studentId: visit.studentId } });
+    if (healthRecord) {
+      await prisma.clinicVisit.upsert({
+        where: { id: visit.id },
+        update: {},
+        create: {
+          id: visit.id,
+          reason: visit.reason,
+          treatment: visit.treatment,
+          date: new Date(visit.date),
+          healthRecordId: healthRecord.id
+        },
+      });
+    }
+  }
+  
   for (const [conversationId, messages] of Object.entries(mockMessages)) {
     await prisma.conversation.upsert({
       where: { id: conversationId },
       update: {},
       create: {
         id: conversationId,
-        members: conversationId.split("-"),
+        members: conversationId.split('-'),
         messages: {
           create: messages.map((msg) => ({
             sender: msg.sender,
@@ -252,111 +314,7 @@ async function main() {
     });
   }
 
-  // Seed Library
-  for (const b of books) {
-    await prisma.book.upsert({ where: { id: b.id }, update: {}, create: b });
-  }
-  for (const lt of libraryTransactions) {
-    await prisma.libraryTransaction.upsert({
-      where: { id: lt.id },
-      update: {},
-      create: {
-        id: lt.id,
-        studentId: lt.studentId,
-        bookId: lt.bookId,
-        type: lt.type,
-        date: new Date(lt.date),
-        dueDate: lt.dueDate ? new Date(lt.dueDate) : null,
-      },
-    });
-  }
-
-  // Seed Transport
-  for (const v of vehicles) {
-    await prisma.vehicle.upsert({
-      where: { id: v.id },
-      update: {},
-      create: { ...v, lat: v.location.lat, lng: v.location.lng },
-    });
-  }
-  for (const d of drivers) {
-    await prisma.driver.upsert({ where: { id: d.id }, update: {}, create: d });
-  }
-  for (const r of routes) {
-    await prisma.route.upsert({
-      where: { id: r.id },
-      update: {},
-      create: { ...r, stops: r.stops },
-    });
-  }
-
-  // Seed Hostel
-  for (const h of hostels) {
-    await prisma.hostel.upsert({
-      where: { id: h.id },
-      update: {},
-      create: {
-        id: h.id,
-        name: h.name,
-        capacity: h.capacity,
-        rooms: {
-          create: h.rooms.map((r) => ({
-            id: r.id,
-            number: r.number,
-            capacity: r.capacity,
-            occupants: {
-              connect: r.occupants.map((studentId) => ({ id: studentId })),
-            },
-          })),
-        },
-      },
-    });
-  }
-
-  // Seed Extensions
-  // Canteen
-  for (const acc of canteenAccounts) {
-    await prisma.canteenAccount.upsert({
-      where: { studentId: acc.studentId },
-      update: {},
-      create: acc,
-    });
-  }
-  for (const trans of canteenTransactions) {
-    const account = await prisma.canteenAccount.findUnique({
-      where: { studentId: trans.studentId },
-    });
-    if (account) {
-      await prisma.canteenTransaction.upsert({
-        where: { id: trans.id },
-        update: {},
-        create: {
-          ...trans,
-          date: new Date(trans.date),
-          canteenAccountId: account.id,
-        },
-      });
-    }
-  }
-  for (const dayMenu of canteenMenu) {
-    for (const item of dayMenu.items) {
-      await prisma.canteenMenuItem.upsert({
-        where: { name: item.name },
-        update: { price: item.price, stock: item.stock },
-        create: { name: item.name, price: item.price, stock: item.stock },
-      });
-    }
-  }
-
-  // Alumni
-  for (const ap of alumniProfiles) {
-    await prisma.alumniProfile.upsert({
-      where: { id: ap.id },
-      update: {},
-      create: ap,
-    });
-  }
-  for (const m of mentorships) {
+   for (const m of mockMentorships) {
     await prisma.mentorship.upsert({
       where: { id: m.id },
       update: {},
@@ -369,38 +327,7 @@ async function main() {
       },
     });
   }
-  
-  // Health Records
-  for (const hr of healthRecords) {
-    await prisma.healthRecord.upsert({
-      where: { studentId: hr.studentId },
-      update: {},
-      create: {
-        studentId: hr.studentId,
-        bloodGroup: hr.bloodGroup,
-        allergies: hr.allergies,
-        vaccinations: hr.vaccinations,
-      },
-    });
-  }
-  
-  // Clinic Visits
-  for (const cv of clinicVisits) {
-    const healthRecord = await prisma.healthRecord.findUnique({where: { studentId: cv.studentId }})
-    if (healthRecord) {
-        await prisma.clinicVisit.upsert({
-            where: { id: cv.id },
-            update: {},
-            create: {
-              id: cv.id,
-              reason: cv.reason,
-              treatment: cv.treatment,
-              date: new Date(cv.date),
-              healthRecordId: healthRecord.id, // Connect to health record
-            },
-        });
-    }
-  }
+
 
   console.log("Seeding finished.");
 }
@@ -414,5 +341,3 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
-
-    
