@@ -13,127 +13,100 @@ This document provides a detailed overview of the CampusConnect Lite application
 
 These server-side functions handle AI-powered features using Genkit.
 
-#### `generateReportCard`
-- **Name**: `generateReportCard`
-- **Parameters**: `input: ReportCardInput` which is an object containing `studentName: string` and `grades: string`.
-- **Calls**: `generateReportCardFlow` (internal Genkit flow).
-- **Returns**: `Promise<ReportCardOutput>` which is an object containing `summary: string` and `reportCard: string`.
-- **Purpose**: Takes a student's name and grades as input and uses an AI model to generate a personalized, encouraging summary and a fully formatted report card text.
-- **Dependencies**: `genkit`, `zod`.
+#### `getChatbotResponse`
+- **Name**: `getChatbotResponse`
+- **Parameters**: `input: ChatbotInput` containing `studentId` and `question`.
+- **Calls**: `chatbotPrompt` which uses `getLatestGrades` and `getAttendanceSummary` tools.
+- **Returns**: `Promise<ChatbotOutput>` with a string `answer`.
+- **Purpose**: Provides conversational answers to parent/student questions by using AI-powered tools to query the database for academic information.
 
-#### `generateTimetable`
-- **Name**: `generateTimetable`
-- **Parameters**: `input: TimetableInput` which is an object containing `courseSchedules: string` and `instructorAvailability: string`.
-- **Calls**: `generateTimetableFlow` (internal Genkit flow).
-- **Returns**: `Promise<TimetableOutput>` which is an object containing `timetable: string`.
-- **Purpose**: Generates a conflict-free timetable based on the provided course schedules and instructor availability, using an AI model to resolve scheduling complexities.
-- **Dependencies**: `genkit`, `zod`.
+#### `generateWeeklyDigest`
+- **Name**: `generateWeeklyDigest`
+- **Parameters**: `input: WeeklyDigestInput` containing `studentName` and a string of `logEntries`.
+- **Calls**: `weeklyDigestPrompt`.
+- **Returns**: `Promise<WeeklyDigestOutput>` with `kudos` and `concerns` string arrays.
+- **Purpose**: Analyzes a student's weekly activity log to create a concise, categorized summary for parents, highlighting achievements and areas for attention.
+
+#### `differentiateContent`
+- **Name**: `differentiateContent`
+- **Parameters**: `input: DifferentiatorInput` containing `originalText` and `targetLevel`.
+- **Calls**: `differentiationPrompt`.
+- **Returns**: `Promise<DifferentiatorOutput>` with the `differentiatedText`.
+- **Purpose**: Adapts a piece of educational text to be simpler or more advanced, helping teachers cater to diverse learning needs.
+
+#### `generateLessonPlan`
+- **Name**: `generateLessonPlan`
+- **Parameters**: `input: LessonPlanInput` containing `topic`, `gradeLevel`, and `duration`.
+- **Calls**: `lessonPlannerPrompt`.
+- **Returns**: `Promise<LessonPlanOutput>` with a Markdown-formatted `lessonPlan`.
+- **Purpose**: Assists teachers by generating a detailed, week-long lesson plan based on a given topic and grade level.
 
 ### Core React Components
 
-#### `LoginForm`
-- **Name**: `LoginForm`
+#### `ParentDashboard`
+- **Name**: `ParentDashboard`
+- **Parameters**: `studentId: string`.
+- **Calls**: `useStudents()`, `generateWeeklyDigest()`.
+- **Purpose**: Serves as the main landing page for parents and students. It features a **Live Feed** of recent academic events and an **AI Weekly Digest** tab that provides an intelligent summary of the student's week.
+- **Dependencies**: `@/hooks/use-students`, `@/ai/flows/ai-weekly-digest`.
+
+#### `ChatbotWidget`
+- **Name**: `ChatbotWidget`
+- **Parameters**: `studentId: string`.
+- **Calls**: `getChatbotResponse()` API endpoint.
+- **Purpose**: A floating chat widget available on the parent/student dashboard that allows users to ask natural language questions about their grades and attendance.
+- **Dependencies**: `@/ai/flows/ai-chatbot`.
+
+#### `AutomatedMarkingPage`
+- **Name**: `AutomatedMarkingPage`
 - **Parameters**: None.
-- **Calls**: `useAuth().login(role)`.
-- **Purpose**: Provides a user interface for users to select their role (Admin, Teacher, Student, Parent) and sign in. It uses the `useAuth` hook to trigger the login process.
-- **Dependencies**: `@/hooks/use-auth`, `@/lib/auth`, `@/components/ui/*`.
-
-#### `AppLayout`
-- **Name**: `AppLayout`
-- **Parameters**: `children: React.ReactNode`.
-- **Calls**: `useAuth()`, `useRouter()`.
-- **Purpose**: This is the main layout for authenticated users. It protects routes by checking for a valid user session. If no user is logged in, it redirects to `/login`. It renders the `AppSidebar` for navigation and the main content area for the specific page.
-- **Dependencies**: `@/hooks/use-auth`, `next/navigation`, `@/components/layout/app-sidebar`.
-
-#### `AppSidebar`
-- **Name**: `AppSidebar`
-- **Parameters**: `user: User`.
-- **Calls**: `useAuth().logout()`.
-- **Purpose**: Renders the main navigation sidebar. It dynamically displays navigation links based on the logged-in user's role. It also shows user information and a logout button.
-- **Dependencies**: `@/hooks/use-auth`, `@/lib/auth`, `next/link`, `next/navigation`.
-
-#### `StudentProfilePage`
-- **Name**: `StudentProfilePage`
-- **Parameters**: `params: { id: string }`.
-- **Calls**: None directly, but renders various UI components.
-- **Purpose**: Displays the detailed profile of a single student, identified by the ID in the URL. It shows personal details, academic performance charts, attendance, and contact information.
-- **Dependencies**: `@/lib/data`, `next/navigation`, `recharts`, `@/components/ui/*`.
-
-#### `GradebookTable`
-- **Name**: `GradebookTable`
-- **Parameters**: None.
-- **Calls**: `useToast()`.
-- **Purpose**: Displays a table of all students and their grades in Math, Science, and English. It allows users (teachers/admins) to edit the grades directly in the input fields and save the changes.
-- **Dependencies**: `@/lib/data`, `@/hooks/use-toast`, `@/components/ui/*`.
+- **Calls**: `useStudents().updateGrades()`.
+- **Purpose**: Provides a UI for teachers to input correct exam solutions and then enter student answers for automated grading. It also includes a "Print Results" feature.
+- **Dependencies**: `@/hooks/use-students`, `@/components/ui/*`.
 
 ### Custom Hooks
 
 #### `useAuth`
 - **Name**: `useAuth`
 - **Parameters**: None.
-- **Returns**: An object with `user: User | null`, `login: (role: Role) => void`, `logout: () => void`, and `isLoading: boolean`.
-- **Purpose**: Manages the application's authentication state. It handles logging in, logging out, and persisting the user session using `localStorage`. It provides the user's data and auth status to any component that consumes it.
-- **Dependencies**: `react`, `next/navigation`, `@/lib/auth`.
+- **Returns**: An object with `user`, `authState`, `login`, `logout`, `submitMfa`, and `isLoading`.
+- **Purpose**: Manages the application's authentication state. It handles a multi-step login process (credentials then MFA) and persists the user session via an HTTP-only cookie by calling Next.js API endpoints (`/api/auth/session`, `/api/auth/login`, `/api/auth/logout`).
+- **Dependencies**: `react`, `next/navigation`, `@/hooks/use-audit-log`.
+
+#### API-Driven Data Hooks (`useStudents`, `useFinance`, etc.)
+- **Name**: e.g., `useStudents`
+- **Parameters**: None.
+- **Returns**: State variables (e.g., `students`, `grades`, `isLoading`) and action functions (e.g., `addStudent`).
+- **Purpose**: These hooks are now responsible for fetching data from the backend. Each hook makes `fetch` requests to its corresponding API route (e.g., `/api/students`). Crucially, they depend on `useAuth` and only trigger API calls when the `authState` is `'authenticated'`.
+- **Dependencies**: `react`, `@/hooks/use-auth`, `@/hooks/use-toast`.
 
 ## 3. Flow / Execution Order
 
 1.  **Initial Load & Redirect**: User accesses the site, `src/app/page.tsx` redirects them to `/login`.
-2.  **Authentication**: The `LoginPage` is displayed. The user selects a role from the `LoginForm` and clicks "Sign In".
-3.  **Login Process**: The `login` function from `useAuth` is called. It finds the corresponding user object from `USERS` in `src/lib/auth.ts`, saves it to `localStorage`, and updates the state.
-4.  **Redirection to Dashboard**: The `useEffect` in `LoginPage` detects the user is now logged in and redirects them to `/dashboard`.
-5.  **Authenticated Layout**: `AppLayout` takes over. It confirms the user is authenticated via `useAuth` and renders the main application interface, including the `AppSidebar` and the content for the `/dashboard` route.
-6.  **Navigation**: The `AppSidebar` displays links accessible to the user's role. Clicking a link (e.g., "Students") navigates the user to the corresponding page (`/students`).
-7.  **Page Rendering**: The requested page component (e.g., `StudentsPage`) renders. It fetches its data from the mock data file (`src/lib/data.ts`) and displays it using reusable UI components from `@/components/ui`.
-8.  **AI Feature Interaction**: On pages like "Timetable" or "Report Cards", the user interacts with a generator component (e.g., `TimetableGenerator`). This component collects input and calls the relevant server-side Genkit flow (e.g., `generateTimetable`) to get an AI-generated result, which is then displayed to the user.
-9.  **Logout**: The user clicks the logout button in the `AppSidebar`. The `logout` function from `useAuth` is called, clearing `localStorage` and redirecting the user back to the `/login` page.
+2.  **Authentication**: The `LoginPage` is displayed. The user fills the `LoginForm`.
+3.  **MFA Step**: The `login` function from `useAuth` updates the state to `awaitingMfa`. The `MfaForm` is displayed.
+4.  **Session Creation**: The `submitMfa` function calls the `/api/auth/login` endpoint. The backend creates a session and returns a secure, HTTP-only cookie. The `useAuth` hook then updates its state to `authenticated`.
+5.  **Redirection to Dashboard**: The `LoginPage` detects the `authenticated` state and redirects the user to `/dashboard`.
+6.  **Authenticated Layout**: `AppLayout` takes over. It confirms authentication via `useAuth` and renders the main application interface.
+7.  **Data Fetching**: All data provider hooks (e.g., `StudentProvider`, `FinanceProvider`), now detecting that `authState` is `authenticated`, trigger their `fetch` requests to the backend APIs (e.g., `/api/students`).
+8.  **Page Rendering**: Once data is loaded, the requested page component (e.g., `StudentsPage`) renders with live data from the backend.
+9.  **AI Feature Interaction**: On pages like "AI Weekly Digest", the user interacts with a component that calls a server-side Genkit flow (e.g., `generateWeeklyDigest`) to get an AI-generated result.
 
-## 4. Backend Integration Strategy (Next Steps)
+## 4. Backend Integration Strategy
 
-The current implementation uses `localStorage` and mocked data to simulate a fully functional application. The next phase of development would involve replacing these mocks with a real backend. Here is a recommended strategy:
-
-1.  **Database Setup**:
-    *   **Action**: Choose and configure a production-grade database (e.g., Firebase Firestore, Supabase/PostgreSQL).
-    *   **Purpose**: To replace `localStorage` and provide a persistent, scalable, and secure data store for all application data (students, staff, grades, invoices, etc.).
-
-2.  **API Layer Development**:
-    *   **Action**: Create API endpoints using Next.js API Routes or Server Actions for each data model. For example:
-        *   `GET /api/students`
-        *   `POST /api/students`
-        *   `PUT /api/students/[id]`
-        *   `DELETE /api/students/[id]`
-    *   **Purpose**: These endpoints will serve as the bridge between the frontend and the database, handling all data manipulation (CRUD) operations.
-
-3.  **Refactor Frontend Hooks**:
-    *   **Action**: Modify the custom hooks in `src/hooks/*.tsx` (e.g., `useStudents`, `useFinance`) to replace `localStorage` calls with `fetch` requests to the new API endpoints.
-    *   **Purpose**: This will connect the frontend components to the live backend data, making the application data-dynamic. The `isLoading` states in these hooks will now reflect real network request statuses.
-
-4.  **Implement Real Authentication**:
-    *   **Action**: Replace the mocked `useAuth` logic with a real authentication provider (e.g., Firebase Authentication, NextAuth.js).
-    *   **Purpose**: To handle secure user sign-up, sign-in, session management, and password/MFA verification.
-
-5.  **Integrate Third-Party Services**:
-    *   **Action**: Connect the backend to external APIs for services that cannot be handled on the client-side.
-        *   **Payments**: Integrate Stripe, PayPal, or M-Pesa APIs within your backend. The frontend payment dialogs would trigger calls to your API, which then securely communicates with the payment gateway.
-        *   **Notifications**: Use services like Twilio (for SMS) or SendGrid (for email) to send automated notifications. A backend cron job could trigger these (e.g., for daily attendance alerts or weekly fee reminders).
-    *   **Purpose**: To enable real-world transactions and communications.
-
-6.  **Enhance AI Flows**:
-    *   **Action**: Modify the Genkit flows in `src/ai/flows/*.ts` to query the live database for context.
-    *   **Purpose**: To move from generating plausible mock data to providing real, data-driven AI insights. For example, the `getAnalyticsQuery` flow would execute a real database query based on the user's natural language question.
-
-By following this strategy, the fully mocked frontend can be systematically connected to a robust and scalable backend architecture.
+The application has been refactored from a mock, `localStorage`-based prototype to a full-stack application with a Next.js API backend and a Prisma/SQLite database. All data is now fetched and persisted via API routes.
 
 ## 5. Dependencies / External Modules
 
-- **next**: The core React framework for server-side rendering, routing, and application structure.
+- **next**: The core React framework for server-side rendering, routing, and API development.
 - **react** & **react-dom**: Libraries for building the user interface.
+- **@prisma/client**: The ORM used to interact with the SQLite database from the backend API routes.
 - **genkit** & **@genkit-ai/googleai**: Used for all Generative AI functionality, including defining AI flows and interacting with Google's Gemini models.
 - **zod**: Used for schema declaration and validation, particularly for defining the input and output structures of AI flows.
 - **tailwindcss**: A utility-first CSS framework for styling the application.
-- **shadcn/ui** (via `@radix-ui` and `lucide-react`): A collection of beautifully designed, accessible, and reusable UI components (Buttons, Cards, Dialogs, etc.) that form the foundation of the app's design system.
-- **recharts**: A composable charting library used to display academic performance graphs on the student profile page.
-- **react-hook-form**: Used for managing form state and validation, although its usage is minimal in the current implementation.
-- **clsx** & **tailwind-merge**: Utility libraries for conditionally combining Tailwind CSS classes without style conflicts.
+- **shadcn/ui** (via `@radix-ui` and `lucide-react`): A collection of beautifully designed, accessible, and reusable UI components (Buttons, Cards, Dialogs, etc.).
+- **recharts**: A composable charting library used for displaying graphs.
+- **jspdf** & **xlsx**: Libraries used for generating PDF and Excel report exports.
 
 ## 6. Usage Guide (Local Development)
 
@@ -141,15 +114,18 @@ By following this strategy, the fully mocked frontend can be systematically conn
     ```bash
     npm install
     ```
-2.  **Start the Genkit Server**:
-    For AI features to work, you need to run the Genkit development server.
+2.  **Set up Database**: Apply database migrations and seed it with initial data.
+    ```bash
+    npx prisma migrate dev --name init
+    npx prisma db seed
+    ```
+3.  **Start the Genkit Server**: (For AI features)
     ```bash
     npm run genkit:dev
     ```
-3.  **Start the Next.js Development Server**:
-    In a separate terminal, run the main application server.
+4.  **Start the Next.js Development Server**: (Main App & API)
     ```bash
     npm run dev
     ```
-4.  **Access the App**:
-    Open your browser and navigate to `http://localhost:9002`. You will be redirected to the login page. Select a role and click "Sign In" to explore the application.
+5.  **Access the App**:
+    Open your browser and navigate to `http://localhost:9002`.

@@ -126,7 +126,7 @@ export default function DashboardPage() {
 
             {isParentOrStudent ? <ParentDashboard studentId={studentForDashboard} /> : <AdminTeacherDashboard />}
             
-            {isParentOrStudent && <ChatbotWidget studentId={studentForDashboard} />}
+            {isParentOrStudent && studentForDashboard && <ChatbotWidget studentId={studentForDashboard} />}
         </div>
     );
 }

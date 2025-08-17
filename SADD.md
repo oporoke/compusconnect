@@ -77,12 +77,10 @@ The frontend is organized by features and data domains.
 -   **Responsibilities**:
     -   Render all UI components.
     -   Manage UI state (e.g., open dialogs, selected tabs).
-    -   Manage client-side data caching (`localStorage` for session, React hooks for app data).
-    -   Perform initial data validation on forms before API submission.
     -   Make authenticated API calls to the backend.
 -   **Dependencies**: The entire frontend depends on the backend API for data persistence and business logic.
 -   **Key Interfaces**:
-    -   **React Hooks (`src/hooks/*.tsx`)**: Each hook (e.g., `useStudents`, `useFinance`) encapsulates the logic for fetching and manipulating data for a specific domain. These hooks are the primary interface between UI components and the data layer. In a backend-integrated app, these hooks would contain the `fetch` calls to the API.
+    -   **React Hooks (`src/hooks/*.tsx`)**: Each hook (e.g., `useStudents`, `useFinance`) encapsulates the logic for fetching and manipulating data for a specific domain. These hooks now contain the `fetch` calls to the API and are dependent on the `useAuth` hook to ensure a user is authenticated before making requests.
     -   **UI Components (`src/components/*`)**: Reusable and page-specific components responsible for rendering data.
     -   **AI Flows (`src/ai/flows/*.ts`)**: While running on the server, these are directly callable from server-side React components, acting as a direct interface to the AI subsystem.
 
@@ -118,26 +116,27 @@ This system operates within the backend layer.
 ## 4. Data Design
 
 ### 4.1. Data Models/Entities
-The primary data entities are defined in `src/lib/data.ts`:
--   `Student`: Core student information.
--   `Staff`: Staff information, including payroll details.
--   `Exam`, `Grade`: Academic performance records.
--   `Invoice`, `Payment`, `Expense`: Financial records.
--   `Book`, `LibraryTransaction`: Library management data.
--   `Asset`: School inventory.
--   `User`, `Role`: Authentication and authorization data.
+The primary data entities are defined in `prisma/schema.prisma`:
+-   `Student`, `Staff`, `User`, `Role`
+-   `Exam`, `Grade`, `AttendanceRecord`
+-   `Invoice`, `Payment`, `Expense`, `FeeStructure`
+-   `Book`, `LibraryTransaction`
+-   `Asset`, `Vehicle`, `Driver`, `Route`
+-   `Hostel`, `Room`
+-   `CanteenAccount`, `CanteenTransaction`, `CanteenMenuItem`
+-   `AlumniProfile`, `Donation`, `Campaign`, `Pledge`, `Mentorship`
+-   `HealthRecord`, `ClinicVisit`
 
 ### 4.2. Entity-Relationship Description
 -   A **Student** has one-to-many **Grades**, **Invoices**, and **Attendance Records**.
 -   An **Invoice** has one-to-many **Payments**.
 -   A **Staff** member has one-to-many **Payroll Records**.
--   A **Route** has one **Vehicle** and one **Driver**.
+-   A **Campaign** has one-to-many **Pledges** and **Donations**.
 -   A **LibraryTransaction** links one **Student** to one **Book**.
 
 ### 4.3. Storage Strategy
--   **Primary Data Store**: **Firebase Firestore**. It's a NoSQL, document-based database. Data will be organized into top-level collections (e.g., `students`, `staff`, `invoices`). This choice supports flexible schemas and scales automatically.
--   **Client-Side Cache**: **`localStorage`**. Used in the current mock implementation for all data persistence. In the production system, it will be used only for storing the user's session token and non-sensitive UI preferences.
--   **File Storage**: **Firebase Storage**. Used for storing user-uploaded files like admission documents or assignment submissions.
+-   **Primary Data Store**: **SQLite** (via Prisma) for local development. This can be swapped for a production database like PostgreSQL or MySQL.
+-   **File Storage**: A cloud-based solution like Firebase Storage or AWS S3 would be used for storing user-uploaded files like admission documents.
 
 ---
 
@@ -145,21 +144,20 @@ The primary data entities are defined in `src/lib/data.ts`:
 
 ### 5.1. Authentication Flow
 1.  User enters credentials in the Next.js frontend.
-2.  Frontend sends credentials to the **Firebase Authentication** service.
-3.  Firebase Auth verifies credentials and, if successful, returns a JSON Web Token (JWT) to the client.
-4.  The client stores the JWT securely (e.g., in `localStorage` or a secure cookie).
-5.  For every subsequent API request to the backend (Firebase Functions), the client includes the JWT in the `Authorization` header.
-6.  The backend API uses a middleware to verify the JWT's signature and extract the user's ID and role, ensuring the request is authentic.
+2.  Frontend calls the `/api/auth/login` endpoint.
+3.  The backend verifies credentials and, if successful, creates a session.
+4.  The backend returns a secure, HTTP-only cookie to the client to manage the session.
+5.  All subsequent API requests from the client automatically include this cookie, which the backend uses to identify the user and their session.
 
 ### 5.2. Authorization Strategy
--   Authorization will be handled on the backend using **Firestore Security Rules** and middleware in the API functions.
--   **Firestore Security Rules** provide granular, database-level protection (e.g., a student can only read their own grades; a teacher can only write grades for their students).
--   API middleware will check the user's role (decoded from the JWT) before allowing access to certain endpoints (e.g., only an 'admin' can run payroll).
+-   Authorization is handled on the backend via middleware in the API routes.
+-   This middleware inspects the user's session (retrieved from the cookie) to determine their role.
+-   Access to specific API endpoints or actions is then granted or denied based on this role, ensuring a user can only perform actions they are permitted to.
 
 ### 5.3. Data Encryption
--   **In Transit**: All communication between the client, backend, and Firebase services is automatically encrypted with HTTPS/TLS.
--   **At Rest**: Firestore automatically encrypts all data at rest on Google's servers. No additional configuration is needed.
+-   **In Transit**: All communication between the client and backend is encrypted with HTTPS/TLS.
+-   **At Rest**: The production database (e.g., PostgreSQL on a managed service) should be configured to encrypt all data at rest.
 
 ### 5.4. Backup & Recovery
--   Firestore provides point-in-time recovery (PITR) features, allowing for automated, continuous backups. The database can be restored to any point in the last 7 days.
--   For archival purposes, scheduled backend functions will be created to export collections from Firestore to a separate, long-term storage solution like Google Cloud Storage on a weekly or monthly basis.
+-   Production databases should have automated backup and point-in-time recovery (PITR) features enabled.
+-   For archival purposes, scheduled jobs can be created to export the database to a separate, long-term storage solution.

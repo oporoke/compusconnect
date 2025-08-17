@@ -14,32 +14,30 @@ The application is organized into 7 core modules, each packed with features to s
 
 | Module | Key Features |
 | :--- | :--- |
-| 🎓 **Academic** | Student Information, Attendance Tracking, AI-powered Timetable Generation, Examination & Grading, Integrated LMS (Assignments, Materials, etc.), Adaptive Learning & Gamification. |
-| 🏛️ **Administrative** | AI Applicant Scoring, Staff & Faculty Profiles, Multi-School Management, Asset & Inventory Tracking, E-Library with Plagiarism Check Mocks. |
-| 💰 **Financial** | Configurable Fee Structures, Batch Invoicing, Integrated Payment Gateway Mocks (Card, M-Pesa, BNPL), Payroll Processing, Expense Tracking, AI Anomaly Detection. |
-| 📣 **Communication** | Secure In-App Messaging, School-wide Announcements, Event Calendar with Google/Outlook Sync Mocks. |
-| 🔒 **Security** | Role-Based Access Control (RBAC), Multi-Factor Authentication (MFA) Flows, GDPR Compliance Tools, Comprehensive Audit Logging. |
-| 📊 **Analytics & Reporting** | Role-specific Dashboards, AI-powered Natural Language Query Tool, Predictive Analytics (At-Risk Students, Fee Defaults), Cross-School Benchmarking, PDF & Excel Exports. |
-| 🧩 **Extensions** | Canteen Management (Prepaid Accounts, Stock), Alumni Portal (Donations, Networking), Health Center (Medical Records, Vaccination Tracking). |
+| 🎓 **Academic** | Student Information, Attendance Tracking, **AI-powered Timetable Generation**, Examination & Grading, **Automated Marking**, Integrated LMS (Assignments, Materials, etc.), **AI Adaptive Learning & Gamification**. |
+| 🏛️ **Administrative** | **AI Applicant Scoring**, Staff & Faculty Profiles, **Multi-School Management**, **Asset & Inventory Tracking**, E-Library with Plagiarism Check Mocks. |
+| 💰 **Financial** | Configurable Fee Structures, Batch Invoicing, Integrated Payment Gateway Mocks (Card, **M-Pesa**, **BNPL**), Payroll Processing, Expense Tracking, **AI Anomaly Detection**. |
+| 📣 **Communication** | Secure In-App Messaging, School-wide Announcements, Event Calendar with **Google/Outlook Sync Mocks**. |
+| 🔒 **Security** | Role-Based Access Control (RBAC), **Multi-Factor Authentication (MFA)** Flows, **GDPR** Compliance Tools, Comprehensive **Audit Logging**. |
+| 📊 **Analytics & Reporting** | Role-specific Dashboards, **AI-powered Natural Language Query Tool**, **Predictive Analytics** (At-Risk Students, Fee Defaults), **Cross-School Benchmarking**, PDF & Excel Exports. |
+| 🧩 **Extensions** | **Canteen Management** (Prepaid Accounts, Stock), **Alumni Portal** (Donations, Networking), **Health Center** (Medical Records, Vaccination Tracking). |
 
 ---
 
 ## 📚 Documentation Index
 
-This repository contains extensive documentation covering every aspect of the project. All documentation files are located in the `/docs` directory.
+This repository contains extensive documentation covering every aspect of the project.
 
 | Document | Description |
 | :--- | :--- |
-| 📄 **[Software Requirements Specification (SRS)](./docs/srs.md)** | Detailed breakdown of all functional and non-functional requirements. |
-| 🏗️ **[System Architecture & Design (SADD)](./docs/System_Architecture_Design.md)** | Overview of the system architecture, technology stack, and module design. |
-| 💻 **[Developer Documentation](./docs/Developer_Documentation.md)** | In-depth guide to the codebase, component structure, and development flow. |
-| 🔗 **[API Documentation](./docs/API_DOCUMENTATION.md)** | Conceptual blueprint for the backend RESTful API. |
-| 🧑‍🏫 **[User Manual](./docs/User_Manual.md)** | A user-friendly guide for end-users (admins, teachers, parents). |
-| ⚙️ **[Admin & Deployment Guide](./docs/Admin_Deployment.md)** | Instructions for system administrators and DevOps engineers. |
-| 📈 **[Analytics & Reporting Guide](./docs/analytics_reporting_guide.md)** | A guide for decision-makers on using the analytics features. |
-| 🧪 **[Test Plan & QA Strategy](./docs/TestPlan_QA.md)** | The strategy for testing and quality assurance. |
-| 🔄 **[Changelog](./docs/CHANGELOG.md)** | A log of all notable changes to the project. |
-
+| 📄 **[Software Requirements Specification (SRS)](./srs.md)** | Detailed breakdown of all functional and non-functional requirements. |
+| 🏗️ **[System Architecture & Design (SADD)](./SADD.md)** | Overview of the system architecture, technology stack, and module design. |
+| 💻 **[Developer Documentation](./DOCUMENTATION.md)** | In-depth guide to the codebase, component structure, and development flow. |
+| 🔗 **[API Documentation](./API_DOCUMENTATION.md)** | Conceptual blueprint for the backend RESTful API. |
+| 🧑‍🏫 **[User Manual](./USER_MANUAL.md)** | A user-friendly guide for end-users (admins, teachers, parents). |
+| ⚙️ **[Admin & Deployment Guide](./ADMIN_GUIDE.md)** | Instructions for system administrators and DevOps engineers. |
+| 📈 **[Analytics & Reporting Guide](./analytics_reporting_guide.md)** | A guide for decision-makers on using the analytics features. |
+| 🧪 **[Test Plan & QA Strategy](./TestPlan_QA.md)** | The strategy for testing and quality assurance. |
 
 ---
 
