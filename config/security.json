@@ -1,0 +1,6 @@
+{
+  "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;",
+  "cors": {
+    "origin": "https://your-production-domain.com"
+  }
+}

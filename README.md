@@ -26,26 +26,20 @@ The application is organized into 7 core modules, each packed with features to s
 
 ## 📚 Documentation Index
 
-This repository contains extensive documentation covering every aspect of the project.
+This repository contains extensive documentation covering every aspect of the project. All documentation files are located in the `/docs` directory.
 
 | Document | Description |
 | :--- | :--- |
-| 📄 **[Software Requirements Specification (SRS)](./srs.md)** | Detailed breakdown of all functional and non-functional requirements. |
-| 🏗️ **[System Architecture & Design (SADD)](./SADD.md)** | Overview of the system architecture, technology stack, and module design. |
-| 💻 **[Developer Documentation](./DOCUMENTATION.md)** | In-depth guide to the codebase, component structure, and development flow. |
-| 🔗 **[API Documentation](./API_DOCUMENTATION.md)** | Conceptual blueprint for the backend RESTful API. |
-| 🧑‍🏫 **[User Manual](./USER_MANUAL.md)** | A user-friendly guide for end-users (admins, teachers, parents). |
-| ⚙️ **[Admin & Deployment Guide](./ADMIN_GUIDE.md)** | Instructions for system administrators and DevOps engineers. |
-| 📈 **[Analytics & Reporting Guide](./analytics_reporting_guide.md)** | A guide for decision-makers on using the analytics features. |
+| 📄 **[Software Requirements Specification (SRS)](./docs/srs.md)** | Detailed breakdown of all functional and non-functional requirements. |
+| 🏗️ **[System Architecture & Design (SADD)](./docs/System_Architecture_Design.md)** | Overview of the system architecture, technology stack, and module design. |
+| 💻 **[Developer Documentation](./docs/Developer_Documentation.md)** | In-depth guide to the codebase, component structure, and development flow. |
+| 🔗 **[API Documentation](./docs/API_DOCUMENTATION.md)** | Conceptual blueprint for the backend RESTful API. |
+| 🧑‍🏫 **[User Manual](./docs/User_Manual.md)** | A user-friendly guide for end-users (admins, teachers, parents). |
+| ⚙️ **[Admin & Deployment Guide](./docs/Admin_Deployment.md)** | Instructions for system administrators and DevOps engineers. |
+| 📈 **[Analytics & Reporting Guide](./docs/analytics_reporting_guide.md)** | A guide for decision-makers on using the analytics features. |
+| 🧪 **[Test Plan & QA Strategy](./docs/TestPlan_QA.md)** | The strategy for testing and quality assurance. |
+| 🔄 **[Changelog](./docs/CHANGELOG.md)** | A log of all notable changes to the project. |
 
-For a detailed audit of features implemented against competitive requirements, please see the module checklists:
--   `academic_competitive_checklist.md`
--   `admin_competitive_checklist.md`
--   `finance_competitive_checklist.md`
--   `communication_competitive_checklist.md`
--   `security_competitive_checklist.md`
--   `analytics_competitive_checklist.md`
--   `extensions_competitive_checklist.md`
 
 ---
 
@@ -103,10 +97,10 @@ The application requires two processes to be run in separate terminals for full 
 
 ## 🤝 Contributors
 
-This section is a placeholder for future contributors to the project. We welcome contributions from the community!
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ---
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE.md](https://opensource.org/licenses/MIT) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
