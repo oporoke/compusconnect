@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import type { Event as SchoolEvent, Announcement } from '@prisma/client';
 import { useToast } from './use-toast';
-import { messages as initialMessages, Message, Conversation } from '@/lib/data';
+import { Message, Conversation } from '@/lib/data';
 
 interface CommunicationContextType {
   conversations: Record<string, Conversation>;
@@ -28,16 +28,16 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [eventRes, announcementRes] = await Promise.all([
+        const [eventRes, announcementRes, messagesRes] = await Promise.all([
           fetch('/api/events'),
           fetch('/api/announcements'),
+          fetch('/api/messages'),
         ]);
-        if(!eventRes.ok || !announcementRes.ok) throw new Error("Failed to fetch communication data");
+        if(!eventRes.ok || !announcementRes.ok || !messagesRes.ok) throw new Error("Failed to fetch communication data");
 
         setEvents(await eventRes.json());
         setAnnouncements(await announcementRes.json());
-        // Messages are still mock/local as they are more complex to implement
-        setConversations(initialMessages); 
+        setConversations(await messagesRes.json()); 
       } catch (error) {
         console.error("Failed to parse communication data from API", error);
         toast({ variant: 'destructive', title: 'Error', description: 'Could not load communication data.' });
@@ -48,20 +48,34 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
     fetchData();
   }, [toast]);
 
-  const sendMessage = useCallback((sender: string, receiver: string, content: string) => {
+  const sendMessage = useCallback(async (sender: string, receiver: string, content: string) => {
     const newMessage: Message = {
         sender,
         content,
         timestamp: new Date().toISOString()
     };
     
+    // Optimistic UI update
     setConversations(prev => {
         const conversationId = [sender, receiver].sort().join('-');
         const oldConversation = prev[conversationId] || [];
         const newConversation = [...oldConversation, newMessage];
         return { ...prev, [conversationId]: newConversation };
     });
-  }, []);
+
+    try {
+        // Post to the (mock) API
+        await fetch('/api/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newMessage)
+        });
+    } catch(error) {
+        console.error("Failed to send message", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not send message.'});
+        // Here you could implement logic to revert the optimistic update
+    }
+  }, [toast]);
 
   const addEvent = useCallback((eventData: Omit<SchoolEvent, 'id'>) => {
     toast({ title: "Mock Action", description: `Event creation is not implemented.` });
