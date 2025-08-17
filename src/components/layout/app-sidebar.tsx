@@ -33,6 +33,7 @@ import {
   Hammer,
   BrainCircuit,
   Award,
+  BookOpen,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -46,6 +47,8 @@ const navLinks = [
   { href: '/admissions', label: 'Admissions', icon: UserPlus, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/staff', label: 'Staff', icon: Briefcase, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/students', label: 'Students', icon: Users, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
+  { type: 'divider', roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN]},
+  { href: '/academics/lesson-planner', label: 'Lesson Planner', icon: BookOpen, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { href: '/academics/adaptive-learning', label: 'Adaptive Learning', icon: BrainCircuit, roles: [ROLES.STUDENT, ROLES.PARENT, ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { href: '/academics/gamification', label: 'Achievements', icon: Award, roles: [ROLES.STUDENT, ROLES.PARENT, ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { href: '/exams', label: 'Exams', icon: FilePen, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
