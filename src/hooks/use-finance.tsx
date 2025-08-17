@@ -71,7 +71,7 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
       return payments.filter(p => p.invoiceId === invoiceId);
   }, [payments]);
 
-  const addFeeStructure = useCallback((structureData: Omit<FeeStructure, 'id'>) => {
+  const addFeeStructure = useCallback(async (structureData: Omit<FeeStructure, 'id'>) => {
     // API call to POST /api/feestructures
   }, []);
 
