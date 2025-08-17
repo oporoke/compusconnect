@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import type { Event as SchoolEvent, Announcement } from '@prisma/client';
 import { useToast } from './use-toast';
 import { Message, Conversation } from '@/lib/data';
+import { useAuth } from './use-auth';
 
 interface CommunicationContextType {
   conversations: Record<string, Conversation>;
@@ -21,8 +22,9 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
   const [conversations, setConversations] = useState<Record<string, Conversation>>({});
   const [events, setEvents] = useState<SchoolEvent[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { authState } = useAuth();
 
   const fetchData = useCallback(async (signal: AbortSignal) => {
     setIsLoading(true);
@@ -58,12 +60,19 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
   }, [toast]);
 
   useEffect(() => {
-    const abortController = new AbortController();
-    fetchData(abortController.signal);
-    return () => {
-      abortController.abort();
-    };
-  }, [fetchData]);
+    if (authState === 'authenticated') {
+      const abortController = new AbortController();
+      fetchData(abortController.signal);
+      return () => {
+        abortController.abort();
+      };
+    } else {
+        setEvents([]);
+        setAnnouncements([]);
+        setConversations({});
+        setIsLoading(false);
+    }
+  }, [fetchData, authState]);
 
   const sendMessage = useCallback(async (sender: string, receiver: string, content: string) => {
     const conversationId = [sender, receiver].sort().join('-');

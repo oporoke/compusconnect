@@ -6,6 +6,7 @@ import type { Student as PrismaStudent, Grade as PrismaGrade, Exam as PrismaExam
 import { useAuditLog } from './use-audit-log';
 import { useToast } from './use-toast';
 import { useLMS } from './use-lms';
+import { useAuth } from './use-auth';
 
 // Re-exporting Prisma types for client-side usage if needed
 export interface Student extends PrismaStudent {
@@ -39,10 +40,11 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [grades, setGrades] = useState<Grade[]>([]);
   const [exams, setExams] = useState<Exam[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { logAction } = useAuditLog();
   const { toast } = useToast();
   const { assignments } = useLMS(); // Use LMS to get assignment data
+  const { authState } = useAuth();
 
   const fetchData = useCallback(async (signal: AbortSignal) => {
     setIsLoading(true);
@@ -78,12 +80,20 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [toast]);
 
   useEffect(() => {
-    const abortController = new AbortController();
-    fetchData(abortController.signal);
-    return () => {
-        abortController.abort();
+    if (authState === 'authenticated') {
+      const abortController = new AbortController();
+      fetchData(abortController.signal);
+      return () => {
+          abortController.abort();
+      }
+    } else {
+        setStudents([]);
+        setGrades([]);
+        setExams([]);
+        setAttendance([]);
+        setIsLoading(false);
     }
-  }, [fetchData]);
+  }, [fetchData, authState]);
 
   const addStudent = useCallback(async (studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt' | 'discipline' | 'hostelRoomId'>) => {
     try {
@@ -172,7 +182,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
     assignments.forEach(assignment => {
       const isCompleted = assignment.status === 'Submitted' || assignment.status === 'Graded';
       if (isCompleted && assignment.skills) {
-        assignment.skills.forEach(skillName => {
+        (assignment.skills as unknown as string[]).forEach(skillName => {
           if (!acquiredSkills[skillName]) {
             acquiredSkills[skillName] = { level: 0, source: assignment.title };
           }
@@ -185,6 +195,8 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
       name,
       level: Math.min(5, data.level), // Cap level at 5
       source: data.source,
+      id: name, // Mock id
+      studentId, // Mock studentId
     }));
   }, [getGradesByStudentId, assignments]);
 

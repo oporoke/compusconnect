@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import type { Staff } from '@prisma/client';
 import { useToast } from './use-toast';
+import { useAuth } from './use-auth';
 
 interface StaffContextType {
   staff: Staff[];
@@ -17,8 +18,9 @@ const StaffContext = createContext<StaffContextType | undefined>(undefined);
 
 export const StaffProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [staff, setStaff] = useState<Staff[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { authState } = useAuth();
 
   const fetchData = useCallback(async (signal: AbortSignal) => {
     setIsLoading(true);
@@ -41,12 +43,17 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, [toast]);
 
   useEffect(() => {
-    const abortController = new AbortController();
-    fetchData(abortController.signal);
-    return () => {
-        abortController.abort();
+    if (authState === 'authenticated') {
+      const abortController = new AbortController();
+      fetchData(abortController.signal);
+      return () => {
+          abortController.abort();
+      }
+    } else {
+        setStaff([]);
+        setIsLoading(false);
     }
-  }, [fetchData]);
+  }, [fetchData, authState]);
 
   const addStaff = useCallback(async (staffData: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable' | 'performanceNotes' | 'schoolId' | 'taxDeduction' | 'insuranceDeduction'>) => {
     toast({ title: "Staff Member Added (Mock)", description: `The profile for ${staffData.name} has been created.` });

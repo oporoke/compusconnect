@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import type { Hostel as PrismaHostel, Student as PrismaStudent } from '@prisma/client';
 import { useToast } from './use-toast';
 import { useStudents } from './use-students';
+import { useAuth } from './use-auth';
 
 // Define a more detailed Room type for the frontend
 export interface Room {
@@ -30,9 +31,10 @@ const HostelContext = createContext<HostelContextType | undefined>(undefined);
 
 export const HostelProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [hostels, setHostels] = useState<Hostel[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { students } = useStudents(); // Use the existing student context
+  const { students } = useStudents();
+  const { authState } = useAuth();
 
   const fetchData = useCallback(async (signal: AbortSignal) => {
     setIsLoading(true);
@@ -55,12 +57,17 @@ export const HostelProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   }, [toast]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetchData(controller.signal);
-    return () => {
-      controller.abort();
-    };
-  }, [fetchData]);
+    if (authState === 'authenticated') {
+      const controller = new AbortController();
+      fetchData(controller.signal);
+      return () => {
+        controller.abort();
+      };
+    } else {
+        setHostels([]);
+        setIsLoading(false);
+    }
+  }, [fetchData, authState]);
 
   const assignStudentToRoom = useCallback((hostelId: string, roomId: string, studentId: string) => {
     // This is a mock implementation. In a real app, this would be a POST/PUT request to an API endpoint.

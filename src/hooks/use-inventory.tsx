@@ -4,11 +4,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import type { Asset } from '@prisma/client';
 import { useToast } from './use-toast';
+import { useAuth } from './use-auth';
 
 interface InventoryContextType {
   assets: Asset[];
   isLoading: boolean;
-  addAsset: (asset: Omit<Asset, 'id' | 'status' | 'assignedTo' | 'purchaseDate'>) => void;
+  addAsset: (asset: Omit<Asset, 'id' | 'status' | 'assignedToId' | 'purchaseDate'>) => void;
   assignAsset: (assetId: string, assignedTo: string | null) => void;
 }
 
@@ -16,8 +17,9 @@ const InventoryContext = createContext<InventoryContextType | undefined>(undefin
 
 export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [assets, setAssets] = useState<Asset[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { authState } = useAuth();
 
   const fetchData = useCallback(async (signal: AbortSignal) => {
     setIsLoading(true);
@@ -40,20 +42,25 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
   }, [toast]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetchData(controller.signal);
-    return () => controller.abort();
-  }, [fetchData]);
+    if (authState === 'authenticated') {
+      const controller = new AbortController();
+      fetchData(controller.signal);
+      return () => controller.abort();
+    } else {
+        setAssets([]);
+        setIsLoading(false);
+    }
+  }, [fetchData, authState]);
 
 
-  const addAsset = useCallback((assetData: Omit<Asset, 'id' | 'status' | 'assignedTo' | 'purchaseDate'>) => {
+  const addAsset = useCallback((assetData: Omit<Asset, 'id' | 'status' | 'assignedToId' | 'purchaseDate'>) => {
     // This would be a POST request in a real app
     setAssets(prev => {
         const newAsset: Asset = {
             ...assetData,
             id: `ASSET-${Date.now()}`,
             status: 'Available',
-            assignedTo: null,
+            assignedToId: null,
             purchaseDate: new Date()
         };
         const updatedAssets = [...prev, newAsset];
@@ -62,12 +69,12 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     });
   }, [toast]);
 
-  const assignAsset = useCallback((assetId: string, assignedTo: string | null) => {
+  const assignAsset = useCallback((assetId: string, assignedToId: string | null) => {
     // This would be a PUT/PATCH request in a real app
     setAssets(prev => {
         const updatedAssets = prev.map(a => {
             if (a.id === assetId) {
-                return { ...a, assignedTo: assignedTo === 'null' ? null : assignedTo, status: assignedTo === 'null' ? 'Available' : 'In Use' };
+                return { ...a, assignedToId: assignedToId === 'null' ? null : assignedToId, status: assignedToId === 'null' ? 'Available' : 'In Use' as const };
             }
             return a;
         });

@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import type { Vehicle, Route, Driver } from '@prisma/client';
 import { useToast } from './use-toast';
+import { useAuth } from './use-auth';
 
 interface TransportContextType {
   vehicles: Vehicle[];
@@ -24,8 +25,9 @@ export const TransportProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [routes, setRoutes] = useState<Route[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { authState } = useAuth();
 
   const fetchData = useCallback(async (signal: AbortSignal) => {
     setIsLoading(true);
@@ -58,10 +60,17 @@ export const TransportProvider: React.FC<{ children: ReactNode }> = ({ children 
   }, [toast]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetchData(controller.signal);
-    return () => controller.abort();
-  }, [fetchData]);
+    if (authState === 'authenticated') {
+      const controller = new AbortController();
+      fetchData(controller.signal);
+      return () => controller.abort();
+    } else {
+        setVehicles([]);
+        setRoutes([]);
+        setDrivers([]);
+        setIsLoading(false);
+    }
+  }, [fetchData, authState]);
 
 
   const addRoute = useCallback((routeData: Omit<Route, 'id'>) => {
@@ -74,7 +83,7 @@ export const TransportProvider: React.FC<{ children: ReactNode }> = ({ children 
   
   const updateVehicleLocation = useCallback((vehicleId: string, location: { lat: number; lng: number }) => {
     setVehicles(prev => {
-        const newVehicles = prev.map(v => v.id === vehicleId ? { ...v, ...location } : v);
+        const newVehicles = prev.map(v => v.id === vehicleId ? { ...v, lat: location.lat, lng: location.lng } : v);
         return newVehicles;
     })
   }, []);

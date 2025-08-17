@@ -1,10 +1,10 @@
 
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import type { HealthRecord, ClinicVisit } from '@prisma/client';
 import { useToast } from './use-toast';
+import { useAuth } from './use-auth';
 
 interface HealthContextType {
   healthRecords: HealthRecord[];
@@ -22,8 +22,9 @@ const HealthContext = createContext<HealthContextType | undefined>(undefined);
 export const HealthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [healthRecords, setHealthRecords] = useState<HealthRecord[]>([]);
   const [clinicVisits, setClinicVisits] = useState<ClinicVisit[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { authState } = useAuth();
 
   const fetchData = useCallback(async (signal: AbortSignal) => {
     setIsLoading(true);
@@ -50,10 +51,16 @@ export const HealthProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   }, [toast]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetchData(controller.signal);
-    return () => controller.abort();
-  }, [fetchData]);
+    if (authState === 'authenticated') {
+      const controller = new AbortController();
+      fetchData(controller.signal);
+      return () => controller.abort();
+    } else {
+        setHealthRecords([]);
+        setClinicVisits([]);
+        setIsLoading(false);
+    }
+  }, [fetchData, authState]);
 
 
   const getRecordByStudentId = useCallback((studentId: string) => {
@@ -95,5 +102,3 @@ export const useHealth = () => {
   }
   return context;
 };
-
-    

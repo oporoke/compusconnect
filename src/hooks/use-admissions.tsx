@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import type { Admission, AdmissionRequirement } from '@prisma/client';
 import { useToast } from './use-toast';
+import { useAuth } from './use-auth';
 
 interface AdmissionsContextType {
   applications: Admission[];
@@ -19,8 +20,9 @@ const AdmissionsContext = createContext<AdmissionsContextType | undefined>(undef
 export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [applications, setApplications] = useState<Admission[]>([]);
   const [admissionRequirements, setAdmissionRequirements] = useState<AdmissionRequirement[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { authState } = useAuth();
 
   const fetchAdmissions = useCallback(async (signal: AbortSignal) => {
     setIsLoading(true);
@@ -55,13 +57,17 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
-    const abortController = new AbortController();
-    fetchAdmissions(abortController.signal);
-
-    return () => {
-      abortController.abort();
-    };
-  }, [fetchAdmissions]);
+    if (authState === 'authenticated') {
+      const abortController = new AbortController();
+      fetchAdmissions(abortController.signal);
+      return () => {
+        abortController.abort();
+      };
+    } else {
+        setApplications([]);
+        setIsLoading(false);
+    }
+  }, [fetchAdmissions, authState]);
 
   const addApplication = useCallback(async (applicationData: Omit<Admission, 'id' | 'status' | 'date' | 'documents'>) => {
     const optimisticApp = { ...applicationData, id: `temp-${Date.now()}`, status: 'Pending' as const, date: new Date().toISOString(), documents: [] };

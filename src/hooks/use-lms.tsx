@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import type { Assignment, CourseMaterial, OnlineClass, Badge, DiscussionThread, DiscussionReply } from '@prisma/client';
 import { useToast } from './use-toast';
+import { useAuth } from './use-auth';
 
 type ThreadWithReplies = DiscussionThread & { replies: DiscussionReply[] };
 
@@ -29,8 +30,9 @@ export const LMSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [onlineClasses, setOnlineClasses] = useState<OnlineClass[]>([]);
   const [badges, setBadges] = useState<Badge[]>([]);
   const [threads, setThreads] = useState<ThreadWithReplies[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { authState } = useAuth();
 
   const fetchData = useCallback(async (signal: AbortSignal) => {
     setIsLoading(true);
@@ -67,12 +69,21 @@ export const LMSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [toast]);
 
   useEffect(() => {
-    const abortController = new AbortController();
-    fetchData(abortController.signal);
-    return () => {
-        abortController.abort();
+    if (authState === 'authenticated') {
+      const abortController = new AbortController();
+      fetchData(abortController.signal);
+      return () => {
+          abortController.abort();
+      }
+    } else {
+        setAssignments([]);
+        setCourseMaterials([]);
+        setOnlineClasses([]);
+        setBadges([]);
+        setThreads([]);
+        setIsLoading(false);
     }
-  }, [fetchData]);
+  }, [fetchData, authState]);
 
   const submitAssignment = useCallback(async (assignmentId: string) => {
     // Optimistic update
