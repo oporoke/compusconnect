@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookCopy, CalendarCheck, Megaphone, Users } from "lucide-react";
 import { ROLES } from "@/lib/auth";
 import { ParentDashboard } from "@/components/dashboard/parent-dashboard";
+import { ChatbotWidget } from "@/components/chatbot/chatbot-widget";
 
 function AdminTeacherDashboard() {
      const stats = [
@@ -106,6 +107,8 @@ export default function DashboardPage() {
             </div>
 
             {isParentOrStudent ? <ParentDashboard studentId={studentForDashboard} /> : <AdminTeacherDashboard />}
+            
+            {isParentOrStudent && <ChatbotWidget studentId={studentForDashboard} />}
         </div>
     );
 }
