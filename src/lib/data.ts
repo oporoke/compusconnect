@@ -53,3 +53,24 @@ export const grades = [
     { studentId: 'S006', math: 78, science: 82, english: 70 },
     { studentId: 'S007', math: 92, science: 95, english: 88 },
 ];
+
+export const courseMaterials = [
+    { id: 'CM01', subject: 'Math', title: 'Algebra Basics', type: 'PDF', link: '#' },
+    { id: 'CM02', subject: 'Science', title: 'Cellular Biology', type: 'Video', link: '#' },
+    { id: 'CM03', subject: 'English', title: 'Shakespeare\'s Sonnets', type: 'Document', link: '#' },
+    { id: 'CM04', subject: 'History', title: 'The World Wars', type: 'Slides', link: '#' },
+];
+
+export const assignments = [
+    { id: 'AS01', title: 'Algebra Worksheet', subject: 'Math', dueDate: '2024-10-20', status: 'Pending' },
+    { id: 'AS02', title: 'Lab Report', subject: 'Science', dueDate: '2024-10-22', status: 'Submitted' },
+    { id: 'AS03', title: 'Essay on Macbeth', subject: 'English', dueDate: '2024-10-25', status: 'Graded' },
+    { id: 'AS04', title: 'Research Paper', subject: 'History', dueDate: '2024-11-01', status: 'Pending' },
+];
+
+export const onlineClasses = [
+    { id: 'OC01', subject: 'Math', topic: 'Geometry', time: 'Mon, 10:00 AM', link: '#' },
+    { id: 'OC02', subject: 'Science', topic: 'Photosynthesis', time: 'Tue, 11:00 AM', link: '#' },
+    { id: 'OC03', subject: 'English', topic: 'Grammar Review', time: 'Wed, 9:00 AM', link: '#' },
+    { id: 'OC04', subject: 'History', topic: 'Ancient Civilizations', time: 'Thu, 2:00 PM', link: '#' },
+];
