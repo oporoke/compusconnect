@@ -297,7 +297,7 @@ export const messMenu: MessMenu[] = [
     { day: 'Sunday', breakfast: 'French Toast', lunch: 'Brunch', dinner: 'Pot Roast' },
 ];
 
-// New Finance Module Data
+// Finance Module Data
 export interface FeeStructure {
     id: string;
     name: string; // e.g., 'Annual Tuition', 'Activity Fee'
@@ -354,3 +354,36 @@ export const invoices: Invoice[] = [
 export const payments: Payment[] = [];
 export const payrollRecords: PayrollRecord[] = [];
 export const expenses: Expense[] = [];
+
+
+// Communication Module Data
+export interface Message {
+    sender: string; // User's name
+    content: string;
+    timestamp: string; // ISO 8601
+}
+export type Conversation = Message[];
+
+// Key is a sorted combination of two user names, e.g., "Admin User-Student User"
+export const messages: Record<string, Conversation> = {
+    'Admin User-Student User': [
+        { sender: 'Admin User', content: 'Welcome to CampusConnect Lite!', timestamp: '2024-09-10T10:00:00Z' },
+        { sender: 'Student User', content: 'Thank you!', timestamp: '2024-09-10T10:01:00Z' },
+    ],
+    'Parent User-Teacher User': [
+        { sender: 'Parent User', content: 'Hi, I wanted to ask about Alice\'s progress in Math.', timestamp: '2024-09-11T14:00:00Z' },
+    ]
+};
+
+export interface Event {
+    id: string;
+    title: string;
+    date: string; // YYYY-MM-DD
+    description: string;
+}
+
+export const events: Event[] = [
+    { id: 'EVT01', title: 'Parent-Teacher Meeting', date: '2024-10-25', description: 'Discuss student progress for the first term.' },
+    { id: 'EVT02', title: 'Science Fair', date: '2024-11-15', description: 'Annual science fair for grades 9-12.' },
+    { id: 'EVT03', title: 'Winter Break', date: '2024-12-20', description: 'School closed for winter break.' },
+];

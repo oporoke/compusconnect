@@ -1,13 +1,14 @@
+
 "use client";
 
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookCopy, CalendarCheck, Megaphone, Users } from "lucide-react";
+import { ROLES } from "@/lib/auth";
+import { ParentDashboard } from "@/components/dashboard/parent-dashboard";
 
-export default function DashboardPage() {
-    const { user } = useAuth();
-
-    const stats = [
+function AdminTeacherDashboard() {
+     const stats = [
         { title: "Students", value: "350", icon: Users },
         { title: "Classes", value: "15", icon: BookCopy },
         { title: "Events", value: "3", icon: Megaphone },
@@ -15,16 +16,7 @@ export default function DashboardPage() {
     ]
 
     return (
-        <div className="space-y-8">
-            <div>
-                <h1 className="text-3xl font-headline font-bold">
-                    Welcome back, {user?.name}!
-                </h1>
-                <p className="text-muted-foreground">
-                    Here's a quick overview of your school's activities.
-                </p>
-            </div>
-
+        <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {stats.map((stat) => (
                     <Card key={stat.title}>
@@ -87,6 +79,33 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
             </div>
+        </div>
+    )
+}
+
+export default function DashboardPage() {
+    const { user } = useAuth();
+
+    const isParentOrStudent = user?.role === ROLES.PARENT || user?.role === ROLES.STUDENT;
+    // For this demo, both parent and student will see the same dashboard view focused on a single student.
+    // In a real app, a parent might have a student selector if they have multiple children.
+    const studentForDashboard = "S001"; // Hardcoded for simplicity
+
+    return (
+        <div className="space-y-8">
+            <div>
+                <h1 className="text-3xl font-headline font-bold">
+                    Welcome back, {user?.name}!
+                </h1>
+                <p className="text-muted-foreground">
+                    {isParentOrStudent
+                        ? "Here is an overview of key academic and school-related information."
+                        : "Here's a quick overview of your school's activities."
+                    }
+                </p>
+            </div>
+
+            {isParentOrStudent ? <ParentDashboard studentId={studentForDashboard} /> : <AdminTeacherDashboard />}
         </div>
     );
 }

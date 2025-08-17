@@ -11,6 +11,7 @@ import { LibraryProvider } from '@/hooks/use-library';
 import { TransportProvider } from '@/hooks/use-transport';
 import { HostelProvider } from '@/hooks/use-hostel';
 import { FinanceProvider } from '@/hooks/use-finance';
+import { CommunicationProvider } from '@/hooks/use-communication';
 
 export const metadata: Metadata = {
   title: 'CampusConnect Lite',
@@ -39,7 +40,9 @@ export default function RootLayout({
                           <TransportProvider>
                             <HostelProvider>
                                 <FinanceProvider>
-                                    {children}
+                                    <CommunicationProvider>
+                                        {children}
+                                    </CommunicationProvider>
                                 </FinanceProvider>
                             </HostelProvider>
                           </TransportProvider>

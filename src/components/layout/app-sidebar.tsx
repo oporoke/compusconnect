@@ -22,7 +22,9 @@ import {
   Library,
   Bus,
   BedDouble,
-  DollarSign
+  DollarSign,
+  MessageSquare,
+  Calendar as CalendarIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -45,6 +47,8 @@ const navLinks = [
   { href: '/transport', label: 'Transport', icon: Bus, roles: [ROLES.ADMIN] },
   { href: '/hostel', label: 'Hostel', icon: BedDouble, roles: [ROLES.ADMIN] },
   { href: '/announcements', label: 'Announcements', icon: Megaphone, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/messages', label: 'Messages', icon: MessageSquare, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/events', label: 'Events', icon: CalendarIcon, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/report-cards', label: 'Report Cards', icon: ClipboardCheck, roles: [ROLES.ADMIN, ROLES.TEACHER] },
   { href: '/finance', label: 'Finance', icon: DollarSign, roles: [ROLES.ADMIN] }
 ];
