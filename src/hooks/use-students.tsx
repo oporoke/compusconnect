@@ -77,15 +77,17 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const addStudent = useCallback(async (studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt'| 'discipline' | 'hostelRoomId'>) => {
     try {
-        const id = `S${(students.length + 1).toString().padStart(3, '0')}`;
         const response = await fetch('/api/students', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({...studentData, id}),
+            body: JSON.stringify(studentData),
         });
         if (!response.ok) throw new Error('Failed to create student');
         const newStudent = await response.json();
-        setStudents(prev => [...prev, newStudent]);
+        
+        // Refetch student data to ensure UI is in sync with the database
+        await fetchData();
+
         logAction('Student Created', { studentId: newStudent.id, studentName: newStudent.name });
         toast({
             title: "Student Created",
@@ -99,19 +101,22 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
             description: "Could not create the student profile.",
         });
     }
-  }, [logAction, students.length, toast]);
+  }, [logAction, toast, fetchData]);
   
   const addExam = useCallback(async (examData: Omit<Exam, 'id'>) => {
-    // Similar fetch call to POST /api/exams
-  }, []);
+    // This should be a POST to /api/exams
+    toast({ title: "Mock Action", description: `Exam creation is not implemented.` });
+  }, [toast]);
 
   const updateGrades = useCallback(async (newGrade: Omit<Grade, 'id'>) => {
-    // Similar fetch call to POST /api/grades
-  }, []);
+    // This should be a POST to /api/grades
+    toast({ title: "Mock Action", description: `Grade update is not implemented.` });
+  }, [toast]);
 
   const logAttendance = useCallback(async (classId: string, studentStatuses: { studentId: string; present: boolean }[]) => {
-    // Similar fetch call to POST /api/attendance
-  }, []);
+    // This should be a POST to /api/attendance
+    toast({ title: "Mock Action", description: `Attendance logging is not implemented.` });
+  }, [toast]);
 
   const getStudentById = useCallback((id: string) => {
     return students.find(s => s.id === id);
