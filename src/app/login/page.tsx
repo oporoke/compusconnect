@@ -42,7 +42,7 @@ export default function LoginPage() {
           </div>
           <h1 className="text-3xl font-headline font-bold text-foreground">CampusConnect Lite</h1>
            <p className="text-muted-foreground mt-2">
-             Welcome! Please sign in to your account.
+             {authState === 'awaitingMfa' ? "Just one more step to secure your account." : "Create your account to get started."}
           </p>
         </div>
         {authState === 'awaitingMfa' ? <MfaForm /> : <LoginForm />}

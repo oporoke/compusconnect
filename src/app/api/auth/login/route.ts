@@ -5,11 +5,20 @@ import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
   try {
-    const { role } = await request.json();
-    const user = USERS.find((u) => u.role === role);
+    const { role, name } = await request.json();
+    
+    // In a real app, you would create a new user in the database or find an existing one.
+    // For this demo, we'll create a user object on the fly if a name is provided,
+    // otherwise we fall back to the old role-based lookup.
+    let user;
+    if (name) {
+        user = { name, role };
+    } else {
+        user = USERS.find((u) => u.role === role);
+    }
 
     if (!user) {
-      return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid user data' }, { status: 400 });
     }
 
     // In a real app, you'd create a session in the database

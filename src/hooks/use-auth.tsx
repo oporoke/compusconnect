@@ -11,7 +11,7 @@ type AuthState = 'unauthenticated' | 'awaitingMfa' | 'authenticated';
 interface AuthContextType {
   user: User | null;
   authState: AuthState;
-  login: (role: Role) => void;
+  login: (credentials: { name: string; email: string; role: Role }) => void;
   submitMfa: (code: string) => void;
   logout: () => void;
   isLoading: boolean;
@@ -23,7 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [authState, setAuthState] = useState<AuthState>('unauthenticated');
   const [isLoading, setIsLoading] = useState(true);
-  const [pendingRole, setPendingRole] = useState<Role | null>(null);
+  const [pendingUser, setPendingUser] = useState<User | null>(null);
   const router = useRouter();
   const { logAction } = useAuditLog();
 
@@ -54,23 +54,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkUser();
   }, [checkUser]);
 
-  const login = useCallback(async (role: Role) => {
-    // This is a mock login. In a real app, you'd verify password here.
-    // For the demo, we just proceed to the MFA step.
-    setPendingRole(role);
+  const login = useCallback(async (credentials: { name: string; email: string; role: Role }) => {
+    // This is a mock sign-up/login. In a real app, you'd verify password here.
+    // For the demo, we create a user object and proceed to MFA.
+    const { name, role } = credentials;
+    setPendingUser({ name, role });
     setAuthState('awaitingMfa');
   }, []);
   
   const submitMfa = useCallback(async (code: string) => {
       // Mock MFA verification. Any 6-digit code works.
-      if (!pendingRole || code.length !== 6) return;
+      if (!pendingUser || code.length !== 6) return;
 
       setIsLoading(true);
       try {
+        // In a real app, you'd send the credentials to a sign-up/login endpoint.
+        // For this demo, we'll just use the pending user data to create a session.
         const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ role: pendingRole }),
+            body: JSON.stringify({ name: pendingUser.name, role: pendingUser.role }),
         });
         if(res.ok) {
             const { user: loggedInUser } = await res.json();
@@ -84,9 +87,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setAuthState('unauthenticated');
       } finally {
           setIsLoading(false);
-          setPendingRole(null);
+          setPendingUser(null);
       }
-  }, [pendingRole, router, logAction]);
+  }, [pendingUser, router, logAction]);
   
   const logout = useCallback(async () => {
     try {
@@ -99,7 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
         setUser(null);
         setAuthState('unauthenticated');
-        setPendingRole(null);
+        setPendingUser(null);
         router.push('/login');
     }
   }, [router, user, logAction]);
