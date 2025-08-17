@@ -333,6 +333,13 @@ export interface PayrollRecord {
     netSalary: number;
     date: string;
 }
+export interface Expense {
+    id: string;
+    category: 'Utilities' | 'Maintenance' | 'Supplies' | 'Other';
+    description: string;
+    amount: number;
+    date: string;
+}
 
 export const feeStructures: FeeStructure[] = [
     { id: 'FS01', name: 'Annual Tuition', amount: 5000, grades: ['all'] },
@@ -340,6 +347,10 @@ export const feeStructures: FeeStructure[] = [
     { id: 'FS03', name: 'Transport Fee - Uptown', amount: 800, grades: ['all'] },
     { id: 'FS04', name: 'Hostel Fee', amount: 2500, grades: ['all'] },
 ];
-export const invoices: Invoice[] = [];
+export const invoices: Invoice[] = [
+    // Add an overdue invoice for testing reminders
+    { id: 'INV-S001-1672531200000', studentId: 'S001', date: '2024-08-01', dueDate: '2024-09-01', items: [{ description: 'Annual Tuition', amount: 5000 }], total: 5000, status: 'Unpaid' }
+];
 export const payments: Payment[] = [];
 export const payrollRecords: PayrollRecord[] = [];
+export const expenses: Expense[] = [];

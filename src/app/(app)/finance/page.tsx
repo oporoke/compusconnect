@@ -7,22 +7,76 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { ArrowRight, DollarSign, FileText, Settings, Users, TrendingUp, TrendingDown, FileDown } from "lucide-react";
+import { ArrowRight, DollarSign, FileText, Settings, Users, TrendingUp, TrendingDown, FileDown, PlusCircle, Hammer, Lightbulb, ShoppingCart, Receipt } from "lucide-react";
 import { useStudents } from '@/hooks/use-students';
 import { useStaff } from '@/hooks/use-staff';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import * as XLSX from 'xlsx';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Expense } from '@/lib/data';
+
+function LogExpenseDialog() {
+    const { addExpense } = useFinance();
+    const [open, setOpen] = useState(false);
+    const [description, setDescription] = useState('');
+    const [amount, setAmount] = useState('');
+    const [category, setCategory] = useState<Expense['category']>('Other');
+    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        addExpense({ description, amount: Number(amount), category, date });
+        setOpen(false);
+    }
+    
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline"><PlusCircle/> Log Expense</Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader><DialogTitle>Log New Expense</DialogTitle></DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                     <Select value={category} onValueChange={(v) => setCategory(v as any)}>
+                        <SelectTrigger><SelectValue placeholder="Select category..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Maintenance"><Hammer className="mr-2"/>Maintenance</SelectItem>
+                            <SelectItem value="Utilities"><Lightbulb className="mr-2"/>Utilities</SelectItem>
+                            <SelectItem value="Supplies"><ShoppingCart className="mr-2"/>Supplies</SelectItem>
+                            <SelectItem value="Other"><Receipt className="mr-2"/>Other</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Input placeholder="Expense Description" value={description} onChange={e => setDescription(e.target.value)} required />
+                    <Input type="number" placeholder="Amount" value={amount} onChange={e => setAmount(e.target.value)} required />
+                    <Input type="date" value={date} onChange={e => setDate(e.target.value)} required />
+                    <DialogFooter><Button type="submit">Log Expense</Button></DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
+}
 
 export default function FinancePage() {
-    const { invoices, payments, payrollRecords, isLoading } = useFinance();
+    const { invoices, payments, payrollRecords, expenses, isLoading } = useFinance();
     const { students } = useStudents();
-    const { staff } = useStaff();
-
-    const totalIncome = payments.reduce((acc, p) => acc + p.amount, 0);
-    const totalExpenses = payrollRecords.reduce((acc, pr) => acc + pr.netSalary, 0);
-    const totalDues = invoices.filter(i => i.status !== 'Paid').reduce((acc, i) => acc + i.total, 0);
-    const paidInvoices = invoices.filter(i => i.status === 'Paid').length;
     
+    const totalIncome = payments.reduce((acc, p) => acc + p.amount, 0);
+    const totalPayrollExpenses = payrollRecords.reduce((acc, pr) => acc + pr.netSalary, 0);
+    const totalOtherExpenses = expenses.reduce((acc, e) => acc + e.amount, 0);
+    const totalExpenses = totalPayrollExpenses + totalOtherExpenses;
+    
+    const unpaidInvoices = invoices.filter(i => i.status === 'Unpaid' || i.status === 'Overdue');
+    const totalDues = unpaidInvoices.reduce((acc, i) => acc + i.total - getPaymentsByInvoice(i.id).reduce((pAcc, p) => pAcc + p.amount, 0), 0);
+
+    function getPaymentsByInvoice(invoiceId: string) {
+        return payments.filter(p => p.invoiceId === invoiceId);
+    }
+
     const exportToPDF = () => {
         const doc = new jsPDF();
         doc.text("Financial Summary Report", 14, 16);
@@ -30,7 +84,7 @@ export default function FinancePage() {
         const summaryData = [
             ["Metric", "Value"],
             ["Total Income", `$${totalIncome.toLocaleString()}`],
-            ["Total Expenses (Payroll)", `$${totalExpenses.toLocaleString()}`],
+            ["Total Expenses (Payroll + Other)", `$${totalExpenses.toLocaleString()}`],
             ["Total Pending Dues", `$${totalDues.toLocaleString()}`],
             ["Account Balance", `$${(totalIncome - totalExpenses).toLocaleString()}`],
         ];
@@ -46,7 +100,7 @@ export default function FinancePage() {
             startY: (doc as any).autoTable.previous.finalY + 12,
             head: [['Invoice ID', 'Student', 'Amount', 'Status']],
             body: invoices.slice(0, 10).map(inv => [
-                inv.id,
+                inv.id.split('-')[1],
                 students.find(s => s.id === inv.studentId)?.name || 'N/A',
                 `$${inv.total.toLocaleString()}`,
                 inv.status
@@ -55,6 +109,41 @@ export default function FinancePage() {
 
         doc.save("financial_report.pdf");
     };
+
+    const exportToExcel = () => {
+        const summary_ws_data = [
+            ["Metric", "Value"],
+            ["Total Income", totalIncome],
+            ["Total Expenses", totalExpenses],
+            ["Pending Dues", totalDues],
+            ["Account Balance", totalIncome - totalExpenses],
+        ];
+        const invoices_ws_data = invoices.map(inv => ({
+            "Invoice ID": inv.id,
+            "Student Name": students.find(s => s.id === inv.studentId)?.name || 'N/A',
+            "Amount": inv.total,
+            "Status": inv.status,
+            "Date": inv.date,
+            "Due Date": inv.dueDate,
+        }));
+        const expenses_ws_data = expenses.map(exp => ({
+            "Date": exp.date,
+            "Category": exp.category,
+            "Description": exp.description,
+            "Amount": exp.amount
+        }));
+
+        const wb = XLSX.utils.book_new();
+        const summary_ws = XLSX.utils.aoa_to_sheet(summary_ws_data);
+        const invoices_ws = XLSX.utils.json_to_sheet(invoices_ws_data);
+        const expenses_ws = XLSX.utils.json_to_sheet(expenses_ws_data);
+
+        XLSX.utils.book_append_sheet(wb, summary_ws, "Financial Summary");
+        XLSX.utils.book_append_sheet(wb, invoices_ws, "All Invoices");
+        XLSX.utils.book_append_sheet(wb, expenses_ws, "All Expenses");
+
+        XLSX.writeFile(wb, "financial_report.xlsx");
+    }
 
     const financeFeatures = [
         { title: 'Invoices', href: '/finance/invoices', icon: FileText, description: "Generate and track student fee invoices." },
@@ -69,7 +158,11 @@ export default function FinancePage() {
                     <h1 className="text-3xl font-headline font-bold">Financial Dashboard</h1>
                     <p className="text-muted-foreground">An overview of the school's financial health.</p>
                 </div>
-                <Button onClick={exportToPDF}><FileDown className="mr-2" /> Export Summary</Button>
+                <div className="flex gap-2">
+                    <LogExpenseDialog />
+                    <Button onClick={exportToPDF} variant="outline"><FileDown className="mr-2" /> PDF Report</Button>
+                    <Button onClick={exportToExcel} variant="outline"><FileDown className="mr-2" /> Excel Report</Button>
+                </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -90,7 +183,7 @@ export default function FinancePage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">${totalExpenses.toLocaleString()}</div>
-                         <p className="text-xs text-muted-foreground">{payrollRecords.length} payroll records</p>
+                         <p className="text-xs text-muted-foreground">{payrollRecords.length} payroll, {expenses.length} other</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -100,7 +193,7 @@ export default function FinancePage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">${totalDues.toLocaleString()}</div>
-                        <p className="text-xs text-muted-foreground">{invoices.length - paidInvoices} unpaid invoices</p>
+                        <p className="text-xs text-muted-foreground">{unpaidInvoices.length} unpaid invoices</p>
                     </CardContent>
                 </Card>
                 <Card>

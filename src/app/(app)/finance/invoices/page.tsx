@@ -10,12 +10,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, FileText, CheckCircle, XCircle, Clock } from "lucide-react";
+import { PlusCircle, FileText, CheckCircle, XCircle, Clock, BellRing } from "lucide-react";
 import { useFinance } from '@/hooks/use-finance';
 import { useStudents } from '@/hooks/use-students';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
+import "jspdf-autotable";
 import type { Invoice, Payment } from '@/lib/data';
+import { differenceInDays, parseISO } from 'date-fns';
 
 function GenerateInvoicesDialog() {
     const { feeStructures, generateInvoicesForGrade } = useFinance();
@@ -172,7 +174,32 @@ function ViewInvoiceDialog({ invoice, payments }: { invoice: Invoice, payments: 
 export default function InvoicesPage() {
     const { invoices, getPaymentsByInvoice, isLoading } = useFinance();
     const { students } = useStudents();
+    const { toast } = useToast();
+
+    const sendReminders = () => {
+        const today = new Date();
+        const overdueInvoices = invoices.filter(inv => inv.status === 'Unpaid' && differenceInDays(today, parseISO(inv.dueDate)) > 0);
+        
+        if (overdueInvoices.length === 0) {
+            toast({ title: "No Overdue Invoices", description: "All pending invoices are within their due dates." });
+            return;
+        }
+
+        overdueInvoices.forEach(inv => {
+            const student = students.find(s => s.id === inv.studentId);
+            toast({
+                title: `Reminder Sent to ${student?.name || 'Unknown'}`,
+                description: `Invoice for $${inv.total} is overdue.`
+            });
+        });
+    }
     
+    const getStatus = (invoice: Invoice) => {
+        if (invoice.status === 'Paid') return <Badge variant="default">Paid</Badge>;
+        if (differenceInDays(new Date(), parseISO(invoice.dueDate)) > 0) return <Badge variant="destructive">Overdue</Badge>;
+        return <Badge variant="secondary">Unpaid</Badge>;
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-start">
@@ -180,7 +207,12 @@ export default function InvoicesPage() {
                     <h1 className="text-3xl font-headline font-bold">Invoices & Payments</h1>
                     <p className="text-muted-foreground">Manage all student fee invoices.</p>
                 </div>
-                <GenerateInvoicesDialog />
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={sendReminders}>
+                        <BellRing className="mr-2" /> Send Reminders
+                    </Button>
+                    <GenerateInvoicesDialog />
+                </div>
             </div>
             <Card>
                 <CardHeader><CardTitle>All Invoices</CardTitle></CardHeader>
@@ -197,7 +229,7 @@ export default function InvoicesPage() {
                                     <TableCell>{invoice.date}</TableCell>
                                     <TableCell>${invoice.total.toLocaleString()}</TableCell>
                                     <TableCell>
-                                        <Badge variant={invoice.status === 'Paid' ? 'default' : (invoice.status === 'Unpaid' ? 'secondary' : 'destructive')}>{invoice.status}</Badge>
+                                        {getStatus(invoice)}
                                     </TableCell>
                                     <TableCell className="text-right space-x-2">
                                         <ViewInvoiceDialog invoice={invoice} payments={getPaymentsByInvoice(invoice.id)} />

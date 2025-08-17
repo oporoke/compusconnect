@@ -7,7 +7,8 @@ import {
     invoices as initialInvoices, 
     payments as initialPayments, 
     payrollRecords as initialPayrollRecords,
-    FeeStructure, Invoice, Payment, PayrollRecord, InvoiceItem
+    expenses as initialExpenses,
+    FeeStructure, Invoice, Payment, PayrollRecord, InvoiceItem, Expense
 } from '@/lib/data';
 import { useToast } from './use-toast';
 import { useStudents } from './use-students';
@@ -18,12 +19,14 @@ interface FinanceContextType {
   invoices: Invoice[];
   payments: Payment[];
   payrollRecords: PayrollRecord[];
+  expenses: Expense[];
   isLoading: boolean;
   addFeeStructure: (structure: Omit<FeeStructure, 'id'>) => void;
   removeFeeStructure: (id: string) => void;
   generateInvoicesForGrade: (grade: string, feeStructureIds: string[]) => void;
   addPayment: (payment: Omit<Payment, 'id'>) => void;
   runPayrollForMonth: (month: string) => void;
+  addExpense: (expense: Omit<Expense, 'id'>) => void;
   getInvoicesByStudent: (studentId: string) => Invoice[];
   getPaymentsByInvoice: (invoiceId: string) => Payment[];
 }
@@ -35,6 +38,7 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { students } = useStudents();
@@ -46,11 +50,13 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
       const storedInvoices = localStorage.getItem('campus-connect-invoices');
       const storedPayments = localStorage.getItem('campus-connect-payments');
       const storedPayroll = localStorage.getItem('campus-connect-payroll');
+      const storedExpenses = localStorage.getItem('campus-connect-expenses');
       
       setFeeStructures(storedFeeStructures ? JSON.parse(storedFeeStructures) : initialFeeStructures);
       setInvoices(storedInvoices ? JSON.parse(storedInvoices) : initialInvoices);
       setPayments(storedPayments ? JSON.parse(storedPayments) : initialPayments);
       setPayrollRecords(storedPayroll ? JSON.parse(storedPayroll) : initialPayrollRecords);
+      setExpenses(storedExpenses ? JSON.parse(storedExpenses) : initialExpenses);
     } catch (error) {
       console.error("Failed to parse finance data from localStorage", error);
       // Initialize with default data if parsing fails
@@ -58,6 +64,7 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
       setInvoices(initialInvoices);
       setPayments(initialPayments);
       setPayrollRecords(initialPayrollRecords);
+      setExpenses(initialExpenses);
     } finally {
       setIsLoading(false);
     }
@@ -66,6 +73,10 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
   const persistData = (key: string, data: any) => {
     localStorage.setItem(`campus-connect-${key}`, JSON.stringify(data));
   };
+
+  const getPaymentsByInvoice = useCallback((invoiceId: string) => {
+      return payments.filter(p => p.invoiceId === invoiceId);
+  }, [payments]);
 
   const addFeeStructure = useCallback((structureData: Omit<FeeStructure, 'id'>) => {
     setFeeStructures(prev => {
@@ -128,10 +139,6 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
     
   }, [students, feeStructures, toast]);
-  
-  const getPaymentsByInvoice = useCallback((invoiceId: string) => {
-      return payments.filter(p => p.invoiceId === invoiceId);
-  }, [payments]);
 
   const addPayment = useCallback((paymentData: Omit<Payment, 'id'>) => {
     setPayments(prev => {
@@ -148,7 +155,7 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
         const paymentsForInvoice = [ ...getPaymentsByInvoice(paymentData.invoiceId), paymentData ];
         const totalPaid = paymentsForInvoice.reduce((acc, p) => acc + p.amount, 0);
         
-        const updatedStatus = totalPaid >= invoice.total ? 'Paid' : invoice.status;
+        const updatedStatus = totalPaid >= invoice.total ? 'Paid' : 'Unpaid';
 
         const updated = prev.map(inv => inv.id === paymentData.invoiceId ? { ...inv, status: updatedStatus } : inv);
         persistData('invoices', updated);
@@ -160,8 +167,8 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
   const runPayrollForMonth = useCallback((month: string) => {
     const newPayrollRecords: PayrollRecord[] = staff.map(staffMember => {
         const grossSalary = staffMember.salary;
-        const taxDeduction = grossSalary * (staffMember.deductions.tax / 100);
-        const insuranceDeduction = staffMember.deductions.insurance;
+        const taxDeduction = grossSalary * ((staffMember.deductions?.tax || 0) / 100);
+        const insuranceDeduction = staffMember.deductions?.insurance || 0;
         const totalDeductions = taxDeduction + insuranceDeduction;
         const netSalary = grossSalary - totalDeductions;
         
@@ -185,12 +192,22 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
   }, [staff, toast]);
 
+  const addExpense = useCallback((expenseData: Omit<Expense, 'id'>) => {
+    setExpenses(prev => {
+        const newExpense: Expense = { ...expenseData, id: `EXP-${Date.now()}` };
+        const updated = [...prev, newExpense];
+        persistData('expenses', updated);
+        toast({ title: "Expense Logged" });
+        return updated;
+    })
+  }, [toast]);
+
   const getInvoicesByStudent = useCallback((studentId: string) => {
       return invoices.filter(inv => inv.studentId === studentId);
   }, [invoices]);
 
   return (
-    <FinanceContext.Provider value={{ feeStructures, invoices, payments, payrollRecords, isLoading, addFeeStructure, removeFeeStructure, generateInvoicesForGrade, addPayment, runPayrollForMonth, getInvoicesByStudent, getPaymentsByInvoice }}>
+    <FinanceContext.Provider value={{ feeStructures, invoices, payments, payrollRecords, expenses, isLoading, addFeeStructure, removeFeeStructure, generateInvoicesForGrade, addPayment, runPayrollForMonth, addExpense, getInvoicesByStudent, getPaymentsByInvoice }}>
       {children}
     </FinanceContext.Provider>
   );
