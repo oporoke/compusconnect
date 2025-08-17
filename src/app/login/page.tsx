@@ -2,6 +2,7 @@
 "use client";
 
 import { LoginForm } from '@/components/auth/login-form';
+import { MfaForm } from '@/components/auth/mfa-form';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -18,7 +19,7 @@ export default function LoginPage() {
     }
   }, [user, isLoading, router, authState]);
   
-  if (isLoading || authState === 'authenticated') {
+  if (isLoading || (authState === 'authenticated' && !window.location.pathname.startsWith('/login'))) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
@@ -44,7 +45,7 @@ export default function LoginPage() {
              Welcome! Please sign in to your account.
           </p>
         </div>
-        <LoginForm />
+        {authState === 'awaitingMfa' ? <MfaForm /> : <LoginForm />}
       </div>
       <footer className="absolute bottom-4 text-center text-sm text-muted-foreground">
         © {new Date().getFullYear()} CampusConnect Lite. All Rights Reserved.

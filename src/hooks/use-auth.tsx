@@ -6,12 +6,13 @@ import { useRouter } from 'next/navigation';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuditLog } from './use-audit-log';
 
-type AuthState = 'unauthenticated' | 'authenticated';
+type AuthState = 'unauthenticated' | 'awaitingMfa' | 'authenticated';
 
 interface AuthContextType {
   user: User | null;
   authState: AuthState;
   login: (role: Role) => void;
+  submitMfa: (code: string) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -22,6 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [authState, setAuthState] = useState<AuthState>('unauthenticated');
   const [isLoading, setIsLoading] = useState(true);
+  const [pendingRole, setPendingRole] = useState<Role | null>(null);
   const router = useRouter();
   const { logAction } = useAuditLog();
 
@@ -53,12 +55,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [checkUser]);
 
   const login = useCallback(async (role: Role) => {
-    setIsLoading(true);
-    try {
+    // This is a mock login. In a real app, you'd verify password here.
+    // For the demo, we just proceed to the MFA step.
+    setPendingRole(role);
+    setAuthState('awaitingMfa');
+  }, []);
+  
+  const submitMfa = useCallback(async (code: string) => {
+      // Mock MFA verification. Any 6-digit code works.
+      if (!pendingRole || code.length !== 6) return;
+
+      setIsLoading(true);
+      try {
         const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ role }),
+            body: JSON.stringify({ role: pendingRole }),
         });
         if(res.ok) {
             const { user: loggedInUser } = await res.json();
@@ -67,12 +79,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             logAction('User Logged In', { userId: loggedInUser.name, role: loggedInUser.role });
             router.push('/dashboard');
         }
-    } catch (error) {
-        console.error("Login failed", error);
-    } finally {
-        setIsLoading(false);
-    }
-  }, [router, logAction]);
+      } catch (error) {
+          console.error("Login failed", error);
+          setAuthState('unauthenticated');
+      } finally {
+          setIsLoading(false);
+          setPendingRole(null);
+      }
+  }, [pendingRole, router, logAction]);
   
   const logout = useCallback(async () => {
     try {
@@ -85,12 +99,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
         setUser(null);
         setAuthState('unauthenticated');
+        setPendingRole(null);
         router.push('/login');
     }
   }, [router, user, logAction]);
 
   return (
-    <AuthContext.Provider value={{ user, authState, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, authState, login, logout, submitMfa, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
