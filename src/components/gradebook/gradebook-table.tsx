@@ -13,6 +13,7 @@ import type { Grade, Student, Exam } from '@/lib/data';
 import { Skeleton } from '../ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { useAuditLog } from '@/hooks/use-audit-log';
 
 type EditableGrade = {
     studentId: string;
@@ -22,6 +23,7 @@ type EditableGrade = {
 
 export function GradebookTable() {
     const { students, grades, exams, updateGrades, isLoading } = useStudents();
+    const { logAction } = useAuditLog();
     const { toast } = useToast();
     
     const [selectedExamId, setSelectedExamId] = useState<string>('');
@@ -80,7 +82,8 @@ export function GradebookTable() {
             };
             updateGrades(gradeData);
         });
-
+        
+        logAction("Grades Updated", { exam: selectedExam?.name, grades: editableGrades });
         toast({
             title: "Grades Saved",
             description: `Grades for ${selectedExam?.name} have been successfully updated.`,

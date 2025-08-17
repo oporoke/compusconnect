@@ -135,17 +135,40 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   }, [students, logAction, toast]);
 
-  const addExam = useCallback(async (examData: Omit<Exam, 'id'>) => {
-    toast({ title: "Mock Action", description: `Exam creation is not implemented.` });
+  const addExam = useCallback((examData: Omit<Exam, 'id'>) => {
+    const newExam: Exam = { ...examData, id: `E${Date.now()}` };
+     setExams(prev => [...prev, newExam]);
+    toast({ title: 'Mock Action', description: `Exam creation is not implemented.` });
   }, [toast]);
 
-  const updateGrades = useCallback(async (newGrade: Omit<Grade, 'id'>) => {
+  const updateGrades = useCallback((newGrade: Omit<Grade, 'id'>) => {
+    setGrades(prev => {
+        const existingGradeIndex = prev.findIndex(g => g.studentId === newGrade.studentId && g.examId === newGrade.examId);
+        if (existingGradeIndex > -1) {
+            const updatedGrades = [...prev];
+            updatedGrades[existingGradeIndex] = { ...updatedGrades[existingGradeIndex], ...newGrade };
+            return updatedGrades;
+        }
+        return [...prev, { ...newGrade, id: `G-${Date.now()}` }];
+    });
     toast({ title: "Mock Action", description: `Grade update is not implemented.` });
   }, [toast]);
 
-  const logAttendance = useCallback(async (classId: string, studentStatuses: { studentId: string; present: boolean }[]) => {
+  const logAttendance = useCallback((classId: string, studentStatuses: { studentId: string; present: boolean }[]) => {
+    const today = new Date().toISOString().split('T')[0];
+    const newAttendanceRecords: AttendanceRecord[] = studentStatuses.map(s => ({
+        id: `ATT-${s.studentId}-${today}`,
+        studentId: s.studentId,
+        date: today,
+        present: s.present,
+    }));
+    setAttendance(prev => {
+        const otherDays = prev.filter(p => p.date !== today);
+        return [...otherDays, ...newAttendanceRecords];
+    });
+    logAction("Attendance Logged", { classId, count: studentStatuses.length });
     toast({ title: "Mock Action", description: `Attendance logging is not implemented.` });
-  }, [toast]);
+  }, [toast, logAction]);
 
   const getStudentById = useCallback((id: string) => {
     return students.find(s => s.id === id);

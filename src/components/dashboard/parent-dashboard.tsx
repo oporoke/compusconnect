@@ -3,44 +3,124 @@
 
 import { useStudents } from "@/hooks/use-students";
 import { useFinance } from "@/hooks/use-finance";
+import { useCommunication } from "@/hooks/use-communication";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { ArrowRight, BookOpenCheck, Calendar, DollarSign, FileText, GraduationCap, MessageSquare, Video } from "lucide-react";
-import React from 'react';
+import { ArrowRight, BookOpenCheck, Calendar, DollarSign, FileText, GraduationCap, MessageSquare, Video, Sparkles, AlertTriangle, Heart, Activity } from "lucide-react";
+import React, { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { generateWeeklyDigest } from "@/ai/flows/ai-weekly-digest";
+import { Button } from "../ui/button";
+import { Loader2 } from "lucide-react";
+
+
+function LiveFeed({ studentId }: { studentId: string }) {
+    const { grades, attendance, exams } = useStudents();
+    const studentGrades = grades.filter(g => g.studentId === studentId);
+    const studentAttendance = attendance.filter(a => a.studentId === studentId);
+
+    const feedItems = [
+        ...studentGrades.flatMap(g => {
+            const exam = exams.find(e => e.id === g.examId);
+            return Object.entries(g.scores).map(([subject, score]) => ({
+                id: `g-${g.examId}-${subject}`,
+                type: 'grade',
+                date: exam?.date || '',
+                text: `Scored ${score}% in ${subject} (${exam?.name})`,
+            }))
+        }),
+        ...studentAttendance.map(a => ({
+            id: `a-${a.date}`,
+            type: 'attendance',
+            date: a.date,
+            text: a.present ? `Marked Present` : `Marked Absent`,
+        }))
+    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    return (
+        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+            {feedItems.slice(0, 10).map(item => (
+                 <div key={item.id} className="flex items-start gap-3">
+                    <div className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${item.type === 'grade' ? 'bg-blue-500' : 'bg-orange-500'}`}>
+                        {item.type === 'grade' ? <GraduationCap className="h-4 w-4 text-white"/> : <Calendar className="h-4 w-4 text-white"/>}
+                    </div>
+                    <div>
+                        <p className="text-sm">{item.text}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(item.date).toLocaleDateString()}</p>
+                    </div>
+                 </div>
+            ))}
+        </div>
+    )
+}
+
+function WeeklyDigest({ studentId, studentName }: { studentId: string, studentName: string }) {
+    const { grades, attendance, exams } = useStudents();
+    const [digest, setDigest] = useState<{ kudos: string[], concerns: string[] } | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleGenerateDigest = async () => {
+        setIsLoading(true);
+        const logEntries = [
+             ...grades.filter(g => g.studentId === studentId).flatMap(g => {
+                const exam = exams.find(e => e.id === g.examId);
+                return Object.entries(g.scores).map(([subject, score]) => `GRADE: ${score}% in ${subject} on ${exam?.date}`)
+            }),
+            ...attendance.filter(a => a.studentId === studentId).map(att => `ATTENDANCE: ${att.present ? 'Present' : 'Absent'} on ${att.date}`)
+        ].join('\n');
+
+        const result = await generateWeeklyDigest({ studentName, logEntries });
+        setDigest(result);
+        setIsLoading(false);
+    }
+    
+    if (!digest && !isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center text-center p-8">
+                 <p className="text-muted-foreground mb-4">Click the button to generate an AI-powered summary of your child's week.</p>
+                 <Button onClick={handleGenerateDigest}>
+                    <Sparkles className="mr-2"/> Generate Weekly Digest
+                </Button>
+            </div>
+        )
+    }
+
+    if(isLoading) {
+        return (
+             <div className="flex flex-col items-center justify-center text-center p-8">
+                 <Loader2 className="animate-spin text-muted-foreground mb-4"/>
+                 <p className="text-muted-foreground">AI is analyzing the week's activities...</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="space-y-4">
+             <div>
+                <h4 className="font-semibold text-lg flex items-center gap-2 text-green-600"><Heart/> Kudos</h4>
+                <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
+                    {digest?.kudos.map((k, i) => <li key={i}>{k}</li>)}
+                    {digest?.kudos.length === 0 && <li>No specific highlights this week.</li>}
+                </ul>
+            </div>
+            <div>
+                <h4 className="font-semibold text-lg flex items-center gap-2 text-amber-600"><AlertTriangle/> Areas for Attention</h4>
+                <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
+                    {digest?.concerns.map((c, i) => <li key={i}>{c}</li>)}
+                     {digest?.concerns.length === 0 && <li>No concerns to report this week. Great job!</li>}
+                </ul>
+            </div>
+        </div>
+    )
+}
+
 
 export function ParentDashboard({ studentId }: { studentId: string }) {
-    const { getStudentById, getGradesByStudentId, getAttendanceByStudentId, exams, isLoading: studentsLoading } = useStudents();
-    const { getInvoicesByStudent, isLoading: financeLoading } = useFinance();
-
+    const { getStudentById, exams, isLoading: studentsLoading } = useStudents();
     const student = getStudentById(studentId);
-    const studentGrades = getGradesByStudentId(studentId);
-    const studentAttendance = getAttendanceByStudentId(studentId);
-    const studentInvoices = getInvoicesByStudent(studentId);
-
-    const latestExamGrades = React.useMemo(() => {
-        if (studentGrades.length === 0 || exams.length === 0) return null;
-        const sortedExams = [...exams].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        const latestExam = sortedExams[0];
-        const grades = studentGrades.find(g => g.examId === latestExam.id);
-        if(!grades) return null;
-
-        const scores = Object.values(grades.scores);
-        const average = scores.reduce((a, b) => a + b, 0) / scores.length;
-        return { examName: latestExam.name, average: average.toFixed(1) };
-    }, [studentGrades, exams]);
-
-    const attendancePercentage = React.useMemo(() => {
-        if (studentAttendance.length === 0) return 100;
-        const presentDays = studentAttendance.filter(a => a.present).length;
-        return Math.round((presentDays / studentAttendance.length) * 100);
-    }, [studentAttendance]);
-
-    const pendingDues = studentInvoices
-        .filter(inv => inv.status === 'Unpaid' || inv.status === 'Overdue')
-        .reduce((acc, inv) => acc + inv.total, 0);
         
     const quickLinks = [
         { title: "Announcements", href: "/announcements", icon: FileText },
@@ -61,74 +141,38 @@ export function ParentDashboard({ studentId }: { studentId: string }) {
                     </Link>
                 ))}
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><GraduationCap /> Latest Exam Result</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {latestExamGrades ? (
-                            <>
-                                <p className="text-sm text-muted-foreground">{latestExamGrades.examName}</p>
-                                <p className="text-4xl font-bold">{latestExamGrades.average}%</p>
-                                <p className="text-xs text-muted-foreground">Overall Average</p>
-                            </>
-                        ) : (
-                            <p className="text-muted-foreground">No recent grades.</p>
-                        )}
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Calendar /> Attendance</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-4xl font-bold">{attendancePercentage}%</p>
-                        <Progress value={attendancePercentage} className="mt-2" />
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><DollarSign /> Pending Dues</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-4xl font-bold">${pendingDues.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">{studentInvoices.filter(i => i.status !== 'Paid').length} unpaid invoice(s)</p>
-                    </CardContent>
-                </Card>
-            </div>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Recent Fee Payments</CardTitle>
-                </CardHeader>
-                <CardContent>
-                     <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Invoice ID</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Amount</TableHead>
-                                <TableHead>Status</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {studentInvoices.slice(0, 5).map((invoice) => (
-                                <TableRow key={invoice.id}>
-                                    <TableCell>{invoice.id.split('-')[1]}</TableCell>
-                                    <TableCell>{invoice.date}</TableCell>
-                                    <TableCell>${invoice.total.toLocaleString()}</TableCell>
-                                    <TableCell><Badge variant={invoice.status === 'Paid' ? 'default' : 'secondary'}>{invoice.status}</Badge></TableCell>
-                                </TableRow>
-                            ))}
-                             {studentInvoices.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="text-center">No financial records found.</TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+            
+            <Tabs defaultValue="overview">
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="overview"><Activity className="mr-2"/>Live Feed</TabsTrigger>
+                    <TabsTrigger value="digest"><Sparkles className="mr-2"/>AI Weekly Digest</TabsTrigger>
+                    <TabsTrigger value="finances"><DollarSign className="mr-2"/>Finances</TabsTrigger>
+                </TabsList>
+                <TabsContent value="overview">
+                     <Card>
+                        <CardHeader><CardTitle>Real-Time Student Feed</CardTitle><CardDescription>A live log of your child's recent school activities.</CardDescription></CardHeader>
+                        <CardContent>
+                           <LiveFeed studentId={studentId} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="digest">
+                     <Card>
+                        <CardHeader><CardTitle>AI-Powered Weekly Summary</CardTitle><CardDescription>A summary of the past week's highlights and areas for attention.</CardDescription></CardHeader>
+                        <CardContent>
+                           {student && <WeeklyDigest studentId={studentId} studentName={student.name} />}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="finances">
+                    <Card>
+                        <CardHeader><CardTitle>Financial Overview</CardTitle><CardDescription>A summary of invoices and pending dues.</CardDescription></CardHeader>
+                        <CardContent>
+                            <p>This is where financial details would go. This section can be built out further.</p>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
         </div>
     )
 }
