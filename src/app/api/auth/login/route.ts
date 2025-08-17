@@ -1,31 +1,33 @@
 import { NextResponse } from "next/server";
 import { USERS } from "@/lib/auth";
 import { cookies } from "next/headers";
+import prisma from "@/lib/db";
 
 export async function POST(request: Request) {
   try {
-    const { role, name } = await request.json();
+    const { role, email } = await request.json();
 
-    // In a real app, you would create a new user in the database or find an existing one.
-    // For this demo, we'll create a user object on the fly if a name is provided,
-    // otherwise we fall back to the old role-based lookup.
     let user;
-    if (name) {
-      user = { name, role };
+    if (role === 'student' || role === 'parent') {
+      // For simplicity, demo student/parent login uses a default student
+      const student = await prisma.student.findFirst();
+      if (student) {
+        user = { id: student.id, name: student.name, role: role };
+      }
     } else {
-      user = USERS.find((u) => u.role === role);
+       const staffMember = await prisma.staff.findFirst({ where: { email, role }});
+       if(staffMember) {
+           user = { id: staffMember.id, name: staffMember.name, role: staffMember.role };
+       }
     }
+
 
     if (!user) {
       return NextResponse.json({ error: "Invalid user data" }, { status: 400 });
     }
 
-    // In a real app, you'd create a session in the database
-    // and store the session ID in the cookie.
-    // For this demo, we'll store the user object directly.
     const session = { user };
 
-    // Set a cookie for the session
     const cookieStore = await cookies();
     cookieStore.set("session", JSON.stringify(session), {
       httpOnly: true,
@@ -36,6 +38,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(session);
   } catch (error) {
+    console.error(error)
     return NextResponse.json({ error: "An error occurred" }, { status: 500 });
   }
 }

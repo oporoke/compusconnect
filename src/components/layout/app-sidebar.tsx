@@ -99,6 +99,17 @@ export function AppSidebar({ user }: AppSidebarProps) {
     }
     return names[0].substring(0, 2);
   };
+  
+  const getProfileLink = () => {
+      if (!user || !user.id) return "/dashboard";
+      if ([ROLES.ADMIN, ROLES.SUPER_ADMIN, ROLES.TEACHER].includes(user.role)) {
+          return `/staff/${user.id}`;
+      }
+      if ([ROLES.STUDENT, ROLES.PARENT].includes(user.role)) {
+          return `/students/${user.id}`;
+      }
+      return "/dashboard";
+  }
 
   return (
     <>
@@ -145,16 +156,16 @@ export function AppSidebar({ user }: AppSidebarProps) {
       </div>
       <div className="mt-auto p-4 border-t">
         <div className="flex items-center justify-between">
-             <div className="flex items-center gap-3">
+             <Link href={getProfileLink()} className="flex items-center gap-3 hover:bg-muted p-2 rounded-md flex-1">
                 <Avatar className="h-10 w-10">
                     <AvatarImage src={`https://placehold.co/100x100.png`} alt={user.name} data-ai-hint="profile picture" />
                     <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
                 <div>
                     <p className="font-semibold text-sm">{user.name}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{user.role.replace('-', ' ')}</p>
                 </div>
-            </div>
+            </Link>
             <Button variant="ghost" size="icon" onClick={logout} className="text-muted-foreground hover:text-foreground">
                 <LogOut className="h-5 w-5" />
                 <span className="sr-only">Logout</span>

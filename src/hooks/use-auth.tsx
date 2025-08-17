@@ -1,7 +1,7 @@
 
 "use client";
 
-import { User, Role, USERS } from '@/lib/auth';
+import { User, Role } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuditLog } from './use-audit-log';
@@ -23,7 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [authState, setAuthState] = useState<AuthState>('unauthenticated');
   const [isLoading, setIsLoading] = useState(true);
-  const [pendingUser, setPendingUser] = useState<User | null>(null);
+  const [pendingCredentials, setPendingCredentials] = useState<{ email: string, role: Role} | null>(null);
   const router = useRouter();
   const { logAction } = useAuditLog();
 
@@ -55,41 +55,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [checkUser]);
 
   const login = useCallback(async (credentials: { name: string; email: string; role: Role }) => {
-    // This is a mock sign-up/login. In a real app, you'd verify password here.
-    // For the demo, we create a user object and proceed to MFA.
-    const { name, role } = credentials;
-    setPendingUser({ name, role });
+    setPendingCredentials({ email: credentials.email, role: credentials.role });
     setAuthState('awaitingMfa');
   }, []);
   
   const submitMfa = useCallback(async (code: string) => {
-      // Mock MFA verification. Any 6-digit code works.
-      if (!pendingUser || code.length !== 6) return;
+      if (!pendingCredentials || code.length !== 6) return;
 
       setIsLoading(true);
       try {
-        // In a real app, you'd send the credentials to a sign-up/login endpoint.
-        // For this demo, we'll just use the pending user data to create a session.
         const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: pendingUser.name, role: pendingUser.role }),
+            body: JSON.stringify({ email: pendingCredentials.email, role: pendingCredentials.role }),
         });
-        if(res.ok) {
-            const { user: loggedInUser } = await res.json();
-            setUser(loggedInUser);
-            setAuthState('authenticated');
-            logAction('User Logged In', { userId: loggedInUser.name, role: loggedInUser.role });
-            router.push('/dashboard');
+
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.error || 'Login failed');
         }
+        
+        const { user: loggedInUser } = await res.json();
+        setUser(loggedInUser);
+        setAuthState('authenticated');
+        logAction('User Logged In', { userId: loggedInUser.name, role: loggedInUser.role });
+        router.push('/dashboard');
       } catch (error) {
           console.error("Login failed", error);
           setAuthState('unauthenticated');
       } finally {
           setIsLoading(false);
-          setPendingUser(null);
+          setPendingCredentials(null);
       }
-  }, [pendingUser, router, logAction]);
+  }, [pendingCredentials, router, logAction]);
   
   const logout = useCallback(async () => {
     try {
@@ -102,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
         setUser(null);
         setAuthState('unauthenticated');
-        setPendingUser(null);
+        setPendingCredentials(null);
         router.push('/login');
     }
   }, [router, user, logAction]);

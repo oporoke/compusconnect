@@ -10,11 +10,14 @@ export const ROLES = {
 export type Role = (typeof ROLES)[keyof typeof ROLES];
 
 export interface User {
+  id: string; // e.g. S001 or T01
   name: string;
   role: Role;
 }
 
-export const USERS: User[] = [
+// This is now primarily for client-side role mapping and fallback.
+// The source of truth for login is the database.
+export const USERS: Omit<User, 'id'>[] = [
   { name: 'Super Admin User', role: ROLES.SUPER_ADMIN },
   { name: 'Admin User', role: ROLES.ADMIN },
   { name: 'Teacher User', role: ROLES.TEACHER },

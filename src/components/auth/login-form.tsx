@@ -13,13 +13,13 @@ import { Input } from '../ui/input';
 
 export function LoginForm({ onToggleView }: { onToggleView: () => void }) {
   const { login, isLoading } = useAuth();
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [selectedRole, setSelectedRole] = useState<Role>(ROLES.STUDENT);
+  const [selectedRole, setSelectedRole] = useState<Role>(ROLES.ADMIN);
 
   const handleLogin = () => {
-    // Password is not used in this simplified session auth, but kept for UI demo
-    login({ name, email, role: selectedRole });
+    // Name and password are not used in this simplified session auth,
+    // but kept for UI demo. The backend will look up the user by email and role.
+    login({ name: 'User', email, role: selectedRole });
   };
 
   return (
@@ -36,13 +36,28 @@ export function LoginForm({ onToggleView }: { onToggleView: () => void }) {
                 <Input 
                     id="email" 
                     type="email"
-                    placeholder="e.g. jane.doe@example.com"
+                    placeholder="e.g. e.reed@school.com"
                     className="pl-10"
                      value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                 />
             </div>
+        </div>
+         <div className="space-y-2">
+          <Label htmlFor="role">Select Role</Label>
+          <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as Role)}>
+            <SelectTrigger id="role" className="w-full">
+              <SelectValue placeholder="Select a role" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="super-admin">Super Admin</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="teacher">Teacher</SelectItem>
+                <SelectItem value="student">Student</SelectItem>
+                <SelectItem value="parent">Parent</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
             <Label htmlFor="password">Password</Label>

@@ -39,6 +39,7 @@ export function MfaForm() {
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     maxLength={6}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
                 />
             </TabsContent>
             <TabsContent value="sms" className="pt-4">
@@ -50,6 +51,7 @@ export function MfaForm() {
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     maxLength={6}
+                     onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
                 />
             </TabsContent>
         </Tabs>
