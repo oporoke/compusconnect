@@ -21,12 +21,13 @@ This guide is for all users of the system:
 ### 2.1. How to Log In
 Getting into the system is your first step.
 1.  Navigate to the login page.
-2.  **Select Your Role**: Use the dropdown menu to choose your role (e.g., Admin, Teacher, Student).
-3.  **Enter Your Password**: Type your password into the field.
-4.  **Multi-Factor Authentication (MFA)**: For security, you will be asked to enter a 6-digit code from your authenticator app or a code sent via SMS.
-5.  Click **Sign In** or **Verify Code** to access your dashboard.
+2.  **Enter Your Details**: Fill in your full name and email address.
+3.  **Select Your Role**: Use the dropdown menu to choose your role (e.g., Admin, Teacher, Student).
+4.  **Enter Your Password**: Type your password into the field.
+5.  **Multi-Factor Authentication (MFA)**: For security, you will be asked to enter a 6-digit code from your authenticator app or a code sent via SMS.
+6.  Click **Create Account** or **Verify Code** to access your dashboard.
 
-> **Note**: For this demonstration version, you can enter any password and any 6-digit code to log in.
+> **Note**: For this demonstration version, you can enter any details and any 6-digit code to log in.
 
 ### 2.2. Your Dashboard
 The dashboard is your personalized home page. It gives you a quick overview of the most important information relevant to your role.
