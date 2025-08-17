@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -84,6 +85,10 @@ export default function StudentAnalyticsPage() {
         if(gradeTrendData.length > 0) {
             const grades_ws = XLSX.utils.json_to_sheet(gradeTrendData);
             XLSX.utils.book_append_sheet(wb, grades_ws, "Grade Trends");
+        }
+        if(student?.discipline?.length) {
+            const discipline_ws = XLSX.utils.json_to_sheet(student.discipline);
+            XLSX.utils.book_append_sheet(wb, discipline_ws, "Discipline");
         }
         XLSX.writeFile(wb, `${student.name}_performance_report.xlsx`);
     }
@@ -187,6 +192,3 @@ export default function StudentAnalyticsPage() {
         </div>
     );
 }
-
-
-    

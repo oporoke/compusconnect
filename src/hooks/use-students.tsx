@@ -4,6 +4,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { students as initialStudents, grades as initialGrades, Student, Grade, exams as initialExams, Exam } from '@/lib/data';
+import { generateMockStudents } from '@/lib/mockData';
 
 export interface AttendanceRecord {
     studentId: string;
@@ -44,6 +45,8 @@ const generateExamId = (existingExams: Exam[]): string => {
     return `E${(maxId + 1).toString().padStart(2, '0')}`;
 }
 
+const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+
 export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
@@ -53,16 +56,23 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   useEffect(() => {
     try {
-      const storedStudents = localStorage.getItem('campus-connect-students');
-      const storedGrades = localStorage.getItem('campus-connect-grades');
-      const storedExams = localStorage.getItem('campus-connect-exams');
-      const storedAttendance = localStorage.getItem('campus-connect-attendance');
-      
-      setStudents(storedStudents ? JSON.parse(storedStudents) : initialStudents);
-      setGrades(storedGrades ? JSON.parse(storedGrades) : initialGrades);
-      setExams(storedExams ? JSON.parse(storedExams) : initialExams);
-      setAttendance(storedAttendance ? JSON.parse(storedAttendance) : []);
-
+      if (useMockData) {
+          const mockData = generateMockStudents(50);
+          setStudents(mockData.students);
+          setGrades(mockData.grades);
+          setExams(mockData.exams);
+          setAttendance(mockData.attendance);
+      } else {
+          const storedStudents = localStorage.getItem('campus-connect-students');
+          const storedGrades = localStorage.getItem('campus-connect-grades');
+          const storedExams = localStorage.getItem('campus-connect-exams');
+          const storedAttendance = localStorage.getItem('campus-connect-attendance');
+          
+          setStudents(storedStudents ? JSON.parse(storedStudents) : initialStudents);
+          setGrades(storedGrades ? JSON.parse(storedGrades) : initialGrades);
+          setExams(storedExams ? JSON.parse(storedExams) : initialExams);
+          setAttendance(storedAttendance ? JSON.parse(storedAttendance) : []);
+      }
     } catch (error) {
       console.error("Failed to parse data from localStorage", error);
       setStudents(initialStudents);
@@ -75,18 +85,22 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   const persistStudents = (data: Student[]) => {
+    if (useMockData) return;
     localStorage.setItem('campus-connect-students', JSON.stringify(data));
   };
   
   const persistGrades = (data: Grade[]) => {
+    if (useMockData) return;
     localStorage.setItem('campus-connect-grades', JSON.stringify(data));
   };
 
   const persistExams = (data: Exam[]) => {
+     if (useMockData) return;
     localStorage.setItem('campus-connect-exams', JSON.stringify(data));
   };
 
   const persistAttendance = (data: AttendanceRecord[]) => {
+    if (useMockData) return;
     localStorage.setItem('campus-connect-attendance', JSON.stringify(data));
   };
 
@@ -171,5 +185,3 @@ export const useStudents = () => {
   }
   return context;
 };
-
-    
