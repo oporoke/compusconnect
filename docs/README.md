@@ -8,10 +8,10 @@ This directory contains all the professional and technical documentation for the
 - **[System Architecture & Design (SADD)](../SADD.md)**: Overview of the system architecture, technology stack, and module design.
 - **[System Architecture (Detailed)](../SYSTEM_ARCHITECTURE.md)**: A comprehensive, in-depth document detailing the complete system architecture.
 - **[Developer Documentation](../DOCUMENTATION.md)**: In-depth guide to the codebase, component structure, and development flow.
-- **[API Documentation](../API_DOCUMENTATION.md)**: Comprehensive reference for all backend RESTful API endpoints.
+- **[API Documentation](../API_DOCUMENTATION.md)**: Conceptual blueprint for the backend RESTful API.
 - **[User Manual](../USER_MANUAL.md)**: A user-friendly guide for end-users (admins, teachers, parents).
 - **[Admin & Deployment Guide](../ADMIN_GUIDE.md)**: Instructions for system administrators and DevOps engineers.
-- **[Analytics & Reporting Guide](../analytics_reporting_guide.md)**: A guide for decision-makers on using the analytics features.
+- **[Analytics & Reporting Guide](./analytics_reporting_guide.md)**: A guide for decision-makers on using the analytics features.
 - **[Test Plan & QA Strategy](../TestPlan_QA.md)**: The strategy for testing and quality assurance.
 - **[Changelog](./CHANGELOG.md)**: A log of all notable changes to the project.
 
