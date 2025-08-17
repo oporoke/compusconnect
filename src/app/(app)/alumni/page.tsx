@@ -166,7 +166,8 @@ function AddMentorshipDialog() {
                     <DialogFooter><Button type="submit">Create</Button></DialogFooter>
                 </form>
             </DialogContent>
-        );
+        </Dialog>
+    );
 }
 
 
