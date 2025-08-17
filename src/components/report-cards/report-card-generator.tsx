@@ -1,7 +1,7 @@
+
 "use client";
 
 import { useState } from 'react';
-import { students, grades } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,12 +9,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Bot, Sparkles, Download, User } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { generateReportCard, ReportCardInput } from '@/ai/flows/ai-report-card-generator';
+import { useStudents } from '@/hooks/use-students';
 
 export function ReportCardGenerator() {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedStudentId, setSelectedStudentId] = useState('');
     const [generatedReport, setGeneratedReport] = useState<{ summary: string, reportCard: string } | null>(null);
     const { toast } = useToast();
+    const { students, grades, isLoading: areStudentsLoading } = useStudents();
 
     const handleGenerate = async () => {
         if (!selectedStudentId) {
@@ -65,18 +67,22 @@ export function ReportCardGenerator() {
                     <CardDescription>Choose a student to generate their report card.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                     <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-                        <SelectTrigger id="student-select" className="w-full">
-                            <SelectValue placeholder="Select a student..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {students.map(student => (
-                                <SelectItem key={student.id} value={student.id}>
-                                    {student.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    {areStudentsLoading ? (
+                        <Skeleton className="h-10 w-full" />
+                    ) : (
+                        <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+                            <SelectTrigger id="student-select" className="w-full">
+                                <SelectValue placeholder="Select a student..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {students.map(student => (
+                                    <SelectItem key={student.id} value={student.id}>
+                                        {student.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
                 </CardContent>
                 <CardFooter>
                     <Button onClick={handleGenerate} disabled={isLoading || !selectedStudentId} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">

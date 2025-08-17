@@ -1,13 +1,23 @@
+
+"use client";
+
 import { CreateStudentDialog } from "@/components/students/create-student-dialog";
-import { students } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useStudents } from "@/hooks/use-students";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StudentsPage() {
+    const { students, isLoading } = useStudents();
+
+    if (isLoading) {
+        return <Skeleton className="h-96 w-full" />
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-start">

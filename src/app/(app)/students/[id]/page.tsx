@@ -1,6 +1,7 @@
+
 "use client";
 
-import { students, grades } from "@/lib/data";
+import { useStudents } from "@/hooks/use-students";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,12 +13,29 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
+} from "@/components/ui/chart";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StudentProfilePage({ params }: { params: { id: string } }) {
-    const student = students.find(s => s.id === params.id);
-    const studentGrades = grades.find(g => g.studentId === params.id);
+    const { getStudentById, getGradesByStudentId, isLoading } = useStudents();
+    
+    const student = getStudentById(params.id);
+    const studentGrades = getGradesByStudentId(params.id);
+
+    if (isLoading) {
+        return (
+             <div className="space-y-6">
+                <Skeleton className="h-32 w-full" />
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <Skeleton className="h-48 w-full" />
+                    <Skeleton className="h-48 w-full" />
+                    <Skeleton className="h-48 w-full" />
+                </div>
+                <Skeleton className="h-64 w-full" />
+            </div>
+        )
+    }
 
     if (!student || !studentGrades) {
         notFound();

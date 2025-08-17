@@ -1,7 +1,9 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/hooks/use-auth';
+import { StudentProvider } from '@/hooks/use-students';
 
 export const metadata: Metadata = {
   title: 'CampusConnect Lite',
@@ -22,7 +24,9 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          {children}
+            <StudentProvider>
+                {children}
+            </StudentProvider>
         </AuthProvider>
         <Toaster />
       </body>

@@ -1,4 +1,20 @@
-export const students = [
+
+export interface Student {
+    id: string;
+    name: string;
+    grade: string;
+    section: string;
+}
+
+export interface Grade {
+    studentId: string;
+    math: number;
+    science: number;
+    english: number;
+}
+
+
+export const students: Student[] = [
     { id: 'S001', name: 'Alice Johnson', grade: '10', section: 'A' },
     { id: 'S002', name: 'Bob Williams', grade: '10', section: 'A' },
     { id: 'S003', name: 'Charlie Brown', grade: '10', section: 'B' },
@@ -44,7 +60,7 @@ export const defaultInstructorAvailability = `
 - Mr. Lee: Mon-Fri 1pm-5pm
 `;
 
-export const grades = [
+export const grades: Grade[] = [
     { studentId: 'S001', math: 85, science: 92, english: 78 },
     { studentId: 'S002', math: 90, science: 88, english: 82 },
     { studentId: 'S003', math: 72, science: 75, english: 80 },

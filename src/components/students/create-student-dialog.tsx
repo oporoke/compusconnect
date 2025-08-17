@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -15,21 +16,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle } from 'lucide-react';
+import { useStudents } from '@/hooks/use-students';
 
 export function CreateStudentDialog() {
     const [open, setOpen] = useState(false);
     const { toast } = useToast();
+    const { addStudent } = useStudents();
+    const [name, setName] = useState('');
+    const [grade, setGrade] = useState('');
+    const [section, setSection] = useState('');
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        // Here you would typically handle form submission,
-        // e.g., send data to an API to create a new student.
-        // For this demo, we'll just show a success toast.
+        const newStudent = { name, grade, section };
+        addStudent(newStudent);
+        
         toast({
             title: "Student Created",
-            description: "The new student profile has been successfully created.",
+            description: `The profile for ${name} has been successfully created.`,
         });
-        setOpen(false); // Close the dialog on successful submission
+        
+        // Reset form and close dialog
+        setName('');
+        setGrade('');
+        setSection('');
+        setOpen(false);
     };
 
     return (
@@ -53,19 +64,19 @@ export function CreateStudentDialog() {
                             <Label htmlFor="name" className="text-right">
                                 Name
                             </Label>
-                            <Input id="name" placeholder="e.g. John Doe" className="col-span-3" required />
+                            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. John Doe" className="col-span-3" required />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="grade" className="text-right">
                                 Grade
                             </Label>
-                            <Input id="grade" type="text" placeholder="e.g. 10" className="col-span-3" required />
+                            <Input id="grade" value={grade} onChange={(e) => setGrade(e.target.value)} type="text" placeholder="e.g. 10" className="col-span-3" required />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="section" className="text-right">
                                 Section
                             </Label>
-                            <Input id="section" type="text" placeholder="e.g. A" className="col-span-3" required />
+                            <Input id="section" value={section} onChange={(e) => setSection(e.target.value)} type="text" placeholder="e.g. A" className="col-span-3" required />
                         </div>
                     </div>
                     <DialogFooter>

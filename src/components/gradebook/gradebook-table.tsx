@@ -1,48 +1,37 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import { students, grades as initialGrades } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from '@/hooks/use-toast';
 import { Save } from 'lucide-react';
+import { useStudents } from '@/hooks/use-students';
+import type { Grade, Student } from '@/lib/data';
+import { Skeleton } from '../ui/skeleton';
 
-type Grade = {
-    studentId: string;
-    math: number;
-    science: number;
-    english: number;
-};
+type EditableGrade = Student & Grade;
 
 export function GradebookTable() {
-    const [grades, setGrades] = useState<Grade[]>(initialGrades);
+    const { students, grades, updateGrades, isLoading } = useStudents();
     const { toast } = useToast();
-
-    const studentData = useMemo(() => {
-        return students.map(student => {
-            const studentGrades = grades.find(g => g.studentId === student.id);
-            const math = studentGrades?.math || 0;
-            const science = studentGrades?.science || 0;
-            const english = studentGrades?.english || 0;
-            const average = (math + science + english) / 3;
-
-            return {
-                ...student,
-                math,
-                science,
-                english,
-                average: average.toFixed(2),
-            };
-        });
-    }, [grades]);
     
-    const [editableGrades, setEditableGrades] = useState(studentData);
-    
+    const [editableGrades, setEditableGrades] = useState<EditableGrade[]>([]);
+
     useEffect(() => {
-        setEditableGrades(studentData);
-    }, [studentData]);
+        if (!isLoading) {
+            const studentData = students.map(student => {
+                const studentGrades = grades.find(g => g.studentId === student.id) || { studentId: student.id, math: 0, science: 0, english: 0 };
+                return {
+                    ...student,
+                    ...studentGrades
+                };
+            });
+            setEditableGrades(studentData);
+        }
+    }, [students, grades, isLoading]);
 
 
     const handleGradeChange = (studentId: string, subject: 'math' | 'science' | 'english', value: string) => {
@@ -63,12 +52,20 @@ export function GradebookTable() {
             science: s.science,
             english: s.english,
         }));
-        setGrades(updatedGrades);
+        updateGrades(updatedGrades);
         toast({
             title: "Grades Saved",
             description: "Student grades have been successfully updated.",
         });
     };
+    
+    const calculateAverage = (student: EditableGrade) => {
+        return ((student.math + student.science + student.english) / 3).toFixed(2);
+    }
+
+    if (isLoading) {
+        return <Skeleton className="h-96 w-full" />;
+    }
 
     return (
         <Card>
@@ -116,7 +113,7 @@ export function GradebookTable() {
                                             className="w-20 text-center mx-auto"
                                         />
                                     </TableCell>
-                                    <TableCell className="text-center font-medium">{student.average}</TableCell>
+                                    <TableCell className="text-center font-medium">{calculateAverage(student)}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

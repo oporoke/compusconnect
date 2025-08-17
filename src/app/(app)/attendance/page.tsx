@@ -1,7 +1,7 @@
+
 "use client";
 
 import { useState } from 'react';
-import { students } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,8 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from '@/hooks/use-toast';
 import { CalendarCheck } from 'lucide-react';
+import { useStudents } from '@/hooks/use-students';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AttendancePage() {
+    const { students, isLoading } = useStudents();
     const [selectedClass, setSelectedClass] = useState('10-A');
     const { toast } = useToast();
 
@@ -19,9 +22,14 @@ export default function AttendancePage() {
         toast({
             title: "Attendance Submitted",
             description: `Attendance for class ${selectedClass} has been recorded.`,
+            // Note: In a real app, this data would be sent to a backend.
         });
     }
     
+    if (isLoading) {
+        return <Skeleton className="h-96 w-full" />;
+    }
+
     const studentsInClass = students.filter(s => `${s.grade}-${s.section}` === selectedClass);
 
     return (
