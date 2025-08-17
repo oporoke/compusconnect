@@ -14,9 +14,11 @@ export async function GET(request: Request) {
       },
     });
 
-    // The frontend expects a Record<string, Conversation>
     const conversationMap = conversations.reduce((acc, curr) => {
-      acc[curr.id] = curr.messages;
+      acc[curr.id] = curr.messages.map(msg => ({
+          ...msg,
+          timestamp: msg.timestamp.toISOString() // Ensure date is serialized
+      }));
       return acc;
     }, {} as Record<string, any>);
 

@@ -281,24 +281,28 @@ async function main() {
 
   // Health
   for(const hr of healthRecords) {
-      await prisma.healthRecord.upsert({
-          where: {studentId: hr.studentId},
-          update: {},
-          create: {
-            studentId: hr.studentId,
-            bloodGroup: hr.bloodGroup,
-            allergies: hr.allergies,
-            vaccinations: hr.vaccinations,
-            clinicVisits: {
-                create: clinicVisits.filter(cv => cv.studentId === hr.studentId).map(cv => ({
-                    id: cv.id,
-                    reason: cv.reason,
-                    treatment: cv.treatment,
-                    date: new Date(cv.date)
-                }))
-            }
-        }
-      })
+    const student = await prisma.student.findUnique({ where: { id: hr.studentId }});
+    if (student) {
+        await prisma.healthRecord.upsert({
+            where: {studentId: hr.studentId},
+            update: {},
+            create: {
+              studentId: hr.studentId,
+              bloodGroup: hr.bloodGroup,
+              allergies: hr.allergies,
+              vaccinations: hr.vaccinations,
+              clinicVisits: {
+                  create: clinicVisits.filter(cv => cv.studentId === hr.studentId).map(cv => ({
+                      id: cv.id,
+                      studentId: cv.studentId, // Denormalized field
+                      reason: cv.reason,
+                      treatment: cv.treatment,
+                      date: new Date(cv.date)
+                  }))
+              }
+          }
+        })
+    }
   }
 
 
