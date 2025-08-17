@@ -1,8 +1,9 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { AlumniProfile, Donation, Campaign, Pledge, alumniProfiles, donations, campaigns, pledges } from '@/lib/data';
+import { AlumniProfile, Donation, Campaign, Pledge, Mentorship, alumniProfiles, donations, campaigns, pledges, mentorships } from '@/lib/data';
 import { useToast } from './use-toast';
 
 interface AlumniContextType {
@@ -10,6 +11,7 @@ interface AlumniContextType {
   donations: Donation[];
   campaigns: Campaign[];
   pledges: Pledge[];
+  mentorships: Mentorship[];
   isLoading: boolean;
   addAlumni: (profile: Omit<AlumniProfile, 'id'>) => void;
   updateAlumni: (profile: AlumniProfile) => void;
@@ -17,6 +19,7 @@ interface AlumniContextType {
   getAlumniNameById: (id: string) => string;
   addCampaign: (campaign: Omit<Campaign, 'id' | 'raised' | 'startDate' | 'endDate'>) => void;
   addPledge: (pledge: Omit<Pledge, 'id' | 'status' | 'date'>) => void;
+  addMentorship: (mentorship: Omit<Mentorship, 'id' | 'startDate' | 'status'>) => void;
 }
 
 const AlumniContext = createContext<AlumniContextType | undefined>(undefined);
@@ -26,6 +29,7 @@ export const AlumniProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [donations, setDonations] = useState<Donation[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [pledges, setPledges] = useState<Pledge[]>([]);
+  const [mentorships, setMentorships] = useState<Mentorship[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -35,17 +39,20 @@ export const AlumniProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       const storedDonations = localStorage.getItem('campus-connect-donations');
       const storedCampaigns = localStorage.getItem('campus-connect-campaigns');
       const storedPledges = localStorage.getItem('campus-connect-pledges');
+      const storedMentorships = localStorage.getItem('campus-connect-mentorships');
       
       setAlumni(storedAlumni ? JSON.parse(storedAlumni) : alumniProfiles);
       setDonations(storedDonations ? JSON.parse(storedDonations) : donations);
       setCampaigns(storedCampaigns ? JSON.parse(storedCampaigns) : campaigns);
       setPledges(storedPledges ? JSON.parse(storedPledges) : pledges);
+      setMentorships(storedMentorships ? JSON.parse(storedMentorships) : mentorships);
     } catch (error) {
       console.error("Failed to parse alumni data from localStorage", error);
       setAlumni(alumniProfiles);
       setDonations(donations);
       setCampaigns(campaigns);
       setPledges(pledges);
+      setMentorships(mentorships);
     } finally {
       setIsLoading(false);
     }
@@ -119,8 +126,23 @@ export const AlumniProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     });
   }, [toast]);
 
+  const addMentorship = useCallback((mentorshipData: Omit<Mentorship, 'id' | 'startDate' | 'status'>) => {
+    setMentorships(prev => {
+        const newMentorship: Mentorship = {
+            ...mentorshipData,
+            id: `MENTOR-${Date.now()}`,
+            startDate: new Date().toISOString().split('T')[0],
+            status: 'Active'
+        };
+        const updated = [...prev, newMentorship];
+        persistData('mentorships', updated);
+        toast({ title: 'Mentorship Started' });
+        return updated;
+    })
+  }, [toast]);
+
   return (
-    <AlumniContext.Provider value={{ alumni, donations, campaigns, pledges, isLoading, addAlumni, updateAlumni, addDonation, getAlumniNameById, addCampaign, addPledge }}>
+    <AlumniContext.Provider value={{ alumni, donations, campaigns, pledges, mentorships, isLoading, addAlumni, updateAlumni, addDonation, getAlumniNameById, addCampaign, addPledge, addMentorship }}>
       {children}
     </AlumniContext.Provider>
   );
@@ -133,3 +155,5 @@ export const useAlumni = () => {
   }
   return context;
 };
+
+    

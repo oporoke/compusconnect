@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from 'react';
@@ -14,6 +15,7 @@ import { useCanteen } from '@/hooks/use-canteen';
 import { useStudents } from '@/hooks/use-students';
 import { DollarSign, CreditCard, ShoppingCart, Utensils, Trash2, PlusCircle, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { CanteenMenuItem } from '@/lib/data';
 
 function AddFundsDialog() {
     const { addFunds } = useCanteen();
@@ -50,18 +52,27 @@ function RecordPurchaseDialog() {
     const { students } = useStudents();
     const [open, setOpen] = useState(false);
     const [studentId, setStudentId] = useState('');
-    const [items, setItems] = useState<string[]>([]);
+    const [selectedItems, setSelectedItems] = useState<{ name: string; price: number; }[]>([]);
     
     const allItems = menu.flatMap(day => day.items).filter((v, i, a) => a.findIndex(t => (t.name === v.name)) === i);
-    const total = items.reduce((acc, current) => acc + (allItems.find(i => i.name === current)?.price || 0), 0);
+    const total = selectedItems.reduce((acc, current) => acc + current.price, 0);
     
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        recordPurchase(studentId, total, items.join(', '));
+        recordPurchase(studentId, selectedItems);
         setStudentId('');
-        setItems([]);
+        setSelectedItems([]);
         setOpen(false);
     }
+    
+    const handleItemToggle = (item: CanteenMenuItem, checked: boolean) => {
+        if (checked) {
+            setSelectedItems([...selectedItems, item]);
+        } else {
+            setSelectedItems(selectedItems.filter(i => i.name !== item.name));
+        }
+    }
+
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -75,18 +86,15 @@ function RecordPurchaseDialog() {
                         <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                             {allItems.map(item => (
                                 <div key={item.name} className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                                    <input type="checkbox" id={item.name} checked={items.includes(item.name)} onChange={e => {
-                                        if (e.target.checked) setItems([...items, item.name]);
-                                        else setItems(items.filter(i => i !== item.name));
-                                    }} />
-                                    <Label htmlFor={item.name} className="flex-1">{item.name}</Label>
+                                    <input type="checkbox" id={item.name} checked={selectedItems.some(i => i.name === item.name)} onChange={e => handleItemToggle(item, e.target.checked)} disabled={item.stock <= 0} />
+                                    <Label htmlFor={item.name} className={`flex-1 ${item.stock <= 0 ? 'text-muted-foreground line-through' : ''}`}>{item.name}</Label>
                                     <span className="text-sm font-mono">${item.price.toFixed(2)}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
                     <div className="text-lg font-bold text-right">Total: ${total.toFixed(2)}</div>
-                    <DialogFooter><Button type="submit" disabled={!studentId || items.length === 0}>Complete Purchase</Button></DialogFooter>
+                    <DialogFooter><Button type="submit" disabled={!studentId || selectedItems.length === 0}>Complete Purchase</Button></DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>
@@ -97,11 +105,11 @@ function MenuManager() {
     const { menu, updateMenu } = useCanteen();
     const [editableMenu, setEditableMenu] = useState(JSON.parse(JSON.stringify(menu)));
 
-    const handleItemChange = (day: string, itemIndex: number, field: 'name' | 'price', value: string) => {
+    const handleItemChange = (day: string, itemIndex: number, field: keyof CanteenMenuItem, value: string) => {
         const newMenu = [...editableMenu];
         const dayMenu = newMenu.find(d => d.day === day);
         if (dayMenu) {
-            dayMenu.items[itemIndex][field] = field === 'price' ? Number(value) : value;
+            dayMenu.items[itemIndex][field] = typeof dayMenu.items[itemIndex][field] === 'number' ? Number(value) : value;
             setEditableMenu(newMenu);
         }
     };
@@ -110,7 +118,7 @@ function MenuManager() {
          const newMenu = [...editableMenu];
         const dayMenu = newMenu.find(d => d.day === day);
         if (dayMenu) {
-            dayMenu.items.push({ name: '', price: 0 });
+            dayMenu.items.push({ name: '', price: 0, stock: 0 });
             setEditableMenu(newMenu);
         }
     }
@@ -127,8 +135,8 @@ function MenuManager() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Weekly Menu Management</CardTitle>
-                <CardDescription>Set the food items and prices for each day.</CardDescription>
+                <CardTitle>Weekly Menu & Stock Management</CardTitle>
+                <CardDescription>Set food items, prices, and available stock for each day.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 {editableMenu.map((dayMenu: any) => (
@@ -139,6 +147,7 @@ function MenuManager() {
                             <div key={index} className="flex items-center gap-2">
                                 <Input placeholder="Item Name" value={item.name} onChange={(e) => handleItemChange(dayMenu.day, index, 'name', e.target.value)} />
                                 <Input type="number" placeholder="Price" value={item.price} onChange={(e) => handleItemChange(dayMenu.day, index, 'price', e.target.value)} className="w-24"/>
+                                <Input type="number" placeholder="Stock" value={item.stock} onChange={(e) => handleItemChange(dayMenu.day, index, 'stock', e.target.value)} className="w-24"/>
                                 <Button variant="ghost" size="icon" onClick={() => removeItem(dayMenu.day, index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                             </div>
                         ))}
@@ -176,7 +185,7 @@ export default function CanteenPage() {
                 <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="accounts"><DollarSign className="mr-2"/>Accounts</TabsTrigger>
                     <TabsTrigger value="transactions"><ShoppingCart className="mr-2"/>Transactions</TabsTrigger>
-                    <TabsTrigger value="menu"><Utensils className="mr-2"/>Menu</TabsTrigger>
+                    <TabsTrigger value="menu"><Utensils className="mr-2"/>Menu & Stock</TabsTrigger>
                 </TabsList>
                 <TabsContent value="accounts">
                     <Card>
@@ -197,3 +206,5 @@ export default function CanteenPage() {
         </div>
     );
 }
+
+    

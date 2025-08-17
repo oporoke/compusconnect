@@ -421,10 +421,15 @@ export interface CanteenTransaction {
     description: string;
     date: string;
 }
+export interface CanteenMenuItem {
+    name: string;
+    price: number;
+    stock: number;
+}
 export interface CanteenMenu {
     id: string;
     day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
-    items: { name: string; price: number }[];
+    items: CanteenMenuItem[];
 }
 
 // Alumni Management
@@ -444,6 +449,14 @@ export interface Donation {
     purpose: string;
     date: string;
 }
+export interface Mentorship {
+    id: string;
+    mentorId: string; // Alumni ID
+    menteeId: string; // Student ID
+    startDate: string;
+    status: 'Active' | 'Completed';
+}
+
 
 // Health Center
 export interface HealthRecord {
@@ -469,16 +482,21 @@ export const canteenTransactions: CanteenTransaction[] = [
     { id: 'CT01', studentId: 'S001', type: 'debit', amount: 5.50, description: 'Lunch', date: new Date().toISOString().split('T')[0] },
 ];
 export const canteenMenu: CanteenMenu[] = [
-    { id: 'CM1', day: 'Monday', items: [{ name: 'Pizza Slice', price: 2.50 }, { name: 'Salad', price: 3.00 }] },
-    { id: 'CM2', day: 'Tuesday', items: [{ name: 'Burger', price: 4.00 }, { name: 'Fries', price: 1.50 }] },
-    { id: 'CM3', day: 'Wednesday', items: [{ name: 'Pasta', price: 4.50 }, { name: 'Garlic Bread', price: 1.00 }] },
-    { id: 'CM4', day: 'Thursday', items: [{ name: 'Taco', price: 3.00 }, { name: 'Nachos', price: 3.50 }] },
-    { id: 'CM5', day: 'Friday', items: [{ name: 'Fish & Chips', price: 5.00 }, { name: 'Soup', price: 2.00 }] },
+    { id: 'CM1', day: 'Monday', items: [{ name: 'Pizza Slice', price: 2.50, stock: 50 }, { name: 'Salad', price: 3.00, stock: 30 }] },
+    { id: 'CM2', day: 'Tuesday', items: [{ name: 'Burger', price: 4.00, stock: 40 }, { name: 'Fries', price: 1.50, stock: 100 }] },
+    { id: 'CM3', day: 'Wednesday', items: [{ name: 'Pasta', price: 4.50, stock: 35 }, { name: 'Garlic Bread', price: 1.00, stock: 70 }] },
+    { id: 'CM4', day: 'Thursday', items: [{ name: 'Taco', price: 3.00, stock: 60 }, { name: 'Nachos', price: 3.50, stock: 40 }] },
+    { id: 'CM5', day: 'Friday', items: [{ name: 'Fish & Chips', price: 5.00, stock: 30 }, { name: 'Soup', price: 2.00, stock: 50 }] },
 ];
 export const alumniProfiles: AlumniProfile[] = [
     { id: 'S000', name: 'John Smith (Alumnus)', graduationYear: 2015, email: 'j.smith@alumni.com', phone: '555-0001', occupation: 'Software Engineer', company: 'Google' },
+    { id: 'S-ALUM-02', name: 'Jane Doe (Alumna)', graduationYear: 2018, email: 'j.doe@alumni.com', phone: '555-0002', occupation: 'Doctor', company: 'General Hospital' },
 ];
 export const donations: Donation[] = [];
+export const mentorships: Mentorship[] = [
+    { id: 'MENTOR-01', mentorId: 'S000', menteeId: 'S005', startDate: '2024-09-01', status: 'Active' }
+];
+
 export const healthRecords: HealthRecord[] = [
     { studentId: 'S001', bloodGroup: 'O+', allergies: ['Peanuts'], vaccinations: [{ name: 'MMR', date: '2015-05-20' }] },
 ];
@@ -520,3 +538,5 @@ export const campaigns: Campaign[] = [
     { id: 'CAMP01', title: 'New Library Wing', goal: 50000, raised: 12500, startDate: '2024-09-01', endDate: '2025-01-31' },
 ];
 export const pledges: Pledge[] = [];
+
+    

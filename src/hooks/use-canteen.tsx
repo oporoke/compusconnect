@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
@@ -12,7 +13,7 @@ interface CanteenContextType {
   isLoading: boolean;
   getAccountByStudentId: (studentId: string) => CanteenAccount | undefined;
   addFunds: (studentId: string, amount: number) => void;
-  recordPurchase: (studentId: string, amount: number, description: string) => void;
+  recordPurchase: (studentId: string, items: { name: string; price: number; }[]) => void;
   updateMenu: (updatedMenu: CanteenMenu[]) => void;
 }
 
@@ -84,20 +85,57 @@ export const CanteenProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
   }, [toast, addTransaction]);
 
-  const recordPurchase = useCallback((studentId: string, amount: number, description: string) => {
+  const recordPurchase = useCallback((studentId: string, items: { name: string; price: number; }[]) => {
+    const totalAmount = items.reduce((sum, item) => sum + item.price, 0);
+    const description = items.map(item => item.name).join(', ');
+
     setAccounts(prev => {
         const account = prev.find(acc => acc.studentId === studentId);
-        if (!account || account.balance < amount) {
+        if (!account || account.balance < totalAmount) {
             toast({ variant: 'destructive', title: 'Insufficient Funds', description: 'The student does not have enough balance for this purchase.' });
             return prev;
         }
-        const updatedAccounts = prev.map(acc => acc.studentId === studentId ? { ...acc, balance: acc.balance - amount } : acc);
+
+        // Check stock levels
+        let canFulfill = true;
+        const updatedMenu = JSON.parse(JSON.stringify(menu));
+        items.forEach(purchasedItem => {
+            let itemFound = false;
+            for (const dayMenu of updatedMenu) {
+                const menuItem = dayMenu.items.find((i:any) => i.name === purchasedItem.name);
+                if (menuItem) {
+                    if (menuItem.stock > 0) {
+                        menuItem.stock -= 1;
+                        itemFound = true;
+                    } else {
+                        canFulfill = false;
+                        toast({ variant: 'destructive', title: 'Out of Stock', description: `${purchasedItem.name} is no longer available.` });
+                    }
+                    break;
+                }
+            }
+             if (!itemFound) {
+                canFulfill = false;
+                 toast({ variant: 'destructive', title: 'Item not found', description: `${purchasedItem.name} could not be found in the menu.` });
+            }
+        });
+
+        if (!canFulfill) {
+            return prev; // Revert if any item is out of stock
+        }
+
+        // If all items are in stock, proceed with purchase
+        const updatedAccounts = prev.map(acc => acc.studentId === studentId ? { ...acc, balance: acc.balance - totalAmount } : acc);
         persistData('accounts', updatedAccounts);
-        addTransaction(studentId, 'debit', amount, description);
-        toast({ title: 'Purchase Recorded', description: `A charge of $${amount.toFixed(2)} was made.` });
+        setMenu(updatedMenu);
+        persistData('menu', updatedMenu);
+
+        addTransaction(studentId, 'debit', totalAmount, description);
+        toast({ title: 'Purchase Recorded', description: `A charge of $${totalAmount.toFixed(2)} was made.` });
         return updatedAccounts;
     });
-  }, [toast, addTransaction]);
+  }, [menu, toast, addTransaction]);
+
 
   const updateMenu = useCallback((updatedMenu: CanteenMenu[]) => {
     setMenu(updatedMenu);
@@ -119,3 +157,5 @@ export const useCanteen = () => {
   }
   return context;
 };
+
+    

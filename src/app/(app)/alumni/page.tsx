@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from 'react';
@@ -11,7 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAlumni } from '@/hooks/use-alumni';
-import { UserSquare, Search, PlusCircle, Pencil, Gift, TrendingUp, Handshake } from 'lucide-react';
+import { useStudents } from '@/hooks/use-students';
+import { UserSquare, Search, PlusCircle, Pencil, Gift, TrendingUp, Handshake, ShieldQuestion } from 'lucide-react';
 import type { AlumniProfile, Campaign, Pledge } from '@/lib/data';
 import { Progress } from '@/components/ui/progress';
 
@@ -140,8 +142,37 @@ function AddPledgeDialog() {
     );
 }
 
+function AddMentorshipDialog() {
+    const { alumni, addMentorship } = useAlumni();
+    const { students } = useStudents();
+    const [open, setOpen] = useState(false);
+    const [mentorId, setMentorId] = useState('');
+    const [menteeId, setMenteeId] = useState('');
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        addMentorship({ mentorId, menteeId });
+        setOpen(false);
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button><PlusCircle className="mr-2"/>New Mentorship</Button></DialogTrigger>
+            <DialogContent>
+                <DialogHeader><DialogTitle>Create New Mentorship</DialogTitle></DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <Select value={mentorId} onValueChange={setMentorId} required><SelectTrigger><SelectValue placeholder="Select Mentor (Alumni)..." /></SelectTrigger><SelectContent>{alumni.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent></Select>
+                    <Select value={menteeId} onValueChange={setMenteeId} required><SelectTrigger><SelectValue placeholder="Select Mentee (Student)..." /></SelectTrigger><SelectContent>{students.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>
+                    <DialogFooter><Button type="submit">Create</Button></DialogFooter>
+                </form>
+            </DialogContent>
+        );
+}
+
+
 export default function AlumniPage() {
-    const { alumni, donations, campaigns, pledges, getAlumniNameById, isLoading } = useAlumni();
+    const { alumni, donations, campaigns, pledges, mentorships, getAlumniNameById, isLoading } = useAlumni();
+    const { students } = useStudents();
     const [searchTerm, setSearchTerm] = useState('');
     const [editingAlumni, setEditingAlumni] = useState<AlumniProfile | undefined>(undefined);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -152,6 +183,8 @@ export default function AlumniPage() {
         a.company.toLowerCase().includes(searchTerm.toLowerCase())
     );
     
+    const getStudentNameById = (id: string) => students.find(s => s.id === id)?.name || 'N/A';
+
     return (
         <div className="space-y-6">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -172,11 +205,12 @@ export default function AlumniPage() {
             </div>
 
             <Tabs defaultValue="directory">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="directory"><UserSquare className="mr-2"/>Directory</TabsTrigger>
                     <TabsTrigger value="donations"><Gift className="mr-2"/>Donations</TabsTrigger>
                     <TabsTrigger value="campaigns"><TrendingUp className="mr-2"/>Campaigns</TabsTrigger>
                     <TabsTrigger value="pledges"><Handshake className="mr-2"/>Pledges</TabsTrigger>
+                    <TabsTrigger value="mentorships"><ShieldQuestion className="mr-2"/>Mentorships</TabsTrigger>
                 </TabsList>
                 <TabsContent value="directory">
                     <Card>
@@ -265,7 +299,29 @@ export default function AlumniPage() {
                         </CardContent>
                     </Card>
                 </TabsContent>
+                <TabsContent value="mentorships">
+                     <Card>
+                        <CardHeader className="flex justify-between items-center"><CardTitle>Mentorship Program</CardTitle><AddMentorshipDialog /></CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader><TableRow><TableHead>Mentor (Alumni)</TableHead><TableHead>Mentee (Student)</TableHead><TableHead>Start Date</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                                <TableBody>
+                                    {mentorships.map(m => (
+                                        <TableRow key={m.id}>
+                                            <TableCell>{getAlumniNameById(m.mentorId)}</TableCell>
+                                            <TableCell>{getStudentNameById(m.menteeId)}</TableCell>
+                                            <TableCell>{m.startDate}</TableCell>
+                                            <TableCell><Badge variant={m.status === 'Active' ? 'default' : 'secondary'}>{m.status}</Badge></TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
             </Tabs>
         </div>
     );
 }
+
+    
