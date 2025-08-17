@@ -27,10 +27,10 @@ export function CreateStudentDialog() {
     const [grade, setGrade] = useState('');
     const [section, setSection] = useState('');
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const newStudent = { name, grade, section };
-        await addStudent(newStudent);
+        addStudent(newStudent);
         
         // Reset form and close dialog
         setName('');
