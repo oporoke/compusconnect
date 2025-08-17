@@ -10,6 +10,7 @@ export async function GET(request: Request) {
     return NextResponse.json(admissions);
   } catch (error) {
     console.error('Failed to fetch admissions:', error);
+    // Return 200 OK with an empty array to prevent client-side errors
     return NextResponse.json([], { status: 200 });
   }
 }
