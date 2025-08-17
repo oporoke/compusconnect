@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { User, ROLES } from '@/lib/auth';
@@ -32,6 +31,7 @@ import {
   HeartPulse,
   Utensils,
   Hammer,
+  Route,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -46,6 +46,7 @@ const navLinks = [
   { href: '/staff', label: 'Staff', icon: Briefcase, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/students', label: 'Students', icon: Users, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { type: 'divider', roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN, ROLES.STUDENT, ROLES.PARENT]},
+  { href: '/academics/life-path', label: 'Life Path', icon: Route, roles: [ROLES.STUDENT, ROLES.PARENT, ROLES.TEACHER] },
   { href: '/exams', label: 'Exams', icon: FilePen, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { href: '/attendance', label: 'Attendance', icon: CalendarCheck, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { href: '/gradebook', label: 'Gradebook', icon: GraduationCap, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },

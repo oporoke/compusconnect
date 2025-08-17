@@ -18,7 +18,7 @@ const CareerPathwayOutputSchema = z.object({
       introduction: z.string().describe("A brief, encouraging introduction to the career path."),
       milestones: z.array(z.object({
           stage: z.enum(["High School", "University", "Career"]),
-          title: z.string().describe("The title of the milestone (e.g., 'Excel in Key Subjects', 'Bachelor's Degree in Computer Science')."),
+          title: z.string().describe("The title of the milestone (e.g., 'Excel in Key Subjects', 'Bachelor's Degree in Computer Science'])."),
           description: z.string().describe("A one-sentence description of the milestone."),
       })).describe("A list of key milestones from high school to career entry.")
   })

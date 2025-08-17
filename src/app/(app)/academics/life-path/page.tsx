@@ -85,7 +85,7 @@ export default function LifePathSimulatorPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-headline font-bold">Life Path Simulator & Career Co-Pilot</h1>
+                <h1 className="text-3xl font-headline font-bold">Life Path Simulator &amp; Career Co-Pilot</h1>
                 <p className="text-muted-foreground">Explore future careers and get an AI-powered roadmap to achieve your goals.</p>
             </div>
 
