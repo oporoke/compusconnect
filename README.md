@@ -12,7 +12,7 @@ The system is designed to be a comprehensive, all-in-one solution, replacing fra
 
 The application is organized into 7 core modules, each packed with features to serve the diverse needs of a modern school.
 
-| Module | Key Features |
+| Module | Key Features 
 | :--- | :--- |
 | 🎓 **Academic** | Student Information, Attendance Tracking, **AI Timetable Generation**, Examination & Grading, **Automated Marking**, Integrated LMS, **AI Adaptive Learning**, **Gamification**, **AI Life Path Simulator**. |
 | 🏛️ **Administrative** | **AI Applicant Scoring**, Staff & Faculty Profiles, **Multi-School Management**, **Asset & Inventory Tracking**, E-Library with Plagiarism Check Mocks. |
