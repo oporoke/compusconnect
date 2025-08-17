@@ -1,0 +1,31 @@
+import { NextResponse } from 'next/server'
+import prisma from '@/lib/db'
+
+export async function GET(request: Request) {
+  try {
+    const students = await prisma.student.findMany({
+      include: {
+        discipline: true,
+      },
+    });
+    return NextResponse.json(students);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch students' }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const data = await request.json();
+    const newStudent = await prisma.student.create({
+      data: {
+        name: data.name,
+        grade: data.grade,
+        section: data.section,
+      },
+    });
+    return NextResponse.json(newStudent, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to create student' }, { status: 500 });
+  }
+}

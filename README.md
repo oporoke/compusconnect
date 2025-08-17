@@ -53,7 +53,7 @@ Follow these instructions to get a local copy of the project up and running for 
 -   **npm** (or yarn/pnpm)
 -   **(Optional)** **Google Cloud SDK**: Required for running the Genkit AI flows. Ensure you are authenticated via `gcloud auth application-default login`.
 
-### Installation
+### Installation & Database Setup
 
 1.  **Clone the repository**:
     ```bash
@@ -63,6 +63,17 @@ Follow these instructions to get a local copy of the project up and running for 
 2.  **Install dependencies**:
     ```bash
     npm install
+    ```
+3.  **Set up the database**:
+    This project uses SQLite with Prisma ORM. The database file will be automatically created.
+    Run the following command to apply the schema migrations:
+    ```bash
+    npx prisma migrate dev --name init
+    ```
+4.  **Seed the database**:
+    To populate the database with initial mock data, run the seed script:
+    ```bash
+    npx prisma db seed
     ```
 
 ### Environment Variables

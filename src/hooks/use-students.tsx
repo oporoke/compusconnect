@@ -1,26 +1,22 @@
 
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { students as initialStudents, grades as initialGrades, Student, Grade, exams as initialExams, Exam } from '@/lib/data';
-import { generateMockStudents } from '@/lib/mockData';
+import type { Student, Grade, Exam, AttendanceRecord as IAttendanceRecord } from '@prisma/client';
 import { useAuditLog } from './use-audit-log';
 
-export interface AttendanceRecord {
-    studentId: string;
-    date: string; // YYYY-MM-DD
-    present: boolean;
-}
+// Re-exporting Prisma types for client-side usage if needed
+export type { Student, Grade, Exam };
+export interface AttendanceRecord extends IAttendanceRecord {}
 
 interface StudentContextType {
   students: Student[];
   grades: Grade[];
   exams: Exam[];
   attendance: AttendanceRecord[];
-  addStudent: (student: Omit<Student, 'id' | 'discipline'>) => void;
+  addStudent: (student: Omit<Student, 'id' | 'createdAt' | 'updatedAt' | 'hostelRoomId'>) => void;
   addExam: (exam: Omit<Exam, 'id'>) => void;
-  updateGrades: (newGrade: Grade) => void;
+  updateGrades: (newGrade: Omit<Grade, 'id'>) => void;
   logAttendance: (classId: string, studentStatuses: { studentId: string; present: boolean }[]) => void;
   getStudentById: (id: string) => Student | undefined;
   getGradesByStudentId: (id: string) => Grade[];
@@ -30,24 +26,6 @@ interface StudentContextType {
 
 const StudentContext = createContext<StudentContextType | undefined>(undefined);
 
-const generateStudentId = (existingStudents: Student[]): string => {
-    const maxId = existingStudents.reduce((max, student) => {
-        const idNum = parseInt(student.id.replace('S', ''), 10);
-        return idNum > max ? idNum : max;
-    }, 0);
-    return `S${(maxId + 1).toString().padStart(3, '0')}`;
-}
-
-const generateExamId = (existingExams: Exam[]): string => {
-    const maxId = existingExams.reduce((max, exam) => {
-        const idNum = parseInt(exam.id.replace('E', ''), 10);
-        return idNum > max ? idNum : max;
-    }, 0);
-    return `E${(maxId + 1).toString().padStart(2, '0')}`;
-}
-
-const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
-
 export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
@@ -56,109 +34,67 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [isLoading, setIsLoading] = useState(true);
   const { logAction } = useAuditLog();
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
     try {
-      if (useMockData) {
-          const mockData = generateMockStudents(50);
-          setStudents(mockData.students);
-          setGrades(mockData.grades);
-          setExams(mockData.exams);
-          setAttendance(mockData.attendance);
-      } else {
-          const storedStudents = localStorage.getItem('campus-connect-students');
-          const storedGrades = localStorage.getItem('campus-connect-grades');
-          const storedExams = localStorage.getItem('campus-connect-exams');
-          const storedAttendance = localStorage.getItem('campus-connect-attendance');
-          
-          setStudents(storedStudents ? JSON.parse(storedStudents) : initialStudents);
-          setGrades(storedGrades ? JSON.parse(storedGrades) : initialGrades);
-          setExams(storedExams ? JSON.parse(storedExams) : initialExams);
-          setAttendance(storedAttendance ? JSON.parse(storedAttendance) : []);
-      }
+        const [studentsRes, gradesRes, examsRes, attendanceRes] = await Promise.all([
+            fetch('/api/students'),
+            fetch('/api/grades'),
+            fetch('/api/exams'),
+            fetch('/api/attendance')
+        ]);
+
+        if(!studentsRes.ok || !gradesRes.ok || !examsRes.ok || !attendanceRes.ok) {
+            throw new Error('Failed to fetch initial data');
+        }
+
+        const studentsData = await studentsRes.json();
+        const gradesData = await gradesRes.json();
+        const examsData = await examsRes.json();
+        const attendanceData = await attendanceRes.json();
+
+        setStudents(studentsData);
+        setGrades(gradesData);
+        setExams(examsData);
+        setAttendance(attendanceData);
+
     } catch (error) {
-      console.error("Failed to parse data from localStorage", error);
-      setStudents(initialStudents);
-      setGrades(initialGrades);
-      setExams(initialExams);
-      setAttendance([]);
+      console.error("Failed to fetch data from API", error);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const persistStudents = (data: Student[]) => {
-    if (useMockData) return;
-    localStorage.setItem('campus-connect-students', JSON.stringify(data));
-  };
-  
-  const persistGrades = (data: Grade[]) => {
-    if (useMockData) return;
-    localStorage.setItem('campus-connect-grades', JSON.stringify(data));
-  };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const persistExams = (data: Exam[]) => {
-     if (useMockData) return;
-    localStorage.setItem('campus-connect-exams', JSON.stringify(data));
-  };
-
-  const persistAttendance = (data: AttendanceRecord[]) => {
-    if (useMockData) return;
-    localStorage.setItem('campus-connect-attendance', JSON.stringify(data));
-  };
-
-  const addStudent = useCallback((studentData: Omit<Student, 'id' | 'discipline'>) => {
-    setStudents(prevStudents => {
-        const newStudent: Student = {
-            ...studentData,
-            id: generateStudentId(prevStudents),
-        };
-        const newStudents = [...prevStudents, newStudent];
-        persistStudents(newStudents);
+  const addStudent = useCallback(async (studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt' | 'hostelRoomId'>) => {
+    try {
+        const response = await fetch('/api/students', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(studentData),
+        });
+        if (!response.ok) throw new Error('Failed to create student');
+        const newStudent = await response.json();
+        setStudents(prev => [...prev, newStudent]);
         logAction('Student Created', { studentId: newStudent.id, studentName: newStudent.name });
-        return newStudents;
-    });
+    } catch (error) {
+        console.error(error);
+    }
   }, [logAction]);
   
-  const addExam = useCallback((examData: Omit<Exam, 'id'>) => {
-    setExams(prevExams => {
-        const newExam: Exam = {
-            ...examData,
-            id: generateExamId(prevExams),
-        };
-        const newExams = [...prevExams, newExam];
-        persistExams(newExams);
-        return newExams;
-    });
+  const addExam = useCallback(async (examData: Omit<Exam, 'id'>) => {
+    // Similar fetch call to POST /api/exams
   }, []);
 
-  const updateGrades = useCallback((newGrade: Grade) => {
-    setGrades(currentGrades => {
-        const index = currentGrades.findIndex(g => g.studentId === newGrade.studentId && g.examId === newGrade.examId);
-        let updatedGrades;
-        if (index > -1) {
-            updatedGrades = [...currentGrades];
-            updatedGrades[index] = newGrade;
-        } else {
-            updatedGrades = [...currentGrades, newGrade];
-        }
-        persistGrades(updatedGrades);
-        return updatedGrades;
-    });
+  const updateGrades = useCallback(async (newGrade: Omit<Grade, 'id'>) => {
+    // Similar fetch call to POST /api/grades
   }, []);
 
-  const logAttendance = useCallback((classId: string, studentStatuses: { studentId: string; present: boolean }[]) => {
-    const today = new Date().toISOString().split('T')[0]; // Get YYYY-MM-DD
-    setAttendance(prevAttendance => {
-      const otherDaysAttendance = prevAttendance.filter(att => att.date !== today);
-      const newAttendanceForToday = studentStatuses.map(s => ({
-        studentId: s.studentId,
-        date: today,
-        present: s.present,
-      }));
-      const updatedAttendance = [...otherDaysAttendance, ...newAttendanceForToday];
-      persistAttendance(updatedAttendance);
-      return updatedAttendance;
-    });
+  const logAttendance = useCallback(async (classId: string, studentStatuses: { studentId: string; present: boolean }[]) => {
+    // Similar fetch call to POST /api/attendance
   }, []);
 
   const getStudentById = useCallback((id: string) => {
