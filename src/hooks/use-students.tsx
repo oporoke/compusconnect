@@ -52,7 +52,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
         ]);
 
         if(!studentsRes.ok || !gradesRes.ok || !examsRes.ok || !attendanceRes.ok) {
-            throw new Error('Failed to fetch initial data');
+            throw new Error('Failed to fetch initial student-related data');
         }
 
         const studentsData = await studentsRes.json();
@@ -67,10 +67,11 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     } catch (error) {
       console.error("Failed to fetch data from API", error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not load student data.' });
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     fetchData();
@@ -86,8 +87,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
         });
         if (!response.ok) throw new Error('Failed to create student');
         
-        // Refetch student data to ensure UI is in sync with the database
-        await fetchData();
+        await fetchData(); // Refetch data to update the UI with the new student
 
         logAction('Student Created', { studentId: studentId, studentName: studentData.name });
         toast({
