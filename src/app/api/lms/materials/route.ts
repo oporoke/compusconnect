@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const materials = await prisma.courseMaterial.findMany();
     return NextResponse.json(materials);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch course materials' }, { status: 500 });
+    console.error('Failed to fetch course materials:', error);
+    return NextResponse.json([], { status: 500 });
   }
 }
-

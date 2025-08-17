@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 
@@ -6,6 +7,7 @@ export async function GET(request: Request) {
     const grades = await prisma.grade.findMany();
     return NextResponse.json(grades);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch grades' }, { status: 500 });
+    console.error('Failed to fetch grades:', error);
+    return NextResponse.json([], { status: 500 });
   }
 }

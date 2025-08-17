@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const classes = await prisma.onlineClass.findMany();
     return NextResponse.json(classes);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch online classes' }, { status: 500 });
+    console.error('Failed to fetch online classes:', error);
+    return NextResponse.json([], { status: 500 });
   }
 }
-

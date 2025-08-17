@@ -10,6 +10,6 @@ export async function GET(request: Request) {
     return NextResponse.json(admissions);
   } catch (error) {
     console.error('Failed to fetch admissions:', error);
-    return NextResponse.json({ error: 'Failed to fetch admissions' }, { status: 500 });
+    return NextResponse.json([], { status: 500 });
   }
 }

@@ -8,6 +8,6 @@ export async function GET(request: Request) {
     return NextResponse.json(feeStructures);
   } catch (error) {
     console.error('Failed to fetch fee structures:', error);
-    return NextResponse.json({ error: 'Failed to fetch fee structures' }, { status: 500 });
+    return NextResponse.json([], { status: 500 });
   }
 }

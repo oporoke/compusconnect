@@ -29,6 +29,7 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 console.error("Failed to fetch staff data");
                 toast({ variant: 'destructive', title: 'Error', description: 'Could not load staff data.' });
                 setStaff([]);
+                setIsLoading(false);
                 return;
             }
             const data = await res.json();

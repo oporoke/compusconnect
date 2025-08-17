@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const assignments = await prisma.assignment.findMany();
     return NextResponse.json(assignments);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch assignments' }, { status: 500 });
+    console.error('Failed to fetch assignments:', error);
+    return NextResponse.json([], { status: 500 });
   }
 }
-

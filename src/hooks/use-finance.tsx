@@ -54,6 +54,7 @@ export const FinanceProvider: React.FC<{ children: ReactNode }> = ({ children })
                 setPayments([]);
                 setPayrollRecords([]);
                 setExpenses([]);
+                setIsLoading(false);
                 return;
             }
             

@@ -39,6 +39,7 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
             setEvents([]);
             setAnnouncements([]);
             setConversations({});
+            setIsLoading(false);
             return;
         }
 
@@ -48,6 +49,9 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
       } catch (error) {
         console.error("Failed to parse communication data from API", error);
         toast({ variant: 'destructive', title: 'Error', description: 'Could not load communication data.' });
+        setEvents([]);
+        setAnnouncements([]);
+        setConversations({});
       } finally {
         setIsLoading(false);
       }

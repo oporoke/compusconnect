@@ -58,6 +58,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
             setGrades([]);
             setExams([]);
             setAttendance([]);
+            setIsLoading(false);
             return;
         }
 

@@ -9,6 +9,7 @@ export async function GET(request: Request) {
     });
     return NextResponse.json(announcements);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch announcements' }, { status: 500 });
+     console.error('Failed to fetch announcements:', error);
+    return NextResponse.json([], { status: 500 });
   }
 }

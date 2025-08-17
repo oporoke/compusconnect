@@ -40,6 +40,7 @@ export const LMSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 setAssignments([]);
                 setCourseMaterials([]);
                 setOnlineClasses([]);
+                setIsLoading(false);
                 return;
             }
             
