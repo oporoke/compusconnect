@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**CampusConnect Lite** is a modern, feature-rich, and AI-powered school management system designed to streamline the academic, administrative, and financial operations of educational institutions. This repository contains the complete frontend application, built as a high-fidelity, interactive prototype using Next.js and React.
+**CampusConnect Lite** is a modern, feature-rich, and AI-powered school management system designed to streamline the academic, administrative, and financial operations of educational institutions. This repository contains the complete full-stack application, built with a Next.js frontend, a Next.js/Prisma backend, and a suite of AI features powered by Google Genkit.
 
 The system is designed to be a comprehensive, all-in-one solution, replacing fragmented manual systems with an integrated and intuitive platform for administrators, teachers, students, and parents.
 
@@ -14,13 +14,13 @@ The application is organized into 7 core modules, each packed with features to s
 
 | Module | Key Features |
 | :--- | :--- |
-| 🎓 **Academic** | Student Information, Attendance Tracking, **AI-powered Timetable Generation**, Examination & Grading, **Automated Marking**, Integrated LMS (Assignments, Materials, etc.), **AI Adaptive Learning & Gamification**. |
+| 🎓 **Academic** | Student Information, Attendance Tracking, **AI Timetable Generation**, Examination & Grading, **Automated Marking**, Integrated LMS, **AI Adaptive Learning**, **Gamification**, **AI Life Path Simulator**. |
 | 🏛️ **Administrative** | **AI Applicant Scoring**, Staff & Faculty Profiles, **Multi-School Management**, **Asset & Inventory Tracking**, E-Library with Plagiarism Check Mocks. |
 | 💰 **Financial** | Configurable Fee Structures, Batch Invoicing, Integrated Payment Gateway Mocks (Card, **M-Pesa**, **BNPL**), Payroll Processing, Expense Tracking, **AI Anomaly Detection**. |
-| 📣 **Communication** | Secure In-App Messaging, School-wide Announcements, Event Calendar with **Google/Outlook Sync Mocks**. |
+| 📣 **Communication** | Secure In-App Messaging, School-wide Announcements, Event Calendar with **Google/Outlook Sync Mocks**, **AI Parent Co-Pilot** with Live Feed & Weekly Digest, **Chatbot**. |
 | 🔒 **Security** | Role-Based Access Control (RBAC), **Multi-Factor Authentication (MFA)** Flows, **GDPR** Compliance Tools, Comprehensive **Audit Logging**. |
 | 📊 **Analytics & Reporting** | Role-specific Dashboards, **AI-powered Natural Language Query Tool**, **Predictive Analytics** (At-Risk Students, Fee Defaults), **Cross-School Benchmarking**, PDF & Excel Exports. |
-| 🧩 **Extensions** | **Canteen Management** (Prepaid Accounts, Stock), **Alumni Portal** (Donations, Networking), **Health Center** (Medical Records, Vaccination Tracking). |
+| 🧩 **Extensions** | **Canteen Management** (Prepaid Accounts, Stock, **AI Nutrition Advice**), **Alumni Portal** (Donations, Networking, Mentorship), **Health Center** (Medical Records, Vaccination Tracking). |
 
 ---
 
@@ -32,6 +32,7 @@ This repository contains extensive documentation covering every aspect of the pr
 | :--- | :--- |
 | 📄 **[Software Requirements Specification (SRS)](./srs.md)** | Detailed breakdown of all functional and non-functional requirements. |
 | 🏗️ **[System Architecture & Design (SADD)](./SADD.md)** | Overview of the system architecture, technology stack, and module design. |
+| 🏗️ **[System Architecture (Detailed)](./SYSTEM_ARCHITECTURE.md)** | A comprehensive, in-depth document detailing the complete system architecture. |
 | 💻 **[Developer Documentation](./DOCUMENTATION.md)** | In-depth guide to the codebase, component structure, and development flow. |
 | 🔗 **[API Documentation](./API_DOCUMENTATION.md)** | Conceptual blueprint for the backend RESTful API. |
 | 🧑‍🏫 **[User Manual](./USER_MANUAL.md)** | A user-friendly guide for end-users (admins, teachers, parents). |
@@ -108,12 +109,12 @@ The application requires two processes to be run in separate terminals for full 
 
 ---
 
-## 🤝 Contributors
+## 🤝 Contributing
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+We welcome contributions from the community! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, development process, and pull request guidelines.
 
 ---
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
