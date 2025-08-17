@@ -3,14 +3,54 @@
 
 import { useStaff } from "@/hooks/use-staff";
 import { notFound } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Briefcase, Building, Calendar, DollarSign, Mail, Phone } from "lucide-react";
-import React from 'react';
+import { Briefcase, Building, Calendar, DollarSign, Mail, Phone, MinusCircle, PlusCircle, Pencil } from "lucide-react";
+import React, { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+
+function EditPerformanceDialog({ staffMember, onSave }: { staffMember: any, onSave: (notes: string) => void }) {
+    const [open, setOpen] = useState(false);
+    const [notes, setNotes] = useState(staffMember.performanceNotes || "");
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSave(notes);
+        setOpen(false);
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <Pencil />
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Edit Performance Notes</DialogTitle>
+                    <DialogDescription>Update performance review notes for {staffMember.name}.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={5} />
+                    <DialogFooter>
+                        <Button type="submit">Save Notes</Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
+}
 
 export default function StaffProfilePage({ params }: { params: { id: string } }) {
-    const { getStaffById, isLoading } = useStaff();
+    const { getStaffById, updateStaff, isLoading } = useStaff();
+    const { toast } = useToast();
     
     const staffMember = getStaffById(params.id);
 
@@ -29,6 +69,31 @@ export default function StaffProfilePage({ params }: { params: { id: string } })
     if (!staffMember) {
         notFound();
     }
+    
+    const handleLeaveChange = (amount: number) => {
+        let { leavesTaken, leavesAvailable } = staffMember;
+        
+        if (amount > 0 && leavesAvailable <= 0) return;
+        if (amount < 0 && leavesTaken <= 0) return;
+
+        leavesTaken += amount;
+        leavesAvailable -= amount;
+        
+        updateStaff({ ...staffMember, leavesTaken, leavesAvailable });
+
+        toast({
+            title: "Leave Balance Updated",
+            description: `${staffMember.name}'s leave balance has been adjusted.`
+        })
+    }
+
+    const handlePerformanceSave = (notes: string) => {
+        updateStaff({ ...staffMember, performanceNotes: notes });
+        toast({
+            title: "Performance Notes Saved",
+            description: `Notes for ${staffMember.name} have been updated.`
+        });
+    }
 
     const getInitials = (name: string) => {
         const names = name.split(' ');
@@ -38,12 +103,14 @@ export default function StaffProfilePage({ params }: { params: { id: string } })
         return name.substring(0, 2);
     };
 
+    const leavePercentage = staffMember.leavesAvailable > 0 ? Math.round(((staffMember.leavesAvailable - staffMember.leavesTaken) / staffMember.leavesAvailable) * 100) : 0;
+
     return (
         <div className="space-y-6">
             <Card>
                 <CardHeader className="flex flex-row items-center gap-6">
                     <Avatar className="h-24 w-24">
-                        <AvatarImage src={`https://placehold.co/120x120.png`} alt={staffMember.name} data-ai-hint="profile picture" />
+                        <AvatarImage src={`https://placehold.co/120x120.png`} alt={staffMember.name} data-ai-hint="profile picture"/>
                         <AvatarFallback>{getInitials(staffMember.name)}</AvatarFallback>
                     </Avatar>
                     <div>
@@ -94,9 +161,30 @@ export default function StaffProfilePage({ params }: { params: { id: string } })
                          <Calendar className="h-5 w-5 text-muted-foreground" />
                     </CardHeader>
                      <CardContent className="space-y-2 text-sm">
-                       <p><strong>Available Leaves:</strong> 12</p>
-                       <p><strong>Leaves Taken:</strong> 3</p>
-                       <p className="text-xs text-muted-foreground">Note: Leave request system is under development.</p>
+                       <div className="flex justify-between items-center">
+                           <span>Leaves Taken: <strong>{staffMember.leavesTaken} / {staffMember.leavesAvailable}</strong></span>
+                           <div className="flex items-center gap-1">
+                               <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => handleLeaveChange(1)}><PlusCircle /></Button>
+                               <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => handleLeaveChange(-1)}><MinusCircle /></Button>
+                           </div>
+                       </div>
+                       <Progress value={leavePercentage} />
+                       <p className="text-xs text-muted-foreground text-center">{staffMember.leavesAvailable - staffMember.leavesTaken} days remaining</p>
+                    </CardContent>
+                </Card>
+
+                 <Card className="lg:col-span-3">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-lg">Performance Review</CardTitle>
+                         <div className="flex items-center gap-2">
+                            <EditPerformanceDialog staffMember={staffMember} onSave={handlePerformanceSave} />
+                            <Pencil className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                    </CardHeader>
+                     <CardContent>
+                        <p className="text-sm text-muted-foreground">
+                            {staffMember.performanceNotes || "No performance notes available."}
+                        </p>
                     </CardContent>
                 </Card>
             </div>

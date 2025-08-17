@@ -6,7 +6,8 @@ import { staff as initialStaff, Staff } from '@/lib/data';
 
 interface StaffContextType {
   staff: Staff[];
-  addStaff: (staffMember: Omit<Staff, 'id'>) => void;
+  addStaff: (staffMember: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable'>) => void;
+  updateStaff: (staffMember: Staff) => void;
   getStaffById: (id: string) => Staff | undefined;
   isLoading: boolean;
 }
@@ -41,16 +42,26 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('campus-connect-staff', JSON.stringify(data));
   };
 
-  const addStaff = useCallback((staffData: Omit<Staff, 'id'>) => {
+  const addStaff = useCallback((staffData: Omit<Staff, 'id' | 'leavesTaken' | 'leavesAvailable'>) => {
     setStaff(prevStaff => {
         const newStaffMember: Staff = {
             ...staffData,
             id: generateStaffId(prevStaff),
+            leavesTaken: 0,
+            leavesAvailable: 20, // Default leave balance
         };
         const newStaff = [...prevStaff, newStaffMember];
         persistStaff(newStaff);
         return newStaff;
     });
+  }, []);
+  
+  const updateStaff = useCallback((updatedStaffMember: Staff) => {
+    setStaff(prevStaff => {
+        const newStaff = prevStaff.map(s => s.id === updatedStaffMember.id ? updatedStaffMember : s);
+        persistStaff(newStaff);
+        return newStaff;
+    })
   }, []);
 
   const getStaffById = useCallback((id: string) => {
@@ -58,7 +69,7 @@ export const StaffProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, [staff]);
 
   return (
-    <StaffContext.Provider value={{ staff, addStaff, getStaffById, isLoading }}>
+    <StaffContext.Provider value={{ staff, addStaff, updateStaff, getStaffById, isLoading }}>
       {children}
     </StaffContext.Provider>
   );

@@ -19,6 +19,7 @@ import {
   FilePen,
   UserPlus,
   Briefcase,
+  Library,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -37,6 +38,7 @@ const navLinks = [
   { href: '/gradebook', label: 'Gradebook', icon: GraduationCap, roles: [ROLES.ADMIN, ROLES.TEACHER] },
   { href: '/timetable', label: 'Timetable', icon: BookCopy, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/lms', label: 'LMS', icon: BookOpenCheck, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/library', label: 'Library', icon: Library, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/announcements', label: 'Announcements', icon: Megaphone, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/report-cards', label: 'Report Cards', icon: ClipboardCheck, roles: [ROLES.ADMIN, ROLES.TEACHER] }
 ];

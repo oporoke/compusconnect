@@ -131,11 +131,46 @@ export interface Staff {
   phone: string;
   joiningDate: string;
   salary: number;
+  leavesTaken: number;
+  leavesAvailable: number;
 }
 
 export const staff: Staff[] = [
-  { id: 'T01', name: 'Dr. Evelyn Reed', role: 'Principal', department: 'Administration', email: 'e.reed@example.com', phone: '123-456-7890', joiningDate: '2010-08-15', salary: 90000 },
-  { id: 'T02', name: 'Mr. Samuel Jones', role: 'Math Teacher', department: 'Academics', email: 's.jones@example.com', phone: '123-456-7891', joiningDate: '2015-09-01', salary: 65000 },
-  { id: 'T03', name: 'Ms. Clara Oswald', role: 'Science Teacher', department: 'Academics', email: 'c.oswald@example.com', phone: '123-456-7892', joiningDate: '2018-07-20', salary: 62000 },
-  { id: 'T04', name: 'Mr. Peter Capaldi', role: 'Librarian', department: 'Library', email: 'p.capaldi@example.com', phone: '123-456-7893', joiningDate: '2019-01-10', salary: 55000 },
+  { id: 'T01', name: 'Dr. Evelyn Reed', role: 'Principal', department: 'Administration', email: 'e.reed@example.com', phone: '123-456-7890', joiningDate: '2010-08-15', salary: 90000, leavesTaken: 5, leavesAvailable: 20 },
+  { id: 'T02', name: 'Mr. Samuel Jones', role: 'Math Teacher', department: 'Academics', email: 's.jones@example.com', phone: '123-456-7891', joiningDate: '2015-09-01', salary: 65000, leavesTaken: 3, leavesAvailable: 15 },
+  { id: 'T03', name: 'Ms. Clara Oswald', role: 'Science Teacher', department: 'Academics', email: 'c.oswald@example.com', phone: '123-456-7892', joiningDate: '2018-07-20', salary: 62000, leavesTaken: 8, leavesAvailable: 15 },
+  { id: 'T04', name: 'Mr. Peter Capaldi', role: 'Librarian', department: 'Library', email: 'p.capaldi@example.com', phone: '123-456-7893', joiningDate: '2019-01-10', salary: 55000, leavesTaken: 2, leavesAvailable: 12 },
+];
+
+
+export interface Book {
+  id: string;
+  title: string;
+  author: string;
+  subject: string;
+  isbn: string;
+  quantity: number;
+  available: number;
+}
+
+export interface LibraryTransaction {
+    id: string;
+    studentId: string;
+    bookId: string;
+    type: 'borrow' | 'return';
+    date: string; // YYYY-MM-DD
+    dueDate?: string; // YYYY-MM-DD
+}
+
+export const books: Book[] = [
+    { id: 'B001', title: 'To Kill a Mockingbird', author: 'Harper Lee', subject: 'English', isbn: '978-0061120084', quantity: 5, available: 3 },
+    { id: 'B002', title: '1984', author: 'George Orwell', subject: 'English', isbn: '978-0451524935', quantity: 3, available: 3 },
+    { id: 'B003', title: 'A Brief History of Time', author: 'Stephen Hawking', subject: 'Science', isbn: '978-0553380163', quantity: 4, available: 2 },
+    { id: 'B004', title: 'The Elements of Style', author: 'Strunk & White', subject: 'General', isbn: '978-0205309023', quantity: 10, available: 10 },
+    { id: 'B005', title: 'Calculus: A Modern Approach', author: 'James Stewart', subject: 'Math', isbn: '978-1285740621', quantity: 6, available: 5 },
+];
+
+export const libraryTransactions: LibraryTransaction[] = [
+    { id: 'L001', studentId: 'S001', bookId: 'B001', type: 'borrow', date: '2024-09-01', dueDate: '2024-09-15' },
+    { id: 'L002', studentId: 'S003', bookId: 'B003', type: 'borrow', date: '2024-09-05', dueDate: '2024-09-19' },
 ];
