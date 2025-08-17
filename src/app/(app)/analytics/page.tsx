@@ -1,7 +1,7 @@
 
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AreaChart, GraduationCap, Users, UserCheck } from "lucide-react";
+import { AreaChart, GraduationCap, Users, UserCheck, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 export default function AnalyticsHubPage() {
@@ -23,6 +23,12 @@ export default function AnalyticsHubPage() {
             description: "Track application funnels, acceptance rates, and yearly trends.",
             icon: UserCheck,
             href: "/analytics/admissions"
+        },
+        {
+            title: "Predictive Analytics",
+            description: "Forecast student performance and identify at-risk individuals.",
+            icon: TrendingUp,
+            href: "/analytics/predictive"
         }
     ];
 
@@ -52,3 +58,5 @@ export default function AnalyticsHubPage() {
         </div>
     );
 }
+
+    
