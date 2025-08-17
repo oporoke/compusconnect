@@ -1,13 +1,13 @@
 "use client";
 
-import { students, grades, announcements } from "@/lib/data";
+import { students, grades } from "@/lib/data";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, CalendarCheck, GraduationCap, User as UserIcon } from "lucide-react";
+import { GraduationCap, User as UserIcon, CalendarCheck } from "lucide-react";
 import {
   ChartContainer,
   ChartTooltip,
