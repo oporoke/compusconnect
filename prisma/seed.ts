@@ -1,3 +1,4 @@
+
 import { PrismaClient } from '@prisma/client'
 import {
     students,
@@ -23,7 +24,10 @@ import {
     healthRecords,
     clinicVisits,
     assets,
-    messages as mockMessages
+    messages as mockMessages,
+    onlineClasses,
+    assignments,
+    courseMaterials
 } from '../src/lib/data';
 
 const prisma = new PrismaClient()
@@ -168,6 +172,18 @@ async function main() {
   for (const e of events) {
     await prisma.event.upsert({where: {id: e.id}, update: {}, create: {...e, date: new Date(e.date)}});
   }
+  
+    // Seed LMS
+  for (const a of assignments) {
+      await prisma.assignment.upsert({ where: { id: a.id }, update: {}, create: { ...a, dueDate: new Date(a.dueDate) } });
+  }
+  for (const m of courseMaterials) {
+      await prisma.courseMaterial.upsert({ where: { id: m.id }, update: {}, create: m });
+  }
+  for (const c of onlineClasses) {
+      await prisma.onlineClass.upsert({ where: { id: c.id }, update: {}, create: c });
+  }
+
 
   // Seed Messages and Conversations
   for (const [conversationId, messages] of Object.entries(mockMessages)) {
