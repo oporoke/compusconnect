@@ -21,7 +21,9 @@ import {
     alumniProfiles,
     mentorships,
     healthRecords,
-    assets
+    clinicVisits,
+    assets,
+    messages as mockMessages
 } from '../src/lib/data';
 
 const prisma = new PrismaClient()
@@ -31,8 +33,10 @@ async function main() {
 
   // Seed Students and their related records
   for (const student of students) {
-    await prisma.student.create({
-      data: {
+    await prisma.student.upsert({
+      where: { id: student.id },
+      update: {},
+      create: {
         id: student.id,
         name: student.name,
         grade: student.grade,
@@ -51,8 +55,10 @@ async function main() {
 
   // Seed Exams
   for (const exam of mockExams) {
-    await prisma.exam.create({
-      data: {
+    await prisma.exam.upsert({
+      where: { id: exam.id },
+      update: {},
+      create: {
         id: exam.id,
         name: exam.name,
         date: new Date(exam.date),
@@ -63,8 +69,10 @@ async function main() {
   
   // Seed Grades
   for (const grade of grades) {
-      await prisma.grade.create({
-          data: {
+      await prisma.grade.upsert({
+          where: { studentId_examId: { studentId: grade.studentId, examId: grade.examId } },
+          update: { scores: grade.scores },
+          create: {
               studentId: grade.studentId,
               examId: grade.examId,
               scores: grade.scores
@@ -74,8 +82,10 @@ async function main() {
 
   // Seed Staff
   for (const s of staff) {
-    await prisma.staff.create({
-      data: {
+    await prisma.staff.upsert({
+      where: { id: s.id },
+      update: {},
+      create: {
         id: s.id,
         name: s.name,
         role: s.role,
@@ -96,8 +106,10 @@ async function main() {
   
   // Seed Assets
   for (const asset of assets) {
-    await prisma.asset.create({
-        data: {
+    await prisma.asset.upsert({
+        where: { id: asset.id },
+        update: {},
+        create: {
             id: asset.id,
             name: asset.name,
             type: asset.type,
@@ -110,8 +122,10 @@ async function main() {
 
   // Seed Admissions
   for (const admission of admissions) {
-      await prisma.admission.create({
-          data: {
+      await prisma.admission.upsert({
+          where: { id: admission.id },
+          update: {},
+          create: {
             id: admission.id,
             name: admission.name,
             age: admission.age,
@@ -127,10 +141,15 @@ async function main() {
   }
 
   // Seed Finance
-  await prisma.feeStructure.createMany({ data: feeStructures.map(fs => ({ ...fs, grades: fs.grades })) });
+  for (const fs of feeStructures) {
+      await prisma.feeStructure.upsert({ where: { id: fs.id }, update: {}, create: { ...fs, grades: fs.grades } });
+  }
+
   for(const invoice of invoices) {
-    await prisma.invoice.create({
-        data: {
+    await prisma.invoice.upsert({
+        where: { id: invoice.id },
+        update: {},
+        create: {
             id: invoice.id,
             studentId: invoice.studentId,
             date: new Date(invoice.date),
@@ -143,14 +162,41 @@ async function main() {
   }
 
   // Seed Communication
-  await prisma.announcement.createMany({ data: announcements.map(a => ({...a, date: new Date(a.date)})) });
-  await prisma.event.createMany({ data: events.map(e => ({...e, date: new Date(e.date)})) });
+  for (const a of announcements) {
+    await prisma.announcement.upsert({where: {id: a.id }, update: {}, create: {...a, date: new Date(a.date)}});
+  }
+  for (const e of events) {
+    await prisma.event.upsert({where: {id: e.id}, update: {}, create: {...e, date: new Date(e.date)}});
+  }
+
+  // Seed Messages and Conversations
+  for (const [conversationId, messages] of Object.entries(mockMessages)) {
+      await prisma.conversation.upsert({
+          where: { id: conversationId },
+          update: {},
+          create: {
+              id: conversationId,
+              members: conversationId.split('-'),
+              messages: {
+                  create: messages.map(msg => ({
+                      sender: msg.sender,
+                      content: msg.content,
+                      timestamp: new Date(msg.timestamp)
+                  }))
+              }
+          }
+      })
+  }
 
   // Seed Library
-  await prisma.book.createMany({ data: books });
+  for (const b of books) {
+      await prisma.book.upsert({where: {id: b.id}, update: {}, create: b});
+  }
   for(const lt of libraryTransactions) {
-    await prisma.libraryTransaction.create({
-        data: {
+    await prisma.libraryTransaction.upsert({
+        where: {id: lt.id},
+        update: {},
+        create: {
             id: lt.id,
             studentId: lt.studentId,
             bookId: lt.bookId,
@@ -162,14 +208,22 @@ async function main() {
   }
 
   // Seed Transport
-  await prisma.vehicle.createMany({data: vehicles.map(v => ({...v, lat: v.location.lat, lng: v.location.lng}))});
-  await prisma.driver.createMany({data: drivers});
-  await prisma.route.createMany({data: routes.map(r => ({...r, stops: r.stops}))});
+  for (const v of vehicles) {
+      await prisma.vehicle.upsert({where: {id: v.id}, update: {}, create: {...v, lat: v.location.lat, lng: v.location.lng}});
+  }
+  for(const d of drivers) {
+      await prisma.driver.upsert({where: {id: d.id}, update: {}, create: d});
+  }
+  for(const r of routes) {
+      await prisma.route.upsert({where: {id: r.id}, update: {}, create: {...r, stops: r.stops}});
+  }
   
   // Seed Hostel
   for (const h of hostels) {
-      await prisma.hostel.create({
-          data: {
+      await prisma.hostel.upsert({
+          where: {id: h.id},
+          update: {},
+          create: {
               id: h.id,
               name: h.name,
               capacity: h.capacity,
@@ -190,12 +244,12 @@ async function main() {
   // Seed Extensions
   // Canteen
   for (const acc of canteenAccounts) {
-      await prisma.canteenAccount.create({data: acc})
+      await prisma.canteenAccount.upsert({where: {studentId: acc.studentId}, update: {}, create: acc})
   }
   for (const trans of canteenTransactions) {
       const account = await prisma.canteenAccount.findUnique({where: {studentId: trans.studentId}});
       if(account) {
-          await prisma.canteenTransaction.create({data: {...trans, date: new Date(trans.date), canteenAccountId: account.id}})
+          await prisma.canteenTransaction.upsert({where: {id: trans.id}, update: {}, create: {...trans, date: new Date(trans.date), canteenAccountId: account.id}})
       }
   }
   for(const dayMenu of canteenMenu) {
@@ -209,33 +263,42 @@ async function main() {
   }
 
   // Alumni
-  await prisma.alumniProfile.createMany({data: alumniProfiles});
+  for (const ap of alumniProfiles) {
+      await prisma.alumniProfile.upsert({where: {id: ap.id}, update: {}, create: ap});
+  }
   for(const m of mentorships) {
-      await prisma.mentorship.create({data: {
-        id: m.id,
-        mentorId: m.mentorId,
-        menteeId: m.menteeId,
-        startDate: new Date(m.startDate),
-        status: m.status
+      await prisma.mentorship.upsert({
+          where: {id: m.id},
+          update: {},
+          create: {
+            id: m.id,
+            mentorId: m.mentorId,
+            menteeId: m.menteeId,
+            startDate: new Date(m.startDate),
+            status: m.status
       }})
   }
 
   // Health
   for(const hr of healthRecords) {
-      await prisma.healthRecord.create({data: {
-        studentId: hr.studentId,
-        bloodGroup: hr.bloodGroup,
-        allergies: hr.allergies,
-        vaccinations: hr.vaccinations,
-        clinicVisits: {
-            create: clinicVisits.filter(cv => cv.studentId === hr.studentId).map(cv => ({
-                id: cv.id,
-                reason: cv.reason,
-                treatment: cv.treatment,
-                date: new Date(cv.date)
-            }))
+      await prisma.healthRecord.upsert({
+          where: {studentId: hr.studentId},
+          update: {},
+          create: {
+            studentId: hr.studentId,
+            bloodGroup: hr.bloodGroup,
+            allergies: hr.allergies,
+            vaccinations: hr.vaccinations,
+            clinicVisits: {
+                create: clinicVisits.filter(cv => cv.studentId === hr.studentId).map(cv => ({
+                    id: cv.id,
+                    reason: cv.reason,
+                    treatment: cv.treatment,
+                    date: new Date(cv.date)
+                }))
+            }
         }
-      }})
+      })
   }
 
 

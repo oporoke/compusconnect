@@ -24,9 +24,8 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
       try {
         const [eventRes, announcementRes, messagesRes] = await Promise.all([
           fetch('/api/events'),
@@ -44,38 +43,43 @@ export const CommunicationProvider: React.FC<{ children: ReactNode }> = ({ child
       } finally {
         setIsLoading(false);
       }
-    };
-    fetchData();
   }, [toast]);
 
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   const sendMessage = useCallback(async (sender: string, receiver: string, content: string) => {
-    const newMessage: Message = {
+    // Optimistic UI update
+    const tempMessage: Message = {
         sender,
         content,
         timestamp: new Date().toISOString()
     };
-    
-    // Optimistic UI update
     setConversations(prev => {
         const conversationId = [sender, receiver].sort().join('-');
         const oldConversation = prev[conversationId] || [];
-        const newConversation = [...oldConversation, newMessage];
+        const newConversation = [...oldConversation, tempMessage];
         return { ...prev, [conversationId]: newConversation };
     });
 
     try {
-        // Post to the (mock) API
-        await fetch('/api/messages', {
+        const response = await fetch('/api/messages', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newMessage)
+            body: JSON.stringify({sender, receiver, content})
         });
+        if (!response.ok) {
+            // Revert on failure
+            fetchData();
+        }
     } catch(error) {
         console.error("Failed to send message", error);
         toast({ variant: 'destructive', title: 'Error', description: 'Could not send message.'});
-        // Here you could implement logic to revert the optimistic update
+        // Revert on failure
+        fetchData();
     }
-  }, [toast]);
+  }, [toast, fetchData]);
 
   const addEvent = useCallback((eventData: Omit<SchoolEvent, 'id'>) => {
     toast({ title: "Mock Action", description: `Event creation is not implemented.` });

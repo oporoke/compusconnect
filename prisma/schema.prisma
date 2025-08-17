@@ -1,3 +1,4 @@
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -7,39 +8,39 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
 model Student {
-  id              String                @id @default(cuid())
-  name            String
-  grade           String
-  section         String
-  discipline      DisciplinaryRecord[]
-  grades          Grade[]
-  invoices        Invoice[]
-  attendance      AttendanceRecord[]
-  libraryTransactions LibraryTransaction[]
-  canteenAccount  CanteenAccount?
-  menteeOf        Mentorship[]          @relation("Mentee")
-  healthRecord    HealthRecord?
-  hostelRoom      Room?                 @relation(fields: [hostelRoomId], references: [id])
-  hostelRoomId    String?
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
+  id           String        @id
+  name         String
+  grade        String
+  section      String
+  discipline   DisciplinaryRecord[]
+  grades       Grade[]
+  attendance   AttendanceRecord[]
+  invoices     Invoice[]
+  transactions LibraryTransaction[]
+  canteenAccount CanteenAccount?
+  mentorshipsAsMentee Mentorship[] @relation("Mentee")
+  healthRecord HealthRecord?
+  hostelRoom   HostelRoom? @relation(fields: [hostelRoomId], references: [id])
+  hostelRoomId String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model DisciplinaryRecord {
-  id          String   @id
-  student     Student  @relation(fields: [studentId], references: [id])
+  id          String   @id @default(cuid())
   studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   date        DateTime
   reason      String
   actionTaken String
 }
 
 model Exam {
-  id      String   @id
+  id      String  @id
   name    String
   date    DateTime
   subjects String[]
@@ -48,289 +49,305 @@ model Exam {
 
 model Grade {
   id        Int      @id @default(autoincrement())
-  student   Student  @relation(fields: [studentId], references: [id])
   studentId String
-  exam      Exam     @relation(fields: [examId], references: [id])
   examId    String
-  scores    Json // {"Math": 85, "Science": 92}
+  scores    Json
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  exam      Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, examId])
 }
 
 model AttendanceRecord {
   id        Int      @id @default(autoincrement())
-  student   Student  @relation(fields: [studentId], references: [id])
   studentId String
-  date      DateTime
+  date      String
   present   Boolean
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Staff {
-  id                  String   @id
-  name                String
-  role                String
-  department          String
-  email               String   @unique
-  phone               String
-  joiningDate         DateTime
-  salary              Float
-  leavesTaken         Int
-  leavesAvailable     Int
-  performanceNotes    String?
-  taxDeduction        Float?
-  insuranceDeduction  Float?
-  schoolId            String
-  payrollRecords      PayrollRecord[]
-  assignedAssets      Asset[]
-  assignedRoute       Route?
+  id        String   @id
+  name      String
+  role      String
+  department String
+  email     String   @unique
+  phone     String
+  joiningDate DateTime
+  salary    Float
+  leavesTaken Int
+  leavesAvailable Int
+  performanceNotes String?
+  taxDeduction Float
+  insuranceDeduction Float
+  schoolId String
+  payrollRecords PayrollRecord[]
+  assignedAssets Asset[]
 }
 
 model Asset {
-  id           String    @id
-  name         String
-  type         String // 'Device', 'Furniture', 'Book', 'Equipment'
-  status       String // 'Available', 'In Use', 'Maintenance'
-  assignedTo   Staff?    @relation(fields: [assignedToId], references: [id])
-  assignedToId String?
-  purchaseDate DateTime
+    id String @id
+    name String
+    type String
+    status String
+    assignedToId String?
+    assignedTo Staff? @relation(fields: [assignedToId], references: [id])
+    purchaseDate DateTime
 }
 
 model Admission {
-  id             String   @id
-  name           String
-  age            Int
-  previousSchool String
-  grade          String
-  parentName     String
-  parentEmail    String
-  date           DateTime
-  status         String // 'Pending', 'Approved', 'Rejected'
-  documents      Json
+    id String @id
+    name String
+    age Int
+    previousSchool String
+    grade String
+    parentName String
+    parentEmail String
+    date DateTime
+    status String
+    documents String[]
 }
 
 model FeeStructure {
-  id     String @id
-  name   String
-  amount Float
-  grades Json // string[]
+    id String @id
+    name String
+    amount Float
+    grades String[]
 }
 
 model Invoice {
-  id        String    @id
-  student   Student   @relation(fields: [studentId], references: [id])
-  studentId String
-  date      DateTime
-  dueDate   DateTime
-  items     Json
-  total     Float
-  status    String // 'Paid', 'Unpaid', 'Overdue'
-  payments  Payment[]
+    id String @id
+    studentId String
+    student Student @relation(fields: [studentId], references: [id])
+    date DateTime
+    dueDate DateTime
+    items Json
+    total Float
+    status String
+    payments Payment[]
 }
 
 model Payment {
-  id        String  @id @default(cuid())
-  invoice   Invoice @relation(fields: [invoiceId], references: [id])
-  invoiceId String
-  amount    Float
-  date      DateTime
-  method    String // 'Card', 'Cash', 'Bank Transfer'
+    id String @id @default(cuid())
+    invoiceId String
+    invoice Invoice @relation(fields: [invoiceId], references: [id])
+    amount Float
+    date String
+    method String
 }
 
 model PayrollRecord {
-  id          String   @id
-  staff       Staff    @relation(fields: [staffId], references: [id])
-  staffId     String
-  month       String
-  grossSalary Float
-  deductions  Float
-  netSalary   Float
-  date        DateTime
+    id String @id @default(cuid())
+    staffId String
+    staff Staff @relation(fields: [staffId], references: [id])
+    month String
+    grossSalary Float
+    deductions Float
+    netSalary Float
+    date String
 }
 
 model Expense {
-  id          String   @id @default(cuid())
-  category    String // 'Utilities', 'Maintenance', 'Supplies', 'Other'
-  description String
-  amount      Float
-  date        DateTime
+    id String @id @default(cuid())
+    category String
+    description String
+    amount Float
+    date String
 }
 
 model Announcement {
-  id       String   @id
-  title    String
-  date     DateTime
-  content  String
-  schoolId String
+    id String @id
+    title String
+    date DateTime
+    content String
+    schoolId String
 }
 
 model Event {
-  id          String   @id
-  title       String
-  date        DateTime
-  description String
+    id String @id
+    title String
+    date DateTime
+    description String
 }
 
 model Book {
-  id           String               @id
-  rfid         String?              @unique
-  title        String
-  author       String
-  subject      String
-  isbn         String               @unique
-  quantity     Int
-  available    Int
-  transactions LibraryTransaction[]
+    id String @id
+    rfid String @unique
+    title String
+    author String
+    subject String
+    isbn String @unique
+    quantity Int
+    available Int
+    transactions LibraryTransaction[]
 }
 
 model LibraryTransaction {
-  id        String    @id
-  student   Student   @relation(fields: [studentId], references: [id])
-  studentId String
-  book      Book      @relation(fields: [bookId], references: [id])
-  bookId    String
-  type      String // 'borrow', 'return'
-  date      DateTime
-  dueDate   DateTime?
+    id String @id
+    studentId String
+    student Student @relation(fields: [studentId], references: [id])
+    bookId String
+    book Book @relation(fields: [bookId], references: [id])
+    type String
+    date DateTime
+    dueDate DateTime?
 }
 
 model Vehicle {
-  id     String @id
-  model  String
+  id       String  @id
+  model    String
   capacity Int
-  lat    Float
-  lng    Float
-  route  Route?
+  lat      Float
+  lng      Float
+  route    Route?
 }
 
 model Driver {
   id            String @id
   name          String
-  licenseNumber String
+  licenseNumber String @unique
   contact       String
   route         Route?
 }
 
 model Route {
-  id        String   @id
+  id        String  @id
   name      String
-  stops     Json // string[]
-  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
-  vehicleId String   @unique
-  driver    Driver   @relation(fields: [driverId], references: [id])
-  driverId  String   @unique
+  stops     Json
+  vehicleId String  @unique
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+  driverId  String  @unique
+  driver    Driver  @relation(fields: [driverId], references: [id])
 }
 
 model Hostel {
-  id       String @id
-  name     String
-  capacity Int
-  rooms    Room[]
+    id String @id
+    name String
+    capacity Int
+    rooms HostelRoom[]
 }
 
-model Room {
-  id        String    @id
-  number    String
-  capacity  Int
-  hostel    Hostel    @relation(fields: [hostelId], references: [id])
-  hostelId  String
-  occupants Student[]
+model HostelRoom {
+    id String @id
+    number String
+    capacity Int
+    hostelId String
+    hostel Hostel @relation(fields: [hostelId], references: [id])
+    occupants Student[]
 }
 
-// Extensions
 model CanteenAccount {
-  id           String               @id @default(cuid())
-  student      Student              @relation(fields: [studentId], references: [id])
-  studentId    String               @unique
-  balance      Float
-  transactions CanteenTransaction[]
+    id String @id @default(cuid())
+    studentId String @unique
+    student Student @relation(fields: [studentId], references: [id])
+    balance Float
+    transactions CanteenTransaction[]
 }
 
 model CanteenTransaction {
-  id               String         @id
-  canteenAccount   CanteenAccount @relation(fields: [canteenAccountId], references: [id])
-  canteenAccountId String
-  studentId        String
-  type             String // 'credit', 'debit'
-  amount           Float
-  description      String
-  date             DateTime
+    id String @id
+    canteenAccountId String
+    account CanteenAccount @relation(fields: [canteenAccountId], references: [id])
+    type String // credit or debit
+    amount Float
+    description String
+    date DateTime
 }
 
 model CanteenMenuItem {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
-  price Float
-  stock Int
+    id String @id @default(cuid())
+    name String @unique
+    price Float
+    stock Int
 }
 
 model AlumniProfile {
-  id             String       @id
-  name           String
-  graduationYear Int
-  email          String       @unique
-  phone          String
-  occupation     String
-  company        String
-  donations      Donation[]
-  pledges        Pledge[]
-  mentorships    Mentorship[] @relation("Mentor")
+    id String @id
+    name String
+    graduationYear Int
+    email String @unique
+    phone String
+    occupation String
+    company String
+    donations Donation[]
+    mentorshipsAsMentor Mentorship[] @relation("Mentor")
 }
 
 model Donation {
-  id        String        @id
-  alumni    AlumniProfile @relation(fields: [alumniId], references: [id])
-  alumniId  String
-  amount    Float
-  purpose   String
-  date      DateTime
-}
-
-model Campaign {
-  id        String   @id
-  title     String
-  goal      Float
-  raised    Float
-  startDate DateTime
-  endDate   DateTime
-  pledges   Pledge[]
-}
-
-model Pledge {
-  id         String        @id
-  campaign   Campaign      @relation(fields: [campaignId], references: [id])
-  campaignId String
-  alumni     AlumniProfile @relation(fields: [alumniId], references: [id])
-  alumniId   String
-  amount     Float
-  status     String // 'Pledged', 'Paid'
-  date       DateTime
+    id String @id @default(cuid())
+    alumniId String
+    alumni AlumniProfile @relation(fields: [alumniId], references: [id])
+    amount Float
+    purpose String
+    date String
 }
 
 model Mentorship {
-  id        String        @id
-  mentor    AlumniProfile @relation("Mentor", fields: [mentorId], references: [id])
-  mentorId  String
-  mentee    Student       @relation("Mentee", fields: [menteeId], references: [id])
-  menteeId  String
-  startDate DateTime
-  status    String // 'Active', 'Completed'
+    id String @id
+    mentorId String
+    mentor AlumniProfile @relation("Mentor", fields: [mentorId], references: [id])
+    menteeId String
+    mentee Student @relation("Mentee", fields: [menteeId], references: [id])
+    startDate DateTime
+    status String
 }
 
 model HealthRecord {
-  id           Int      @id @default(autoincrement())
-  student      Student  @relation(fields: [studentId], references: [id])
-  studentId    String   @unique
-  bloodGroup   String
-  allergies    String[]
-  vaccinations Json // { name: string; date: string }[]
-  clinicVisits ClinicVisit[]
+    id String @id @default(cuid())
+    studentId String @unique
+    student Student @relation(fields: [studentId], references: [id])
+    bloodGroup String
+    allergies String[]
+    vaccinations Json
+    clinicVisits ClinicVisit[]
 }
 
 model ClinicVisit {
-  id            String       @id
-  healthRecord  HealthRecord @relation(fields: [healthRecordId], references: [id])
-  healthRecordId Int
-  reason        String
-  treatment     String
-  date          DateTime
+    id String @id
+    healthRecordId String
+    healthRecord HealthRecord @relation(fields: [healthRecordId], references: [id])
+    reason String
+    treatment String
+    date DateTime
+}
+
+model Assignment {
+  id      String @id @default(cuid())
+  title   String
+  subject String
+  dueDate String
+  status  String
+}
+
+model CourseMaterial {
+  id      String @id @default(cuid())
+  title   String
+  subject String
+  type    String
+  link    String
+}
+
+model OnlineClass {
+  id      String @id @default(cuid())
+  topic   String
+  subject String
+  time    String
+  link    String
+}
+
+model Conversation {
+  id        String   @id
+  members   String[]
+  messages  Message[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         String
+  content        String
+  timestamp      DateTime     @default(now())
 }

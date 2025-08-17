@@ -1,25 +1,62 @@
 
 import { NextResponse } from 'next/server'
-import { messages } from '@/lib/data'
+import prisma from '@/lib/db'
 
-// In a real application, this would fetch from a database.
-// For this mock API, we'll return the hardcoded message data.
 export async function GET(request: Request) {
   try {
-    return NextResponse.json(messages);
+    const conversations = await prisma.conversation.findMany({
+      include: {
+        messages: {
+          orderBy: {
+            timestamp: 'asc',
+          },
+        },
+      },
+    });
+
+    // The frontend expects a Record<string, Conversation>
+    const conversationMap = conversations.reduce((acc, curr) => {
+      acc[curr.id] = curr.messages;
+      return acc;
+    }, {} as Record<string, any>);
+
+    return NextResponse.json(conversationMap);
   } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
-    // This is a mock endpoint and doesn't actually save the message.
-    // In a real app, this would write to the database.
     try {
-        const body = await request.json();
-        console.log("Mock message received:", body);
-        return NextResponse.json({ message: "Message sent successfully (mock)" }, { status: 201 });
+        const { sender, receiver, content } = await request.json();
+        const conversationId = [sender, receiver].sort().join('-');
+
+        await prisma.conversation.upsert({
+            where: { id: conversationId },
+            update: {
+                messages: {
+                    create: {
+                        sender,
+                        content,
+                    },
+                },
+            },
+            create: {
+                id: conversationId,
+                members: [sender, receiver],
+                messages: {
+                    create: {
+                        sender,
+                        content,
+                    },
+                },
+            },
+        });
+        
+        return NextResponse.json({ message: "Message sent successfully" }, { status: 201 });
     } catch (error) {
+        console.error(error);
         return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
     }
 }
