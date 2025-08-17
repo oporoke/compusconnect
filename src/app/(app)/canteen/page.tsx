@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState } from 'react';
@@ -108,7 +107,7 @@ function MenuManager() {
 
     const handleItemChange = (day: string, itemIndex: number, field: keyof CanteenMenuItem, value: string) => {
         const newMenu = [...editableMenu];
-        const dayMenu = newMenu.find(d => d.day === day);
+        const dayMenu = newMenu.find((d:any) => d.day === day);
         if (dayMenu) {
             dayMenu.items[itemIndex][field] = typeof dayMenu.items[itemIndex][field] === 'number' ? Number(value) : value;
             setEditableMenu(newMenu);
@@ -117,7 +116,7 @@ function MenuManager() {
     
     const addItem = (day: string) => {
          const newMenu = [...editableMenu];
-        const dayMenu = newMenu.find(d => d.day === day);
+        const dayMenu = newMenu.find((d:any) => d.day === day);
         if (dayMenu) {
             dayMenu.items.push({ name: '', price: 0, stock: 0 });
             setEditableMenu(newMenu);
@@ -126,7 +125,7 @@ function MenuManager() {
     
     const removeItem = (day: string, itemIndex: number) => {
          const newMenu = [...editableMenu];
-        const dayMenu = newMenu.find(d => d.day === day);
+        const dayMenu = newMenu.find((d:any) => d.day === day);
         if (dayMenu) {
             dayMenu.items.splice(itemIndex, 1);
             setEditableMenu(newMenu);
@@ -270,4 +269,3 @@ export default function CanteenPage() {
         </div>
     );
 }
-
