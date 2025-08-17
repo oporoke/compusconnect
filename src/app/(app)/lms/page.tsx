@@ -2,7 +2,7 @@
 "use client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpenCheck, FileText, Video, Link as LinkIcon, RefreshCw, CheckCircle } from "lucide-react";
+import { BookOpenCheck, FileText, Video, Link as LinkIcon, RefreshCw, CheckCircle, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
@@ -26,6 +26,12 @@ export default function LMSPage() {
             description: "Join live online classes, access recordings of past sessions, and interact with your instructors.",
             icon: Video,
             href: "/lms/online-classes"
+        },
+        {
+            title: "Discussion Forums",
+            description: "Collaborate with peers and ask questions in course-specific discussion forums.",
+            icon: MessageSquare,
+            href: "/lms/discussions"
         }
     ];
 
@@ -49,7 +55,7 @@ export default function LMSPage() {
                 <h1 className="text-3xl font-headline font-bold">Learning Management System</h1>
                 <p className="text-muted-foreground">Access course materials, assignments, and online classes.</p>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {lmsFeatures.map((feature) => (
                     <Link href={feature.href} key={feature.title}>
                         <Card className="hover:shadow-lg transition-shadow h-full">
@@ -98,5 +104,3 @@ export default function LMSPage() {
         </div>
     );
 }
-
-    

@@ -33,6 +33,8 @@ import {
   UserSquare,
   FileArchive,
   DatabaseZap,
+  BrainCircuit,
+  Trophy,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -52,6 +54,7 @@ const navLinks = [
   { href: '/gradebook', label: 'Gradebook', icon: GraduationCap, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { href: '/timetable', label: 'Timetable', icon: BookCopy, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/lms', label: 'LMS', icon: BookOpenCheck, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/lms/discussions', label: 'Discussions', icon: MessageSquare, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/library', label: 'Library', icon: Library, roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
   { href: '/transport', label: 'Transport', icon: Bus, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/hostel', label: 'Hostel', icon: BedDouble, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
@@ -61,6 +64,9 @@ const navLinks = [
   { href: '/report-cards', label: 'Report Cards', icon: ClipboardCheck, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN] },
   { href: '/finance', label: 'Finance', icon: DollarSign, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/analytics', label: 'Analytics', icon: AreaChart, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
+  { type: 'divider', roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT]},
+  { href: '/academics/adaptive-learning', label: 'Adaptive Learning', icon: BrainCircuit, roles: [ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/academics/gamification', label: 'Achievements', icon: Trophy, roles: [ROLES.STUDENT, ROLES.PARENT] },
   { type: 'divider', roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN]},
   { href: '/canteen', label: 'Canteen', icon: Utensils, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
   { href: '/alumni', label: 'Alumni', icon: UserSquare, roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN] },
