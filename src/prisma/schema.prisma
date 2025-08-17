@@ -1,0 +1,444 @@
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// --- CORE MODELS ---
+
+model Student {
+  id                    String                 @id
+  name                  String
+  grade                 String
+  section               String
+  disciplinaryRecords   DisciplinaryRecord[]
+  grades                Grade[]
+  attendance            AttendanceRecord[]
+  libraryTransactions   LibraryTransaction[]
+  canteenAccount        CanteenAccount?
+  mentorshipsAsMentee   Mentorship[]           @relation("Mentee")
+  healthRecord          HealthRecord?
+  hostelRoomId          String?
+  hostelRoom            HostelRoom?            @relation(fields: [hostelRoomId], references: [id])
+  invoices              Invoice[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+}
+
+model DisciplinaryRecord {
+  id          String   @id
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  date        DateTime
+  reason      String
+  actionTaken String
+}
+
+model Staff {
+  id                  String          @id
+  name                String
+  role                String
+  department          String
+  email               String          @unique
+  phone               String
+  joiningDate         DateTime
+  salary              Int
+  leavesTaken         Int
+  leavesAvailable     Int
+  performanceNotes    String?
+  taxDeduction        Float
+  insuranceDeduction  Float
+  schoolId            String
+  payrollRecords      PayrollRecord[]
+  assignedAssets      Asset[]
+  driverForRoute      Route?          @relation("Driver")
+}
+
+model Exam {
+  id      String   @id
+  name    String
+  date    DateTime
+  subjects Json
+  grades  Grade[]
+}
+
+model Grade {
+  id        Int      @id @default(autoincrement())
+  studentId String
+  examId    String
+  scores    Json
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  exam      Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, examId])
+}
+
+model AttendanceRecord {
+  id        Int      @id @default(autoincrement())
+  studentId String
+  date      DateTime
+  present   Boolean
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+
+// --- FINANCE ---
+
+model FeeStructure {
+  id     String @id
+  name   String
+  amount Int
+  grades Json
+}
+
+model Invoice {
+  id        String    @id
+  studentId String
+  date      DateTime
+  dueDate   DateTime
+  items     Json
+  total     Int
+  status    String
+  student   Student   @relation(fields: [studentId], references: [id])
+  payments  Payment[]
+}
+
+model Payment {
+  id        String  @id
+  invoiceId String
+  amount    Int
+  date      DateTime
+  method    String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+}
+
+model PayrollRecord {
+  id          String @id
+  staffId     String
+  month       String
+  grossSalary Int
+  deductions  Int
+  netSalary   Int
+  staff       Staff  @relation(fields: [staffId], references: [id])
+}
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  description String
+  amount      Int
+  category    String // e.g., Maintenance, Utilities, Supplies
+  date        DateTime
+}
+
+
+// --- ADMISSIONS & ACADEMICS ---
+
+model Admission {
+  id             String   @id
+  name           String
+  age            Int
+  previousSchool String
+  grade          String
+  parentName     String
+  parentEmail    String
+  date           DateTime
+  status         String
+  documents      Json
+}
+
+model AdmissionRequirement {
+    id String @id
+    requirement String
+}
+
+model Skill {
+    id String @id
+    name String
+}
+
+// --- COMMUNICATION ---
+
+model Announcement {
+  id      String   @id
+  title   String
+  content String
+  date    DateTime
+  schoolId String?
+}
+
+model Event {
+  id          String   @id
+  title       String
+  description String
+  date        DateTime
+}
+
+model Conversation {
+  id       String    @id
+  members  String[]
+  messages Message[]
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         String
+  content        String
+  timestamp      DateTime     @default(now())
+}
+
+
+// --- LMS ---
+
+model Assignment {
+  id      String @id
+  title   String
+  subject String
+  dueDate DateTime
+  status  String // Pending, Submitted, Graded
+  skills  Json
+}
+
+model CourseMaterial {
+  id      String @id
+  title   String
+  subject String
+  type    String // PDF, Video, Slides
+  link    String
+}
+
+model OnlineClass {
+  id      String @id
+  topic   String
+  subject String
+  time    String
+  link    String
+}
+
+model DiscussionThread {
+    id          String @id
+    title       String
+    authorName  String
+    createdAt   DateTime @default(now())
+    replies     DiscussionReply[]
+}
+
+model DiscussionReply {
+    id          Int @id @default(autoincrement())
+    threadId    String
+    thread      DiscussionThread @relation(fields: [threadId], references: [id])
+    authorName  String
+    content     String
+    createdAt   DateTime @default(now())
+}
+
+model Badge {
+    id String @id
+    name String
+    description String
+    icon String
+}
+
+// --- EXTENSIONS ---
+
+// Library
+model Book {
+  id         String               @id
+  title      String
+  author     String
+  subject    String
+  quantity   Int
+  available  Int
+  rfid       String?              @unique
+  transactions LibraryTransaction[]
+}
+
+model LibraryTransaction {
+  id      String   @id
+  studentId String
+  bookId    String
+  type      String // borrow, return
+  date      DateTime
+  dueDate   DateTime?
+  student   Student  @relation(fields: [studentId], references: [id])
+  book      Book     @relation(fields: [bookId], references: [id])
+}
+
+// Transport
+model Vehicle {
+  id       String  @id
+  model    String
+  capacity Int
+  lat      Float
+  lng      Float
+  route    Route?
+}
+
+model Driver {
+  id    String @id
+  name  String
+  phone String
+  route Route?
+}
+
+model Route {
+  id        String  @id
+  name      String
+  stops     Json
+  vehicleId String  @unique
+  driverId  String  @unique
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+  driver    Driver  @relation(name: "Driver", fields: [driverId], references: [id])
+}
+
+// Hostel
+model Hostel {
+  id       String     @id
+  name     String
+  capacity Int
+  rooms    HostelRoom[]
+}
+
+model HostelRoom {
+  id        String    @id
+  number    String
+  capacity  Int
+  hostelId  String
+  hostel    Hostel    @relation(fields: [hostelId], references: [id])
+  occupants Student[]
+}
+
+// Inventory
+model Asset {
+  id           String    @id
+  name         String
+  type         String // Device, Furniture, etc.
+  status       String // Available, In Use, Maintenance
+  assignedToId String?
+  assignedTo   Staff?    @relation(fields: [assignedToId], references: [id])
+  purchaseDate DateTime
+}
+
+// Canteen
+model CanteenAccount {
+  id           Int                  @id @default(autoincrement())
+  studentId    String               @unique
+  balance      Float
+  student      Student              @relation(fields: [studentId], references: [id])
+  transactions CanteenTransaction[]
+}
+
+model CanteenTransaction {
+  id               Int            @id @default(autoincrement())
+  canteenAccountId Int
+  type             String // credit, debit
+  amount           Float
+  description      String
+  date             DateTime
+  account          CanteenAccount @relation(fields: [canteenAccountId], references: [id])
+}
+
+model CanteenMenuItem {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  price Float
+  stock Int
+}
+
+// Alumni
+model AlumniProfile {
+  id             String       @id
+  name           String
+  graduationYear Int
+  email          String
+  phone          String
+  occupation     String
+  company        String
+  donations      Donation[]
+  pledges        Pledge[]
+  mentorships    Mentorship[] @relation("Mentor")
+}
+
+model Campaign {
+  id        String     @id
+  title     String
+  goal      Float
+  raised    Float      @default(0)
+  startDate DateTime
+  endDate   DateTime?
+  pledges   Pledge[]
+  donations Donation[]
+}
+
+model Pledge {
+  id         Int           @id @default(autoincrement())
+  alumniId   String
+  campaignId String
+  amount     Float
+  date       DateTime      @default(now())
+  status     String        // Pledged, Paid
+  alumni     AlumniProfile @relation(fields: [alumniId], references: [id])
+  campaign   Campaign      @relation(fields: [campaignId], references: [id])
+}
+
+model Donation {
+  id         Int            @id @default(autoincrement())
+  alumniId   String
+  campaignId String?
+  amount     Float
+  date       DateTime       @default(now())
+  purpose    String
+  alumni     AlumniProfile  @relation(fields: [alumniId], references: [id])
+  campaign   Campaign?      @relation(fields: [campaignId], references: [id])
+}
+
+model Mentorship {
+  id        Int           @id @default(autoincrement())
+  mentorId  String
+  menteeId  String
+  startDate DateTime      @default(now())
+  status    String        // Active, Completed
+  mentor    AlumniProfile @relation("Mentor", fields: [mentorId], references: [id])
+  mentee    Student       @relation("Mentee", fields: [menteeId], references: [id])
+}
+
+// Health
+model HealthRecord {
+  id           Int          @id @default(autoincrement())
+  studentId    String       @unique
+  bloodGroup   String?
+  allergies    Json
+  vaccinations Json
+  student      Student      @relation(fields: [studentId], references: [id])
+  clinicVisits ClinicVisit[]
+}
+
+model ClinicVisit {
+  id             Int          @id @default(autoincrement())
+  healthRecordId Int
+  reason         String
+  treatment      String
+  date           DateTime
+  healthRecord   HealthRecord @relation(fields: [healthRecordId], references: [id])
+}
+
+
+// --- CAREER & SKILLS ---
+
+model CareerInterest {
+    id String @id
+    name String
+    careerPaths CareerPath[]
+}
+
+model CareerPath {
+    id String @id
+    name String
+    interestId String
+    interest CareerInterest @relation(fields: [interestId], references: [id])
+}
