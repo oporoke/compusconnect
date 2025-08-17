@@ -14,11 +14,12 @@ import { Skeleton } from '../ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { useAuditLog } from '@/hooks/use-audit-log';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 
 type EditableGrade = {
     studentId: string;
     studentName: string;
-    scores: Record<string, number>;
+    scores: Record<string, number | Record<string, number>>; // Can be a single score or question-level scores
 };
 
 export function GradebookTable() {
@@ -26,6 +27,9 @@ export function GradebookTable() {
     const { logAction } = useAuditLog();
     const { toast } = useToast();
     
+    // Mock school level for demo
+    const schoolLevel = 'High School'; // Can be 'Primary' or 'High School'
+
     const [selectedExamId, setSelectedExamId] = useState<string>('');
     const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
     const [editableGrades, setEditableGrades] = useState<EditableGrade[]>([]);
@@ -43,10 +47,15 @@ export function GradebookTable() {
 
             const studentData = students.map(student => {
                 const studentGrades = grades.find(g => g.studentId === student.id && g.examId === selectedExamId);
-                const initialScores: Record<string, number> = {};
+                const initialScores: Record<string, number | Record<string, number>> = {};
                 if (exam) {
                     exam.subjects.forEach(subject => {
-                        initialScores[subject] = studentGrades?.scores[subject] || 0;
+                        const score = studentGrades?.scores[subject];
+                        if (schoolLevel === 'High School' && typeof score !== 'number') {
+                             initialScores[subject] = score || {}; // Keep as object for question-level
+                        } else {
+                            initialScores[subject] = typeof score === 'number' ? score : 0; // Use single score
+                        }
                     });
                 }
 
@@ -58,9 +67,9 @@ export function GradebookTable() {
             });
             setEditableGrades(studentData);
         }
-    }, [selectedExamId, students, grades, exams]);
-
-    const handleGradeChange = (studentId: string, subject: string, value: string) => {
+    }, [selectedExamId, students, grades, exams, schoolLevel]);
+    
+    const handlePrimaryGradeChange = (studentId: string, subject: string, value: string) => {
         const numericValue = Number(value);
         if (isNaN(numericValue) || numericValue < 0 || numericValue > 100) return;
 
@@ -71,14 +80,44 @@ export function GradebookTable() {
         );
     };
 
+    const handleHighSchoolGradeChange = (studentId: string, subject: string, question: number, value: string) => {
+        const numericValue = Number(value);
+        // Add validation as needed
+        setEditableGrades(prev => prev.map(student => {
+            if (student.studentId === studentId) {
+                const subjectScores = typeof student.scores[subject] === 'object' ? student.scores[subject] : {};
+                const newScores = {
+                    ...student.scores,
+                    [subject]: {
+                        ...subjectScores,
+                        [`q${question}`]: numericValue
+                    }
+                };
+                return { ...student, scores: newScores };
+            }
+            return student;
+        }));
+    }
+
     const handleSaveChanges = () => {
         if (!selectedExamId) return;
         
         editableGrades.forEach(studentGrade => {
+             const finalScores: Record<string, number> = {};
+             if(schoolLevel === 'High School') {
+                 Object.entries(studentGrade.scores).forEach(([subject, value]) => {
+                     if(typeof value === 'object'){
+                        finalScores[subject] = Object.values(value).reduce((sum, qScore) => sum + qScore, 0);
+                     } else {
+                         finalScores[subject] = value;
+                     }
+                 })
+             }
+            
             const gradeData: Grade = {
                 studentId: studentGrade.studentId,
                 examId: selectedExamId,
-                scores: studentGrade.scores,
+                scores: schoolLevel === 'High School' ? finalScores : studentGrade.scores as any,
             };
             updateGrades(gradeData);
         });
@@ -90,11 +129,21 @@ export function GradebookTable() {
         });
     };
     
-    const calculateAverage = (scores: Record<string, number>) => {
-        const subjectScores = Object.values(scores);
+    const calculateAverage = (scores: Record<string, number | Record<string, number>>) => {
+        const subjectScores = Object.values(scores).map(score => {
+             if (typeof score === 'object') {
+                const questionScores = Object.values(score);
+                return questionScores.reduce((acc, s) => acc + s, 0);
+            }
+            return score;
+        });
+
         if (subjectScores.length === 0) return 'N/A';
-        const total = subjectScores.reduce((acc, score) => acc + score, 0);
-        return (total / subjectScores.length).toFixed(2);
+        const total = subjectScores.reduce((acc, score) => acc + (score || 0), 0);
+        // This average might need to be weighted by total marks per subject in a real scenario
+        const totalSubjectsWithScores = subjectScores.filter(s => s > 0).length;
+        if(totalSubjectsWithScores === 0) return '0.00';
+        return (total / (totalSubjectsWithScores * 100) * 100).toFixed(2);
     }
     
     const handleHistoryCheck = () => {
@@ -145,20 +194,38 @@ export function GradebookTable() {
                                         <TableCell className="font-medium">{student.studentName}</TableCell>
                                         {selectedExam.subjects.map(subject => (
                                             <TableCell key={subject}>
-                                                <div className="flex items-center justify-center gap-1">
+                                            {schoolLevel === 'Primary' ? (
                                                 <Input 
                                                     type="number" 
-                                                    value={student.scores[subject] || ''} 
-                                                    onChange={(e) => handleGradeChange(student.studentId, subject, e.target.value)}
-                                                    className="w-20 text-center"
+                                                    value={student.scores[subject] as number || ''} 
+                                                    onChange={(e) => handlePrimaryGradeChange(student.studentId, subject, e.target.value)}
+                                                    className="w-24 text-center mx-auto"
                                                 />
-                                                <TooltipProvider>
-                                                    <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={handleHistoryCheck} className="h-8 w-8"><History className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent><p>View Grade History (Mock)</p></TooltipContent></Tooltip>
-                                                </TooltipProvider>
-                                                </div>
+                                            ) : (
+                                                <Accordion type="single" collapsible className="w-full">
+                                                    <AccordionItem value="item-1">
+                                                        <AccordionTrigger className="text-center justify-center hover:no-underline">
+                                                           {Object.values(student.scores[subject] as object).reduce((a,b) => a+b, 0)}
+                                                        </AccordionTrigger>
+                                                        <AccordionContent className="p-2 space-y-1">
+                                                           {[...Array(5)].map((_, i) => (
+                                                               <div key={i} className="flex items-center gap-1">
+                                                                   <Label className="text-xs">Q{i+1}</Label>
+                                                                   <Input 
+                                                                    type="number" 
+                                                                    className="h-7 w-16" 
+                                                                    value={(student.scores[subject] as any)?.[`q${i+1}`] || ''}
+                                                                    onChange={(e) => handleHighSchoolGradeChange(student.studentId, subject, i + 1, e.target.value)}
+                                                                   />
+                                                               </div>
+                                                           ))}
+                                                        </AccordionContent>
+                                                    </AccordionItem>
+                                                </Accordion>
+                                            )}
                                             </TableCell>
                                         ))}
-                                        <TableCell className="text-center font-medium">{calculateAverage(student.scores)}</TableCell>
+                                        <TableCell className="text-center font-medium">{calculateAverage(student.scores)}%</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
