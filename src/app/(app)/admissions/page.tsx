@@ -8,13 +8,53 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, UserPlus, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Upload, UserPlus, CheckCircle, XCircle, Clock, ShieldAlert, BarChart } from "lucide-react";
 import { useAdmissions } from '@/hooks/use-admissions';
 import type { Admission } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+function AiAnalysisReportDialog({ application }: { application: Admission }) {
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="ghost" size="sm">View Report</Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>AI Analysis Report: {application.name}</DialogTitle>
+                    <DialogDescription>Mock fraud detection and applicant scoring.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base">Fraud & Anomaly Detection</CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-sm">
+                            <ul className="list-disc list-inside space-y-1">
+                                <li className="text-green-600">Document checksums verified.</li>
+                                <li className="text-red-600">Previous school "Northwood Middle" has a high dropout rate warning.</li>
+                                <li>Applicant age consistent with grade level.</li>
+                            </ul>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base">Applicant Score: 82/100</CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-sm">
+                            <p>The AI model predicts a high likelihood of success based on academic history and extracurricular data (mock).</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 
 export default function AdmissionsPage() {
     const { applications, addApplication, updateApplicationStatus, isLoading } = useAdmissions();
@@ -159,7 +199,7 @@ export default function AdmissionsPage() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Candidate</TableHead>
-                                            <TableHead>Grade</TableHead>
+                                            <TableHead>AI Analysis</TableHead>
                                             <TableHead>Status</TableHead>
                                             <TableHead className="text-right">Action</TableHead>
                                         </TableRow>
@@ -168,7 +208,12 @@ export default function AdmissionsPage() {
                                         {applications.map(app => (
                                             <TableRow key={app.id}>
                                                 <TableCell className="font-medium">{app.name}</TableCell>
-                                                <TableCell>{app.grade}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant={app.id === 'APP003' ? "destructive" : "secondary"}>
+                                                        <ShieldAlert className="mr-1"/> {app.id === 'APP003' ? 'High Risk' : 'Low Risk'}
+                                                    </Badge>
+                                                    <AiAnalysisReportDialog application={app} />
+                                                </TableCell>
                                                 <TableCell>
                                                     <Badge variant={getStatusVariant(app.status)}>
                                                         {getStatusIcon(app.status)}
@@ -200,3 +245,4 @@ export default function AdmissionsPage() {
         </div>
     );
 }
+
