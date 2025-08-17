@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { Assignment, CourseMaterial, OnlineClass } from '@prisma/client';
+import type { Assignment, CourseMaterial, OnlineClass } from '@/lib/data';
 import { useToast } from './use-toast';
 
 interface LMSContextType {
@@ -67,6 +67,8 @@ export const LMSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [toast]);
 
   const addAssignment = useCallback(async (data: Omit<Assignment, 'id' | 'status'>) => {
+    const newAssignment = { ...data, id: `AS${Date.now()}`, status: 'Pending' as const };
+    setAssignments(prev => [...prev, newAssignment]);
     toast({ title: 'Assignment Created (Mock)', description: `The assignment "${data.title}" has been created.` });
   }, [toast]);
 

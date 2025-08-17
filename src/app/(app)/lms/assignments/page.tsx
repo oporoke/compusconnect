@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Upload, PlusCircle } from "lucide-react";
+import { FileText, Upload, PlusCircle, Tag } from "lucide-react";
 import { useLMS } from "@/hooks/use-lms";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
@@ -21,13 +21,16 @@ function CreateAssignmentDialog() {
     const [title, setTitle] = useState('');
     const [subject, setSubject] = useState('');
     const [dueDate, setDueDate] = useState('');
+    const [skills, setSkills] = useState('');
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        addAssignment({ title, subject, dueDate });
+        const skillList = skills.split(',').map(s => s.trim()).filter(Boolean);
+        addAssignment({ title, subject, dueDate, skills: skillList });
         setTitle('');
         setSubject('');
         setDueDate('');
+        setSkills('');
         setOpen(false);
     };
 
@@ -44,7 +47,7 @@ function CreateAssignmentDialog() {
                     <DialogHeader>
                         <DialogTitle>Create New Assignment</DialogTitle>
                         <DialogDescription>
-                            Fill in the details below to create a new assignment.
+                            Fill in the details below to create a new assignment and tag it with relevant skills.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
@@ -59,6 +62,10 @@ function CreateAssignmentDialog() {
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="dueDate" className="text-right">Due Date</Label>
                             <Input id="dueDate" value={dueDate} onChange={(e) => setDueDate(e.target.value)} type="date" className="col-span-3" required />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="skills" className="text-right">Skills Tag</Label>
+                            <Input id="skills" value={skills} onChange={(e) => setSkills(e.target.value)} className="col-span-3" placeholder="e.g., Critical Thinking, Data Analysis" />
                         </div>
                     </div>
                     <DialogFooter>
@@ -105,15 +112,20 @@ export default function AssignmentsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {assignments.map((assignment) => (
-                        <div key={assignment.id} className="flex items-center justify-between p-4 border rounded-md hover:bg-muted/50">
+                        <div key={assignment.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-md hover:bg-muted/50">
                             <div className="flex items-center gap-4">
                                 <FileText className="h-6 w-6 text-primary" />
                                 <div>
                                     <p className="font-semibold">{assignment.title}</p>
                                     <p className="text-sm text-muted-foreground">{assignment.subject} - Due: {assignment.dueDate}</p>
+                                    {assignment.skills && assignment.skills.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mt-2">
+                                            {assignment.skills.map(skill => <Badge key={skill} variant="outline"><Tag className="mr-1"/>{skill}</Badge>)}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-4 mt-4 sm:mt-0">
                                 <Badge variant={getStatusVariant(assignment.status)}>{assignment.status}</Badge>
                                 {user?.role === ROLES.STUDENT && assignment.status === 'Pending' && (
                                     <Button size="sm" onClick={() => submitAssignment(assignment.id)}>

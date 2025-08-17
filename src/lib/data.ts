@@ -104,12 +104,12 @@ export const courseMaterials: CourseMaterial[] = [
     { id: 'CM04', subject: 'History', title: 'The World Wars', type: 'Slides', link: '#' },
 ];
 
-export type Assignment = { id: string; title: string; subject: string; dueDate: string; status: 'Pending' | 'Submitted' | 'Graded'; };
+export type Assignment = { id: string; title: string; subject: string; dueDate: string; status: 'Pending' | 'Submitted' | 'Graded'; skills?: string[]; };
 export const assignments: Assignment[] = [
-    { id: 'AS01', title: 'Algebra Worksheet', subject: 'Math', dueDate: '2024-10-20', status: 'Pending' },
-    { id: 'AS02', title: 'Lab Report', subject: 'Science', dueDate: '2024-10-22', status: 'Submitted' },
-    { id: 'AS03', title: 'Essay on Macbeth', subject: 'English', dueDate: '2024-10-25', status: 'Graded' },
-    { id: 'AS04', title: 'Research Paper', subject: 'History', dueDate: '2024-11-01', status: 'Pending' },
+    { id: 'AS01', title: 'Algebra Worksheet', subject: 'Math', dueDate: '2024-10-20', status: 'Pending', skills: ['Problem Solving'] },
+    { id: 'AS02', title: 'Lab Report', subject: 'Science', dueDate: '2024-10-22', status: 'Submitted', skills: ['Data Analysis', 'Scientific Writing'] },
+    { id: 'AS03', title: 'Essay on Macbeth', subject: 'English', dueDate: '2024-10-25', status: 'Graded', skills: ['Critical Thinking', 'Creative Writing'] },
+    { id: 'AS04', title: 'Research Paper', subject: 'History', dueDate: '2024-11-01', status: 'Pending', skills: ['Research', 'Critical Thinking'] },
 ];
 
 export type OnlineClass = { id: string; subject: string; topic: string; time: string; link: string; };
@@ -445,6 +445,7 @@ export interface AlumniProfile {
 export interface Donation {
     id: string;
     alumniId: string;
+    campaignId?: string;
     amount: number;
     purpose: string;
     date: string;
