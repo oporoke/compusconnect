@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     return NextResponse.json(conversationMap);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
+    return NextResponse.json({}, { status: 200 });
   }
 }
 

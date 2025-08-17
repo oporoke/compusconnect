@@ -10,6 +10,6 @@ export async function GET(request: Request) {
     return NextResponse.json(events);
   } catch (error) {
     console.error('Failed to fetch events:', error);
-    return NextResponse.json([], { status: 500 });
+    return NextResponse.json([], { status: 200 });
   }
 }
