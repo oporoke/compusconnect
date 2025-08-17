@@ -225,7 +225,7 @@ export default function FinancePage() {
                         <CardDescription>Mock comparison of income vs. expenses over the last few years.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ChartContainer config={{}} className="h-[250px] w-full">
+                        <ChartContainer config={ {}} className="h-[250px] w-full">
                             <LineChart data={multiYearData}>
                                 <CartesianGrid vertical={false} />
                                 <XAxis dataKey="year" />

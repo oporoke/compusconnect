@@ -8,7 +8,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useFinance } from '@/hooks/use-finance';
 import { useStaff } from '@/hooks/use-staff';
 import jsPDF from 'jspdf';
-import { FileDown, Rocket } from 'lucide-react';
+import { FileDown, Rocket, ShieldAlert } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function PayrollPage() {
     const { payrollRecords, runPayrollForMonth } = useFinance();
@@ -62,8 +73,30 @@ export default function PayrollPage() {
                 </CardHeader>
                 <CardContent className="flex items-center gap-4">
                     <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="p-2 border rounded-md"/>
-                    <Button onClick={handleRunPayroll}><Rocket className="mr-2"/>Run for {month}</Button>
+                     <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline"><ShieldAlert className="mr-2"/>Review Payroll</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Mock Payroll Anomaly Detection</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            One anomaly found for the upcoming payroll run:
+                            <ul className="list-disc pl-5 mt-2">
+                                <li><b>Warning:</b> Samuel Jones's net pay is 15% higher than last month's average due to lower tax deductions. Please verify.</li>
+                            </ul>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction>Acknowledge</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                 </CardContent>
+                 <CardFooter>
+                    <Button onClick={handleRunPayroll}><Rocket className="mr-2"/>Run for {month}</Button>
+                 </CardFooter>
             </Card>
 
             <Card>
