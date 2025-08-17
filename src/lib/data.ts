@@ -1,5 +1,4 @@
 
-
 export interface Student {
     id: string;
     name: string;
@@ -101,4 +100,23 @@ export const onlineClasses: OnlineClass[] = [
     { id: 'OC02', subject: 'Science', topic: 'Photosynthesis', time: 'Tue, 11:00 AM', link: '#' },
     { id: 'OC03', subject: 'English', topic: 'Grammar Review', time: 'Wed, 9:00 AM', link: '#' },
     { id: 'OC04', subject: 'History', topic: 'Ancient Civilizations', time: 'Thu, 2:00 PM', link: '#' },
+];
+
+
+export type Admission = {
+    id: string;
+    name: string;
+    age: number;
+    previousSchool: string;
+    grade: string;
+    parentName: string;
+    parentEmail: string;
+    date: string;
+    status: 'Pending' | 'Approved' | 'Rejected';
+};
+
+export const admissions: Admission[] = [
+    { id: 'APP001', name: 'Olivia Martinez', age: 14, previousSchool: 'Northwood Middle', grade: '9', parentName: 'Daniel Martinez', parentEmail: 'daniel@example.com', date: '2024-08-01', status: 'Pending' },
+    { id: 'APP002', name: 'James Wilson', age: 15, previousSchool: 'Southside High', grade: '10', parentName: 'Sophia Wilson', parentEmail: 'sophia@example.com', date: '2024-08-03', status: 'Approved' },
+    { id: 'APP003', name: 'Isabella Anderson', age: 14, previousSchool: 'Eastgate Prep', grade: '9', parentName: 'Liam Anderson', parentEmail: 'liam@example.com', date: '2024-08-05', status: 'Rejected' },
 ];

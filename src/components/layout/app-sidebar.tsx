@@ -17,6 +17,7 @@ import {
   ClipboardCheck,
   BookOpenCheck,
   FilePen,
+  UserPlus,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -27,6 +28,7 @@ interface AppSidebarProps {
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT, ROLES.PARENT] },
+  { href: '/admissions', label: 'Admissions', icon: UserPlus, roles: [ROLES.ADMIN] },
   { href: '/students', label: 'Students', icon: Users, roles: [ROLES.ADMIN, ROLES.TEACHER] },
   { href: '/exams', label: 'Exams', icon: FilePen, roles: [ROLES.ADMIN, ROLES.TEACHER] },
   { href: '/attendance', label: 'Attendance', icon: CalendarCheck, roles: [ROLES.ADMIN, ROLES.TEACHER] },

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/hooks/use-auth';
 import { StudentProvider } from '@/hooks/use-students';
 import { LMSProvider } from '@/hooks/use-lms';
+import { AdmissionsProvider } from '@/hooks/use-admissions';
 
 export const metadata: Metadata = {
   title: 'CampusConnect Lite',
@@ -27,7 +28,9 @@ export default function RootLayout({
         <AuthProvider>
             <StudentProvider>
                 <LMSProvider>
+                  <AdmissionsProvider>
                     {children}
+                  </AdmissionsProvider>
                 </LMSProvider>
             </StudentProvider>
         </AuthProvider>
