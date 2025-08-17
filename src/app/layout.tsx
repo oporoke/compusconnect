@@ -17,6 +17,8 @@ import { AuditLogProvider } from '@/hooks/use-audit-log';
 import { CanteenProvider } from '@/hooks/use-canteen';
 import { AlumniProvider } from '@/hooks/use-alumni';
 import { HealthProvider } from '@/hooks/use-health';
+import { InventoryProvider } from '@/hooks/use-inventory';
+
 
 export const metadata: Metadata = {
   title: 'CampusConnect Lite',
@@ -39,8 +41,8 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <AuditLogProvider>
           <AuthProvider>
-            <StudentProvider>
-                <LMSProvider>
+            <LMSProvider>
+                <StudentProvider>
                   <AdmissionsProvider>
                     <StaffProvider>
                         <LibraryProvider>
@@ -51,7 +53,9 @@ export default function RootLayout({
                                       <CanteenProvider>
                                         <AlumniProvider>
                                           <HealthProvider>
+                                            <InventoryProvider>
                                               {children}
+                                            </InventoryProvider>
                                           </HealthProvider>
                                         </AlumniProvider>
                                       </CanteenProvider>
@@ -62,8 +66,8 @@ export default function RootLayout({
                         </LibraryProvider>
                     </StaffProvider>
                   </AdmissionsProvider>
-                </LMSProvider>
-            </StudentProvider>
+                </StudentProvider>
+            </LMSProvider>
           </AuthProvider>
         </AuditLogProvider>
         <Toaster />

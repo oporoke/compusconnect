@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { vehicles as initialVehicles, routes as initialRoutes, drivers as initialDrivers, Vehicle, Route, Driver } from '@/lib/data';
+import type { Vehicle, Route, Driver } from '@prisma/client';
 import { useToast } from './use-toast';
 
 interface TransportContextType {
@@ -27,54 +27,57 @@ export const TransportProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
+  const fetchData = useCallback(async (signal: AbortSignal) => {
+    setIsLoading(true);
     try {
-      const storedVehicles = localStorage.getItem('campus-connect-vehicles');
-      const storedRoutes = localStorage.getItem('campus-connect-routes');
-      const storedDrivers = localStorage.getItem('campus-connect-drivers');
-      
-      setVehicles(storedVehicles ? JSON.parse(storedVehicles) : initialVehicles);
-      setRoutes(storedRoutes ? JSON.parse(storedRoutes) : initialRoutes);
-      setDrivers(storedDrivers ? JSON.parse(storedDrivers) : initialDrivers);
-    } catch (error) {
-      console.error("Failed to parse transport data from localStorage", error);
-      setVehicles(initialVehicles);
-      setRoutes(initialRoutes);
-      setDrivers(initialDrivers);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+        const [vehiclesRes, routesRes, driversRes] = await Promise.all([
+            fetch('/api/transport/vehicles', { signal }),
+            fetch('/api/transport/routes', { signal }),
+            fetch('/api/transport/drivers', { signal }),
+        ]);
 
-  const persistRoutes = (data: Route[]) => {
-    localStorage.setItem('campus-connect-routes', JSON.stringify(data));
-  };
-  
-  const persistVehicles = (data: Vehicle[]) => {
-    localStorage.setItem('campus-connect-vehicles', JSON.stringify(data));
-  };
+        if (!vehiclesRes.ok || !routesRes.ok || !driversRes.ok) {
+            throw new Error('Failed to fetch transport data');
+        }
+
+        setVehicles(await vehiclesRes.json());
+        setRoutes(await routesRes.json());
+        setDrivers(await driversRes.json());
+        
+    } catch (error) {
+       if (error instanceof Error && error.name !== 'AbortError') {
+          console.error("Failed to load transport data:", error);
+          toast({ variant: 'destructive', title: 'Error', description: 'Could not load transport data.' });
+          setVehicles([]);
+          setRoutes([]);
+          setDrivers([]);
+       }
+    } finally {
+        setIsLoading(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
+  }, [fetchData]);
+
 
   const addRoute = useCallback((routeData: Omit<Route, 'id'>) => {
-    setRoutes(prev => {
-      const newRoute: Route = {
-        ...routeData,
-        id: `R${(prev.length + 1).toString().padStart(2, '0')}`,
-      };
-      const newRoutes = [...prev, newRoute];
-      persistRoutes(newRoutes);
-      toast({ title: "Route Added", description: `Route "${routeData.name}" has been created.` });
-      return newRoutes;
-    });
+    toast({ title: 'Mock Action', description: 'Adding routes is not implemented in this demo.' });
   }, [toast]);
   
   const removeRoute = useCallback((routeId: string) => {
-    setRoutes(prev => {
-        const newRoutes = prev.filter(r => r.id !== routeId);
-        persistRoutes(newRoutes);
-        toast({ title: "Route Removed", description: "The route has been successfully removed." });
-        return newRoutes;
-    });
+    toast({ title: 'Mock Action', description: 'Removing routes is not implemented in this demo.' });
   }, [toast]);
+  
+  const updateVehicleLocation = useCallback((vehicleId: string, location: { lat: number; lng: number }) => {
+    setVehicles(prev => {
+        const newVehicles = prev.map(v => v.id === vehicleId ? { ...v, ...location } : v);
+        return newVehicles;
+    })
+  }, []);
 
   const getVehicleByRoute = useCallback((routeId: string) => {
     const route = routes.find(r => r.id === routeId);
@@ -88,16 +91,6 @@ export const TransportProvider: React.FC<{ children: ReactNode }> = ({ children 
   const getDriverById = useCallback((driverId: string) => {
       return drivers.find(d => d.id === driverId);
   }, [drivers]);
-
-  const updateVehicleLocation = useCallback((vehicleId: string, location: { lat: number; lng: number }) => {
-    setVehicles(prev => {
-        const newVehicles = prev.map(v => v.id === vehicleId ? { ...v, location } : v);
-        // Persisting every location update might be too frequent, so we can choose to throttle this if needed.
-        // For this simulation, we'll persist it.
-        persistVehicles(newVehicles);
-        return newVehicles;
-    })
-  }, []);
 
   return (
     <TransportContext.Provider value={{ vehicles, routes, drivers, addRoute, removeRoute, getVehicleById, getVehicleByRoute, getDriverById, updateVehicleLocation, isLoading }}>
