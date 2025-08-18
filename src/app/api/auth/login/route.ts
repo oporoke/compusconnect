@@ -1,35 +1,35 @@
+
 import { NextResponse } from "next/server";
-import { USERS } from "@/lib/auth";
 import { cookies } from "next/headers";
 import prisma from "@/lib/db";
+import type { Role } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
-    const { role, email } = await request.json();
+    const { email, role }: { email: string, role: Role } = await request.json();
 
     let user;
+    
+    // For demo purposes, student/parent login is mocked and logs in the first student
     if (role === 'student' || role === 'parent') {
-      // For simplicity, demo student/parent login uses a default student
       const student = await prisma.student.findFirst();
-      if (student) {
-        user = { id: student.id, name: student.name, role: role };
+      if (!student) {
+        return NextResponse.json({ error: "No students found for mock login." }, { status: 404 });
       }
+      user = { id: student.id, name: student.name, role: role };
     } else {
-       const staffMember = await prisma.staff.findFirst({ where: { email, role }});
-       if(staffMember) {
-           user = { id: staffMember.id, name: staffMember.name, role: staffMember.role };
-       }
+      // Staff login checks for an existing staff member by email
+      const staffMember = await prisma.staff.findUnique({ where: { email } });
+      if (!staffMember) {
+        return NextResponse.json({ error: "Invalid credentials or user does not exist." }, { status: 401 });
+      }
+      // In a real app, you would also verify a password here
+      user = { id: staffMember.id, name: staffMember.name, role: staffMember.role as Role };
     }
 
-
-    if (!user) {
-      return NextResponse.json({ error: "Invalid user data" }, { status: 400 });
-    }
-
+    // Set session cookie
     const session = { user };
-
-    const cookieStore = await cookies();
-    cookieStore.set("session", JSON.stringify(session), {
+    cookies().set("session", JSON.stringify(session), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24 * 7, // 1 week
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(session);
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: "An error occurred" }, { status: 500 });
+    console.error('Login failed:', error);
+    return NextResponse.json({ error: "An error occurred during login." }, { status: 500 });
   }
 }

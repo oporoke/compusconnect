@@ -13,13 +13,11 @@ import { Input } from '../ui/input';
 
 export function LoginForm({ onToggleView }: { onToggleView: () => void }) {
   const { login, isLoading } = useAuth();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('e.reed@school.com'); // Default for easy demo
   const [selectedRole, setSelectedRole] = useState<Role>(ROLES.ADMIN);
 
   const handleLogin = () => {
-    // Name and password are not used in this simplified session auth,
-    // but kept for UI demo. The backend will look up the user by email and role.
-    login({ name: 'User', email, role: selectedRole });
+    login({ email, role: selectedRole });
   };
 
   return (

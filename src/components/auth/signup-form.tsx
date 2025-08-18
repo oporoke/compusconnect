@@ -12,14 +12,14 @@ import { LogIn, KeyRound, User, Mail } from 'lucide-react';
 import { Input } from '../ui/input';
 
 export function SignupForm({ onToggleView }: { onToggleView: () => void }) {
-  const { login, isLoading } = useAuth();
+  const { signup, isLoading } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [selectedRole, setSelectedRole] = useState<Role>(ROLES.STUDENT);
+  const [password, setPassword] = useState('');
+  const [selectedRole, setSelectedRole] = useState<Role>(ROLES.TEACHER);
 
   const handleSignup = () => {
-    // This flow initiates the MFA step which then creates the account and logs in.
-    login({ name, email, role: selectedRole });
+    signup({ name, email, role: selectedRole, password });
   };
 
   return (
@@ -66,13 +66,14 @@ export function SignupForm({ onToggleView }: { onToggleView: () => void }) {
               <SelectValue placeholder="Select a role" />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(ROLES).map((role) => (
+              {Object.values(ROLES).filter(r => r !== 'student' && r !== 'parent').map((role) => (
                 <SelectItem key={role} value={role} className="capitalize">
                   {role.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+           <p className="text-xs text-muted-foreground pt-1">Note: Student/Parent accounts are created by administrators.</p>
         </div>
          <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
@@ -81,15 +82,17 @@ export function SignupForm({ onToggleView }: { onToggleView: () => void }) {
                 <Input 
                     id="password" 
                     type="password"
-                    placeholder="Enter any password"
+                    placeholder="Enter a strong password"
                     className="pl-10"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
                 />
             </div>
         </div>
       </CardContent>
       <CardFooter className="flex-col items-stretch gap-4">
-        <Button onClick={handleSignup} disabled={isLoading || !name || !email} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+        <Button onClick={handleSignup} disabled={isLoading || !name || !email || !password} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
           <LogIn className="mr-2 h-4 w-4" />
           {isLoading ? 'Creating Account...' : 'Create Account'}
         </Button>

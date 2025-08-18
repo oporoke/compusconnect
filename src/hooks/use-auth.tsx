@@ -5,13 +5,15 @@ import { User, Role } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuditLog } from './use-audit-log';
+import { useToast } from './use-toast';
 
 type AuthState = 'unauthenticated' | 'awaitingMfa' | 'authenticated';
 
 interface AuthContextType {
   user: User | null;
   authState: AuthState;
-  login: (credentials: { name: string; email: string; role: Role }) => void;
+  login: (credentials: { email: string; role: Role }) => void;
+  signup: (credentials: { name: string; email: string; role: Role; password?: string }) => void;
   submitMfa: (code: string) => void;
   logout: () => void;
   isLoading: boolean;
@@ -26,6 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [pendingCredentials, setPendingCredentials] = useState<{ email: string, role: Role} | null>(null);
   const router = useRouter();
   const { logAction } = useAuditLog();
+  const { toast } = useToast();
 
   const checkUser = useCallback(async () => {
     try {
@@ -54,10 +57,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkUser();
   }, [checkUser]);
 
-  const login = useCallback(async (credentials: { name: string; email: string; role: Role }) => {
-    setPendingCredentials({ email: credentials.email, role: credentials.role });
+  const login = useCallback(async (credentials: { email: string; role: Role }) => {
+    setPendingCredentials(credentials);
     setAuthState('awaitingMfa');
   }, []);
+
+  const signup = useCallback(async (credentials: { name: string; email: string; role: Role; password?: string }) => {
+    setIsLoading(true);
+    try {
+        const res = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(credentials)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || "Sign-up failed");
+        }
+        toast({
+            title: "Sign Up Successful",
+            description: "Your account has been created. You can now log in.",
+        });
+        // After successful signup, take them to the login step
+        // We don't log them in automatically for this flow, they must now login.
+        router.push('/login'); // Force a reload to the login view
+
+    } catch (error) {
+        console.error("Signup failed", error);
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+        toast({ variant: 'destructive', title: "Sign Up Failed", description: errorMessage });
+    } finally {
+        setIsLoading(false);
+    }
+  }, [toast, router]);
   
   const submitMfa = useCallback(async (code: string) => {
       if (!pendingCredentials || code.length !== 6) return;
@@ -83,11 +115,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
           console.error("Login failed", error);
           setAuthState('unauthenticated');
+          const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+          toast({ variant: 'destructive', title: 'Login Failed', description: errorMessage });
+
       } finally {
           setIsLoading(false);
           setPendingCredentials(null);
       }
-  }, [pendingCredentials, router, logAction]);
+  }, [pendingCredentials, router, logAction, toast]);
   
   const logout = useCallback(async () => {
     try {
@@ -106,7 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [router, user, logAction]);
 
   return (
-    <AuthContext.Provider value={{ user, authState, login, logout, submitMfa, isLoading }}>
+    <AuthContext.Provider value={{ user, authState, login, signup, logout, submitMfa, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
