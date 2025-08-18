@@ -66,7 +66,14 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
   }, [fetchAdmissions]);
 
   const addApplication = useCallback(async (applicationData: Omit<Admission, 'id' | 'status' | 'date' | 'documents'>) => {
-    const optimisticApp: Admission = { ...applicationData, id: `temp-${Date.now()}`, status: 'Pending' as const, date: new Date(), documents: [] };
+    const tempId = `temp-${Date.now()}`;
+    const optimisticApp: Admission = { 
+        id: tempId, 
+        ...applicationData, 
+        status: 'Pending', 
+        date: new Date(), 
+        documents: [] 
+    };
     setApplications(prev => [optimisticApp, ...prev]);
     try {
         const response = await fetch('/api/admissions', {
@@ -76,11 +83,11 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
         });
         if (!response.ok) throw new Error("Server failed to add application");
         const newApp = await response.json();
-        setApplications(prev => prev.map(a => a.id === optimisticApp.id ? newApp : a));
+        setApplications(prev => prev.map(a => a.id === tempId ? newApp : a));
     } catch (error) {
         console.error(error);
         toast({ variant: 'destructive', title: "Submission Failed" });
-        setApplications(prev => prev.filter(a => a.id !== optimisticApp.id));
+        setApplications(prev => prev.filter(a => a.id !== tempId));
     }
   }, [toast]);
   
