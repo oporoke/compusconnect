@@ -25,7 +25,7 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
   const { authState } = useAuth();
 
   const fetchAdmissions = useCallback(async (signal: AbortSignal) => {
-    if (authState !== 'authenticated') return;
+    if (authState !== 'authenticated' && authState !== 'unauthenticated') return;
     setIsLoading(true);
     try {
       const response = await fetch('/api/admissions', { signal });

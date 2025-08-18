@@ -78,9 +78,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             title: "Sign Up Successful",
             description: "Your account has been created. You can now log in.",
         });
-        // After successful signup, take them to the login step
-        // We don't log them in automatically for this flow, they must now login.
-        router.push('/login'); // Force a reload to the login view
+        // After successful signup, take them to the login view
+        // This is a client-side navigation that won't re-trigger the page load fully,
+        // so the login form will appear.
+        router.push('/login');
 
     } catch (error) {
         console.error("Signup failed", error);
