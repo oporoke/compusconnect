@@ -2,12 +2,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { CanteenAccount, CanteenTransaction, CanteenMenuItem as PrismaCanteenMenuItem } from '@prisma/client';
 import { useToast } from './use-toast';
 import { useAuth } from './use-auth';
+import type { CanteenAccount, CanteenTransaction, CanteenMenuItem } from '@/lib/data';
 
-// Renamed Prisma type to avoid conflict
-type CanteenMenuItem = PrismaCanteenMenuItem;
 
 // Define the CanteenMenu type as it is no longer imported
 export interface CanteenMenu {

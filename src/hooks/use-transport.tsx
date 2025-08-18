@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { Vehicle, Route, Driver } from '@prisma/client';
+import type { Vehicle, Route, Driver } from '@/lib/data';
 import { useToast } from './use-toast';
 import { useAuth } from './use-auth';
 

@@ -2,35 +2,22 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { Hostel as PrismaHostel, Student as PrismaStudent } from '@prisma/client';
 import { useToast } from './use-toast';
 import { useStudents } from './use-students';
 import { useAuth } from './use-auth';
-
-// Define a more detailed Room type for the frontend
-export interface Room {
-  id: string;
-  number: string;
-  capacity: number;
-  occupants: string[]; // array of student IDs
-}
-
-// Define the Hostel type for the frontend, using the detailed Room type
-export interface Hostel extends Omit<PrismaHostel, 'rooms'> {
-  rooms: Room[];
-}
+import type { Hostel as HostelType, Student } from '@/lib/data';
 
 interface HostelContextType {
-  hostels: Hostel[];
+  hostels: HostelType[];
   assignStudentToRoom: (hostelId: string, roomId: string, studentId: string) => void;
-  getStudentById: (studentId: string) => PrismaStudent | undefined;
+  getStudentById: (studentId: string) => Student | undefined;
   isLoading: boolean;
 }
 
 const HostelContext = createContext<HostelContextType | undefined>(undefined);
 
 export const HostelProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [hostels, setHostels] = useState<Hostel[]>([]);
+  const [hostels, setHostels] = useState<HostelType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { students } = useStudents();

@@ -2,9 +2,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { AlumniProfile, Donation, Campaign, Pledge, Mentorship } from '@prisma/client';
 import { useToast } from './use-toast';
 import { useAuth } from './use-auth';
+import type { AlumniProfile, Donation, Campaign, Pledge, Mentorship } from '@/lib/data';
+
 
 interface AlumniContextType {
   alumni: AlumniProfile[];

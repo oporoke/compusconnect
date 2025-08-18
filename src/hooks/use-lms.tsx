@@ -2,9 +2,9 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { Assignment, CourseMaterial, OnlineClass, Badge, DiscussionThread, DiscussionReply } from '@prisma/client';
 import { useToast } from './use-toast';
 import { useAuth } from './use-auth';
+import type { Assignment, CourseMaterial, OnlineClass, Badge, DiscussionThread, DiscussionReply } from '@/lib/data';
 
 type ThreadWithReplies = DiscussionThread & { replies: DiscussionReply[] };
 

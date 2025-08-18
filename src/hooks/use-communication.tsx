@@ -2,9 +2,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { Event as SchoolEvent, Announcement } from '@prisma/client';
 import { useToast } from './use-toast';
-import { Message, Conversation } from '@/lib/data';
+import { Message, Conversation, Event as SchoolEvent, Announcement } from '@/lib/data';
 import { useAuth } from './use-auth';
 
 interface CommunicationContextType {

@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { Book, LibraryTransaction } from '@prisma/client';
+import type { Book, LibraryTransaction } from '@/lib/data';
 import { useToast } from './use-toast';
 import { differenceInDays } from 'date-fns';
 import { useAuth } from './use-auth';
