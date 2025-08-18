@@ -2,11 +2,11 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const students = await prisma.student.findMany({
       include: {
-        discipline: true,
+        disciplinaryRecords: true,
       },
     });
     return NextResponse.json(students);
