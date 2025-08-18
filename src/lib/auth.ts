@@ -14,13 +14,3 @@ export interface User {
   name: string;
   role: Role;
 }
-
-// This is now primarily for client-side role mapping and fallback.
-// The source of truth for login is the database.
-export const USERS: Omit<User, 'id'>[] = [
-  { name: 'Super Admin User', role: ROLES.SUPER_ADMIN },
-  { name: 'Admin User', role: ROLES.ADMIN },
-  { name: 'Teacher User', role: ROLES.TEACHER },
-  { name: 'Student User', role: ROLES.STUDENT },
-  { name: 'Parent User', role: ROLES.PARENT },
-];
