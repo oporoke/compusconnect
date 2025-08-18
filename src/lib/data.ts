@@ -1,8 +1,8 @@
 import { Role, User, ROLES } from './auth';
-export type { User, Role };
 
-export type { DisciplinaryRecord, Student, Exam, Grade, Announcement, CourseMaterial, Assignment, OnlineClass, Admission, AdmissionRequirement, Staff, Book, LibraryTransaction, Vehicle, Driver, Route, Room, Hostel, FeeStructure, Invoice, Payment, PayrollRecord, Expense, CanteenAccount, CanteenTransaction, CanteenMenuItem, AlumniProfile, Mentorship, HealthRecord, ClinicVisit, Asset } from '@prisma/client';
-
+// Re-export all prisma types and custom auth types
+export * from '@prisma/client';
+export type { Role, User };
 
 export const defaultCourseSchedules = `
 - Math 101: 3 hours, Mon/Wed/Fri
@@ -25,6 +25,14 @@ export interface Message {
     timestamp: string; // ISO 8601
 }
 export type Conversation = Message[];
+
+// Added a type for CanteenMenu for better type safety
+export interface CanteenMenu {
+    id: string;
+    day: string;
+    items: { name: string; price: number; stock: number; }[];
+}
+
 
 // Mock Data
 export const students = [
@@ -144,7 +152,7 @@ export const canteenTransactions = [
     { id: 'CT01', studentId: 'S001', type: 'debit', amount: 5.00, description: 'Pizza Slice, Soda', date: '2024-10-01' },
 ];
 
-export const canteenMenu: any[] = [
+export const canteenMenu: CanteenMenu[] = [
     { id: 'CM1', day: 'Monday', items: [{ name: 'Pizza Slice', price: 2.50, stock: 50 }, { name: 'Apple Juice', price: 1.00, stock: 100 }] },
     { id: 'CM2', day: 'Tuesday', items: [{ name: 'Chicken Sandwich', price: 3.50, stock: 40 }, { name: 'Orange Juice', price: 1.00, stock: 100 }] },
 ];
@@ -175,8 +183,8 @@ export const clinicVisits = [
 ];
 
 export const assets = [
-    { id: 'AST01', name: 'Dell Latitude 5420 (SN: ABC123)', type: 'Device', status: 'In Use', assignedTo: 'T02', purchaseDate: '2023-01-15' },
-    { id: 'AST02', name: 'Epson Projector (SN: XYZ987)', type: 'Equipment', status: 'Available', assignedTo: null, purchaseDate: '2022-08-20' },
+    { id: 'AST01', name: 'Dell Latitude 5420 (SN: ABC123)', type: 'Device', status: 'In Use', assignedToId: 'T02', purchaseDate: '2023-01-15' },
+    { id: 'AST02', name: 'Epson Projector (SN: XYZ987)', type: 'Equipment', status: 'Available', assignedToId: null, purchaseDate: '2022-08-20' },
 ];
 
 export const skills = [
@@ -213,4 +221,9 @@ export const careerPaths = [
     { id: 'cp-5', name: 'Graphic Designer', interestId: 'int-3' },
 ];
 
-export const payrollRecords: any[] = []
+export const payrollRecords = [
+    { id: 'PR01', staffId: 'T01', month: '2024-09', grossSalary: 9000, deductions: 1800, netSalary: 7200 },
+    { id: 'PR02', staffId: 'T02', month: '2024-09', grossSalary: 6000, deductions: 900, netSalary: 5100 },
+    { id: 'PR03', staffId: 'T03', month: '2024-09', grossSalary: 5500, deductions: 825, netSalary: 4675 },
+    { id: 'PR04', staffId: 'T04', month: '2024-09', grossSalary: 4500, deductions: 540, netSalary: 3960 },
+];
