@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const exams = await prisma.exam.findMany();
     return NextResponse.json(exams);
