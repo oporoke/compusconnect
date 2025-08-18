@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { FeeStructure, Invoice, Payment, PayrollRecord, Expense } from '@prisma/client';
+import type { FeeStructure, Invoice, Payment, PayrollRecord, Expense } from '@/lib/data';
 import { useToast } from './use-toast';
 import { useAuth } from './use-auth';
 
