@@ -81,7 +81,7 @@ async function main() {
   }
   
   for (const assignment of mockAssignments) {
-    await prisma.assignment.upsert({ where: { id: assignment.id }, update: {}, create: { ...assignment, dueDate: new Date(assignment.dueDate) } });
+    await prisma.assignment.upsert({ where: { id: assignment.id }, update: {}, create: { ...assignment, dueDate: new Date(assignment.dueDate), skills: assignment.skills || [] } });
   }
   
   for (const book of mockBooks) {
@@ -190,11 +190,11 @@ async function main() {
   }
   
   for(const admission of mockAdmissions) {
-      await prisma.admission.upsert({ where: {id: admission.id}, update: {}, create: {...admission, date: new Date(admission.date)}})
+      await prisma.admission.upsert({ where: {id: admission.id}, update: {}, create: {...admission, date: new Date(admission.date), documents: admission.documents || []}})
   }
   
   for(const invoice of mockInvoices) {
-      await prisma.invoice.upsert({where: {id: invoice.id}, update:{}, create: {...invoice, date: new Date(invoice.date), dueDate: new Date(invoice.dueDate)}})
+      await prisma.invoice.upsert({where: {id: invoice.id}, update:{}, create: {...invoice, date: new Date(invoice.date), dueDate: new Date(invoice.dueDate), items: invoice.items}})
   }
 
   for(const payment of mockPayments) {
@@ -256,7 +256,7 @@ async function main() {
   }
 
   for(const campaign of mockCampaigns) {
-      await prisma.campaign.upsert({ where: { id: campaign.id }, update: {}, create: {...campaign, startDate: new Date(campaign.startDate), endDate: new Date(campaign.endDate)}})
+      await prisma.campaign.upsert({ where: { id: campaign.id }, update: {}, create: {...campaign, startDate: new Date(campaign.startDate), endDate: campaign.endDate ? new Date(campaign.endDate) : null}})
   }
 
   for(const pledge of mockPledges) {
@@ -276,7 +276,7 @@ async function main() {
   }
 
    for (const record of mockHealthRecords) {
-    await prisma.healthRecord.upsert({ where: { studentId: record.studentId }, update: {}, create: record });
+    await prisma.healthRecord.upsert({ where: { studentId: record.studentId }, update: {}, create: {...record, vaccinations: record.vaccinations || []} });
   }
 
   for (const visit of mockClinicVisits) {
