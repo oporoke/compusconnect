@@ -34,7 +34,7 @@ This repository contains extensive documentation covering every aspect of the pr
 | 📄 **[Software Requirements Specification (SRS)](./srs.md)** | Detailed breakdown of all functional and non-functional requirements. |
 | 🏗️ **[System Architecture & Design (SADD)](./SADD.md)** | Overview of the system architecture, technology stack, and module design. |
 | 💻 **[Developer Documentation](./DOCUMENTATION.md)** | In-depth guide to the codebase, component structure, and development flow. |
-| 🔗 **[API Documentation](./API_DOCUMENTATION.md)** | Conceptual blueprint for the backend RESTful API. |
+| 🔗 **[API Documentation](./API_DOCUMENTATION.md)** | Blueprint for the backend RESTful API, detailing endpoints and data structures. |
 | 🧑‍🏫 **[User Manual](./USER_MANUAL.md)** | A user-friendly guide for end-users (admins, teachers, parents). |
 | ⚙️ **[Admin & Deployment Guide](./ADMIN_GUIDE.md)** | Instructions for system administrators and DevOps engineers. |
 | 📈 **[Analytics & Reporting Guide](./analytics_reporting_guide.md)** | A guide for decision-makers on using the analytics features. |
