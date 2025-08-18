@@ -50,11 +50,22 @@ export const AlumniProvider: React.FC<{ children: ReactNode }> = ({ children }) 
             throw new Error('Failed to fetch alumni data');
         }
 
-        setAlumni(await alumniRes.json());
-        setDonations(await donationsRes.json());
-        setCampaigns(await campaignsRes.json());
-        setPledges(await pledgesRes.json());
-        setMentorships(await mentorshipsRes.json());
+        const alumniData = await alumniRes.json();
+        const donationsData = await donationsRes.json();
+        const campaignsData = await campaignsRes.json();
+        const pledgesData = await pledgesRes.json();
+        const mentorshipsData = await mentorshipsRes.json();
+        
+        const campaignsWithRaised = campaignsData.map((c:Campaign) => ({
+            ...c,
+            raised: donationsData.filter((d:Donation) => d.campaignId === c.id).reduce((sum:number, d:Donation) => sum + d.amount, 0)
+        }));
+
+        setAlumni(alumniData);
+        setDonations(donationsData);
+        setCampaigns(campaignsWithRaised);
+        setPledges(pledgesData);
+        setMentorships(mentorshipsData);
         
     } catch (error) {
        if (error instanceof Error && error.name !== 'AbortError') {

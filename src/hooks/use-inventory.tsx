@@ -51,32 +51,12 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const addAsset = useCallback((assetData: Omit<Asset, 'id' | 'status' | 'assignedToId' | 'purchaseDate'>) => {
     // This would be a POST request in a real app
-    setAssets(prev => {
-        const newAsset: Asset = {
-            ...assetData,
-            id: `ASSET-${Date.now()}`,
-            status: 'Available',
-            assignedToId: null,
-            purchaseDate: new Date()
-        };
-        const updatedAssets = [...prev, newAsset];
-        toast({ title: 'Asset Added (Mock)', description: `${assetData.name} has been added to inventory.` });
-        return updatedAssets;
-    });
+    toast({ title: 'Mock Action', description: 'Adding assets is not implemented in this demo.' });
   }, [toast]);
 
   const assignAsset = useCallback((assetId: string, assignedToId: string | null) => {
     // This would be a PUT/PATCH request in a real app
-    setAssets(prev => {
-        const updatedAssets = prev.map(a => {
-            if (a.id === assetId) {
-                return { ...a, assignedToId: assignedToId === 'null' ? null : assignedToId, status: assignedToId === 'null' ? 'Available' : 'In Use' as const };
-            }
-            return a;
-        });
-        toast({ title: 'Asset Assigned (Mock)', description: 'The asset assignment has been updated.' });
-        return updatedAssets;
-    });
+    toast({ title: 'Mock Action', description: 'Assigning assets is not implemented in this demo.' });
   }, [toast]);
 
   return (

@@ -13,7 +13,7 @@ interface HealthContextType {
   getRecordByStudentId: (studentId: string) => HealthRecord | undefined;
   getVisitsByStudentId: (studentId: string) => ClinicVisit[];
   updateRecord: (record: HealthRecord) => void;
-  addClinicVisit: (visit: Omit<ClinicVisit, 'id'>) => void;
+  addClinicVisit: (visit: Omit<ClinicVisit, 'id' | 'healthRecordId'>) => void;
   sendVaccinationReminders: () => void;
 }
 
@@ -68,14 +68,16 @@ export const HealthProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   }, [healthRecords]);
 
   const getVisitsByStudentId = useCallback((studentId: string) => {
-    return clinicVisits.filter(visit => visit.studentId === studentId);
-  }, [clinicVisits]);
+    const record = getRecordByStudentId(studentId);
+    if (!record) return [];
+    return clinicVisits.filter(visit => visit.healthRecordId === record.id);
+  }, [clinicVisits, getRecordByStudentId]);
 
   const updateRecord = useCallback((recordData: HealthRecord) => {
     toast({ title: 'Mock Action', description: 'Health record updates are not implemented in this demo.' });
   }, [toast]);
   
-  const addClinicVisit = useCallback((visitData: Omit<ClinicVisit, 'id'>) => {
+  const addClinicVisit = useCallback((visitData: Omit<ClinicVisit, 'id'| 'healthRecordId'>) => {
     toast({ title: 'Mock Action', description: 'Logging clinic visits is not implemented in this demo.' });
   }, [toast]);
 

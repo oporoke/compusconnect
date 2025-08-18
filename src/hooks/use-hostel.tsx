@@ -71,28 +71,7 @@ export const HostelProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const assignStudentToRoom = useCallback((hostelId: string, roomId: string, studentId: string) => {
     // This is a mock implementation. In a real app, this would be a POST/PUT request to an API endpoint.
-    setHostels(prevHostels => {
-      const newHostels = JSON.parse(JSON.stringify(prevHostels));
-      const hostel = newHostels.find((h: Hostel) => h.id === hostelId);
-      if (!hostel) return prevHostels;
-      
-      const room = hostel.rooms.find((r: any) => r.id === roomId);
-      if (!room || room.occupants.length >= room.capacity) {
-          toast({ variant: 'destructive', title: "Room Full", description: "Cannot assign student to a full room."});
-          return prevHostels;
-      }
-      
-      const alreadyAssigned = newHostels.some((h: Hostel) => h.rooms.some((r: any) => r.occupants.includes(studentId)));
-      if (alreadyAssigned) {
-          toast({ variant: 'destructive', title: "Already Assigned", description: "This student is already assigned to a room."});
-          return prevHostels;
-      }
-
-      room.occupants.push(studentId);
-      // In a real app, you would not persist to localStorage. This is for demo purposes.
-      localStorage.setItem('campus-connect-hostels', JSON.stringify(newHostels));
-      return newHostels;
-    });
+    toast({ title: 'Mock Action', description: `Room assignment is not implemented in this demo.` });
   }, [toast]);
   
   const getStudentById = useCallback((studentId: string) => {

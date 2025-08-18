@@ -66,7 +66,7 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
   }, [fetchAdmissions]);
 
   const addApplication = useCallback(async (applicationData: Omit<Admission, 'id' | 'status' | 'date' | 'documents'>) => {
-    const optimisticApp = { ...applicationData, id: `temp-${Date.now()}`, status: 'Pending' as const, date: new Date(), documents: [] };
+    const optimisticApp: Admission = { ...applicationData, id: `temp-${Date.now()}`, status: 'Pending' as const, date: new Date(), documents: [] };
     setApplications(prev => [optimisticApp, ...prev]);
     try {
         const response = await fetch('/api/admissions', {
