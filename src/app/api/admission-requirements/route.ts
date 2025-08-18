@@ -8,6 +8,6 @@ export async function GET() {
     return NextResponse.json(requirements);
   } catch (error) {
     console.error('Failed to fetch admission requirements:', error);
-    return new NextResponse('Failed to fetch admission requirements', { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch admission requirements' }, { status: 500 });
   }
 }
