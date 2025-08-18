@@ -1,6 +1,7 @@
-import { Role, User, ROLES } from './auth';
 
-// Re-export all prisma types and custom auth types
+import { Role, User } from './auth';
+
+// Re-export all prisma types and custom auth types for consistency
 export * from '@prisma/client';
 export type { Role, User };
 
@@ -26,13 +27,12 @@ export interface Message {
 }
 export type Conversation = Message[];
 
-// Added a type for CanteenMenu for better type safety
+// Define a type for CanteenMenu for better type safety
 export interface CanteenMenu {
     id: string;
     day: string;
     items: { name: string; price: number; stock: number; }[];
 }
-
 
 // Mock Data
 export const students = [
@@ -54,6 +54,7 @@ export const grades = [
   { studentId: 'S001', examId: 'E01', scores: { Math: 85, Science: 92, English: 78, History: 88 } },
   { studentId: 'S002', examId: 'E01', scores: { Math: 90, Science: 88, English: 82, History: 91 } },
   { studentId: 'S003', examId: 'E01', scores: { Math: 65, Science: 70, English: 68, History: 72 } },
+  { studentId: 'S001', examId: 'E02', scores: { Math: 88, Science: 95, English: 80, History: 90, Art: 93, "Physical Education": 89 } },
 ];
 
 export const staff = [
@@ -64,9 +65,9 @@ export const staff = [
 ];
 
 export const admissions = [
-  { id: 'APP001', name: 'John Doe', age: 14, previousSchool: 'Greenwood High', grade: '9', parentName: 'Richard Doe', parentEmail: 'r.doe@example.com', date: '2024-09-01', status: 'Pending', documents: [{ name: 'Birth Certificate', url: '#' }, { name: 'Previous Marksheet', url: '#' }] },
-  { id: 'APP002', name: 'Jane Smith', age: 15, previousSchool: 'Oakridge Academy', grade: '10', parentName: 'Robert Smith', parentEmail: 'r.smith@example.com', date: '2024-09-03', status: 'Approved' },
-  { id: 'APP003', name: 'Mike Ross', age: 14, previousSchool: 'Northwood Middle', grade: '9', parentName: 'Harvey Ross', parentEmail: 'h.ross@example.com', date: '2024-09-05', status: 'Rejected' },
+  { id: 'APP001', name: 'John Doe', age: 14, previousSchool: 'Greenwood High', grade: '9', parentName: 'Richard Doe', parentEmail: 'r.doe@example.com', date: new Date('2024-09-01'), status: 'Pending', documents: [{ name: 'Birth Certificate', url: '#' }, { name: 'Previous Marksheet', url: '#' }] },
+  { id: 'APP002', name: 'Jane Smith', age: 15, previousSchool: 'Oakridge Academy', grade: '10', parentName: 'Robert Smith', parentEmail: 'r.smith@example.com', date: new Date('2024-09-03'), status: 'Approved' },
+  { id: 'APP003', name: 'Mike Ross', age: 14, previousSchool: 'Northwood Middle', grade: '9', parentName: 'Harvey Ross', parentEmail: 'h.ross@example.com', date: new Date('2024-09-05'), status: 'Rejected' },
 ];
 
 export const admissionRequirements = [
@@ -145,8 +146,8 @@ export const hostels = [
 ];
 
 export const canteenAccounts = [
-    { studentId: 'S001', balance: 15.50 },
-    { studentId: 'S002', balance: 25.00 },
+    { id: 'CA01', studentId: 'S001', balance: 15.50 },
+    { id: 'CA02', studentId: 'S002', balance: 25.00 },
 ];
 export const canteenTransactions = [
     { id: 'CT01', studentId: 'S001', type: 'debit', amount: 5.00, description: 'Pizza Slice, Soda', date: '2024-10-01' },
@@ -155,6 +156,7 @@ export const canteenTransactions = [
 export const canteenMenu: CanteenMenu[] = [
     { id: 'CM1', day: 'Monday', items: [{ name: 'Pizza Slice', price: 2.50, stock: 50 }, { name: 'Apple Juice', price: 1.00, stock: 100 }] },
     { id: 'CM2', day: 'Tuesday', items: [{ name: 'Chicken Sandwich', price: 3.50, stock: 40 }, { name: 'Orange Juice', price: 1.00, stock: 100 }] },
+    { id: 'CM3', day: 'Wednesday', items: [{ name: 'Beef Burger', price: 4.00, stock: 30 }, { name: 'Fries', price: 2.00, stock: 80 }] },
 ];
 
 export const alumniProfiles = [
@@ -179,12 +181,12 @@ export const healthRecords = [
 ];
 
 export const clinicVisits = [
-    { id: 'CV01', studentId: 'S001', reason: 'Fever and cough', treatment: 'Prescribed paracetamol', date: '2024-09-28' },
+    { id: 'CV01', studentId: 'S001', reason: 'Fever and cough', treatment: 'Prescribed paracetamol', date: '2024-09-28', healthRecordId: 'S001' },
 ];
 
 export const assets = [
-    { id: 'AST01', name: 'Dell Latitude 5420 (SN: ABC123)', type: 'Device', status: 'In Use', assignedToId: 'T02', purchaseDate: '2023-01-15' },
-    { id: 'AST02', name: 'Epson Projector (SN: XYZ987)', type: 'Equipment', status: 'Available', assignedToId: null, purchaseDate: '2022-08-20' },
+    { id: 'AST01', name: 'Dell Latitude 5420 (SN: ABC123)', type: 'Device', status: 'In Use', assignedTo: 'T02', purchaseDate: '2023-01-15' },
+    { id: 'AST02', name: 'Epson Projector (SN: XYZ987)', type: 'Equipment', status: 'Available', assignedTo: null, purchaseDate: '2022-08-20' },
 ];
 
 export const skills = [
@@ -222,8 +224,8 @@ export const careerPaths = [
 ];
 
 export const payrollRecords = [
-    { id: 'PR01', staffId: 'T01', month: '2024-09', grossSalary: 9000, deductions: 1800, netSalary: 7200 },
-    { id: 'PR02', staffId: 'T02', month: '2024-09', grossSalary: 6000, deductions: 900, netSalary: 5100 },
-    { id: 'PR03', staffId: 'T03', month: '2024-09', grossSalary: 5500, deductions: 825, netSalary: 4675 },
-    { id: 'PR04', staffId: 'T04', month: '2024-09', grossSalary: 4500, deductions: 540, netSalary: 3960 },
+    { id: 'PAYROLL-2024-09-T01', staffId: 'T01', month: '2024-09', grossSalary: 9000, deductions: 2100, netSalary: 6900 },
+    { id: 'PAYROLL-2024-09-T02', staffId: 'T02', month: '2024-09', grossSalary: 6000, deductions: 1150, netSalary: 4850 },
+    { id: 'PAYROLL-2024-09-T03', staffId: 'T03', month: '2024-09', grossSalary: 5500, deductions: 1075, netSalary: 4425 },
+    { id: 'PAYROLL-2024-09-T04', staffId: 'T04', month: '2024-09', grossSalary: 4500, deductions: 740, netSalary: 3760 },
 ];

@@ -7,18 +7,13 @@ export async function GET() {
     // In a real app, the menu would be more structured in the DB.
     // For this demo, we'll just fetch all items and group them by a mock "day".
     const items = await prisma.canteenMenuItem.findMany();
-    // A simple way to create a weekly menu from a flat list of items
     const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+    
     const menu = days.map((day, index) => {
       // Create a slice of items for each day, cycling through the list
-      const start = (index * 3) % items.length;
-      const end = start + 3;
-      const dayItems = items.slice(start, end);
-      if (end > items.length && items.length > 0) {
-        dayItems.push(...items.slice(0, end - items.length));
-      }
+      const dayItems = items.length > 0 ? [items[index % items.length], items[(index + 1) % items.length]] : [];
       return {
-        id: (index + 1).toString(),
+        id: `day-${index + 1}`,
         day: day,
         items: dayItems
       };

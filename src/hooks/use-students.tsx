@@ -29,7 +29,7 @@ interface StudentContextType {
   getStudentById: (id: string) => Student | undefined;
   getGradesByStudentId: (id: string) => Grade[];
   getAttendanceByStudentId: (id: string) => AttendanceRecord[];
-  getSkillsByStudentId: (id: string) => (Skill & { source: string })[];
+  getSkillsByStudentId: (id: string) => (Omit<Skill, 'studentId'> & { source: string })[];
   isLoading: boolean;
 }
 
@@ -176,28 +176,33 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const getSkillsByStudentId = useCallback((studentId: string) => {
     if (!studentId) return [];
     
-    // Map submitted/graded assignments to skills
-    const acquiredSkills: Record<string, { level: number; source: string }> = {};
+    // This logic simulates skill acquisition from completed assignments.
+    const studentGrades = grades.filter(g => g.studentId === studentId);
+    const acquiredSkills: Record<string, { level: number; sources: Set<string> }> = {};
+
     assignments.forEach(assignment => {
-        const isCompleted = assignment.status === 'Submitted' || assignment.status === 'Graded';
+        // Find a grade for the student for an exam that contains this assignment's subject.
+        const relevantGrade = studentGrades.find(g => g.scores[assignment.subject] !== undefined);
+        const isCompleted = relevantGrade && relevantGrade.scores[assignment.subject] >= 40; // Assume completed if graded > 40
+        
         if (isCompleted && Array.isArray(assignment.skills)) {
             assignment.skills.forEach(skillName => {
                 if (!acquiredSkills[skillName]) {
-                    acquiredSkills[skillName] = { level: 0, source: assignment.title };
+                    acquiredSkills[skillName] = { level: 0, sources: new Set() };
                 }
-                acquiredSkills[skillName].level += 1; // Increment level for each completed assignment
+                acquiredSkills[skillName].level += 1;
+                acquiredSkills[skillName].sources.add(assignment.title);
             });
         }
     });
   
     return Object.entries(acquiredSkills).map(([name, data]) => ({
+      id: name, // Use skill name as a mock unique ID
       name,
-      level: Math.min(5, data.level), // Cap level at 5
-      source: data.source,
-      id: name, // Mock id
-      studentId, // Mock studentId
+      level: Math.min(5, data.level), // Cap level at 5 for progress bar
+      source: Array.from(data.sources).join(', '),
     }));
-  }, [assignments]);
+  }, [assignments, grades]);
 
   return (
     <StudentContext.Provider value={{ students, grades, exams, attendance, addStudent, deleteStudent, addExam, updateGrades, logAttendance, getStudentById, getGradesByStudentId, getAttendanceByStudentId, getSkillsByStudentId, isLoading }}>
