@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { Student as PrismaStudent, Grade as PrismaGrade, Exam as PrismaExam, AttendanceRecord as PrismaAttendanceRecord, DisciplinaryRecord, Skill } from '@prisma/client';
+import type { Student as PrismaStudent, Grade as PrismaGrade, Exam as PrismaExam, AttendanceRecord as PrismaAttendanceRecord, DisciplinaryRecord, Skill } from '@/lib/data';
 import { useAuditLog } from './use-audit-log';
 import { useToast } from './use-toast';
 import { useLMS } from './use-lms';
