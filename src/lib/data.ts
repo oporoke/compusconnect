@@ -1,7 +1,7 @@
 import { Role, User, ROLES } from './auth';
 export type { User, Role };
 
-export type { DisciplinaryRecord, Student, Exam, Grade, Announcement, CourseMaterial, Assignment, OnlineClass, Admission, Staff, Book, LibraryTransaction, Vehicle, Driver, Route, Room, Hostel, FeeStructure, Invoice, Payment, PayrollRecord, Expense, CanteenAccount, CanteenTransaction, CanteenMenuItem, AlumniProfile, Mentorship, HealthRecord, ClinicVisit, Asset } from '@prisma/client';
+export type { DisciplinaryRecord, Student, Exam, Grade, Announcement, CourseMaterial, Assignment, OnlineClass, Admission, AdmissionRequirement, Staff, Book, LibraryTransaction, Vehicle, Driver, Route, Room, Hostel, FeeStructure, Invoice, Payment, PayrollRecord, Expense, CanteenAccount, CanteenTransaction, CanteenMenuItem, AlumniProfile, Mentorship, HealthRecord, ClinicVisit, Asset } from '@prisma/client';
 
 
 export const defaultCourseSchedules = `
@@ -184,3 +184,33 @@ export const skills = [
   { id: 'skill-2', name: 'Data Analysis', studentId: 'S001' },
   { id: 'skill-3', name: 'Creative Writing', studentId: 'S001' },
 ];
+
+export const threads = [
+    { id: 'thread-1', title: 'Questions about Photosynthesis Essay', authorName: 'Alice Johnson', createdAt: '2024-10-20T10:00:00Z', replies: [
+        { authorName: 'Mr. Samuel Jones', content: "Great question! Make sure to focus on the Calvin Cycle.", createdAt: '2024-10-20T11:30:00Z' },
+        { authorName: 'Alice Johnson', content: "Thank you, that helps!", createdAt: '2024-10-20T12:00:00Z' }
+    ]}
+];
+
+export const badges = [
+    { id: 'badge-1', name: 'Perfect Attendance', description: 'Attended all classes in a month.', icon: 'Star' },
+    { id: 'badge-2', name: 'Top Performer', description: 'Scored above 90% in an exam.', icon: 'Trophy' },
+    { id: 'badge-3', name: 'Bookworm', description: 'Read 5+ library books.', icon: 'BookOpen' },
+    { id: 'badge-4', name: 'Master Debater', description: 'Actively participated in forum discussions.', icon: 'Brain' }
+];
+
+export const careerInterests = [
+    { id: 'int-1', name: 'Technology' },
+    { id: 'int-2', name: 'Healthcare' },
+    { id: 'int-3', name: 'Arts & Design' },
+];
+
+export const careerPaths = [
+    { id: 'cp-1', name: 'Software Engineer', interestId: 'int-1' },
+    { id: 'cp-2', name: 'Data Scientist', interestId: 'int-1' },
+    { id: 'cp-3', name: 'Doctor', interestId: 'int-2' },
+    { id: 'cp-4', name: 'Nurse', interestId: 'int-2' },
+    { id: 'cp-5', name: 'Graphic Designer', interestId: 'int-3' },
+];
+
+export const payrollRecords: any[] = []
