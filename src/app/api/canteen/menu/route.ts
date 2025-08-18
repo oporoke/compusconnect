@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     // In a real app, the menu would be more structured in the DB.
     // For this demo, we'll just fetch all items and group them by a mock "day".

@@ -174,21 +174,20 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [attendance]);
 
   const getSkillsByStudentId = useCallback((studentId: string) => {
-    const studentGrades = getGradesByStudentId(studentId);
-    if (!studentGrades) return [];
-  
+    if (!studentId) return [];
+    
     // Map submitted/graded assignments to skills
     const acquiredSkills: Record<string, { level: number; source: string }> = {};
     assignments.forEach(assignment => {
-      const isCompleted = assignment.status === 'Submitted' || assignment.status === 'Graded';
-      if (isCompleted && assignment.skills) {
-        (assignment.skills as unknown as string[]).forEach(skillName => {
-          if (!acquiredSkills[skillName]) {
-            acquiredSkills[skillName] = { level: 0, source: assignment.title };
-          }
-          acquiredSkills[skillName].level += 1; // Increment level for each completed assignment
-        });
-      }
+        const isCompleted = assignment.status === 'Submitted' || assignment.status === 'Graded';
+        if (isCompleted && Array.isArray(assignment.skills)) {
+            assignment.skills.forEach(skillName => {
+                if (!acquiredSkills[skillName]) {
+                    acquiredSkills[skillName] = { level: 0, source: assignment.title };
+                }
+                acquiredSkills[skillName].level += 1; // Increment level for each completed assignment
+            });
+        }
     });
   
     return Object.entries(acquiredSkills).map(([name, data]) => ({
@@ -198,7 +197,7 @@ export const StudentProvider: React.FC<{ children: ReactNode }> = ({ children })
       id: name, // Mock id
       studentId, // Mock studentId
     }));
-  }, [getGradesByStudentId, assignments]);
+  }, [assignments]);
 
   return (
     <StudentContext.Provider value={{ students, grades, exams, attendance, addStudent, deleteStudent, addExam, updateGrades, logAttendance, getStudentById, getGradesByStudentId, getAttendanceByStudentId, getSkillsByStudentId, isLoading }}>
