@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const admissions = await prisma.admission.findMany({
         orderBy: { date: 'desc' }
