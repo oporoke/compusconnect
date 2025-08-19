@@ -1,4 +1,3 @@
-
 # CampusConnect Lite - Code Documentation
 
 This document provides a detailed overview of the CampusConnect Lite application's codebase, architecture, and functionality.
@@ -15,6 +14,7 @@ This document provides a detailed overview of the CampusConnect Lite application
 These server-side functions handle AI-powered features using Genkit.
 
 #### `getChatbotResponse`
+
 - **Name**: `getChatbotResponse`
 - **Parameters**: `input: ChatbotInput` containing `studentId` and `question`.
 - **Calls**: `chatbotPrompt` which uses `getLatestGrades` and `getAttendanceSummary` tools.
@@ -22,6 +22,7 @@ These server-side functions handle AI-powered features using Genkit.
 - **Purpose**: Provides conversational answers to parent/student questions by using AI-powered tools to query the database for academic information.
 
 #### `generateWeeklyDigest`
+
 - **Name**: `generateWeeklyDigest`
 - **Parameters**: `input: WeeklyDigestInput` containing `studentName` and a string of `logEntries`.
 - **Calls**: `weeklyDigestPrompt`.
@@ -29,6 +30,7 @@ These server-side functions handle AI-powered features using Genkit.
 - **Purpose**: Analyzes a student's weekly activity log to create a concise, categorized summary for parents, highlighting achievements and areas for attention.
 
 #### `differentiateContent`
+
 - **Name**: `differentiateContent`
 - **Parameters**: `input: DifferentiatorInput` containing `originalText` and `targetLevel`.
 - **Calls**: `differentiationPrompt`.
@@ -36,6 +38,7 @@ These server-side functions handle AI-powered features using Genkit.
 - **Purpose**: Adapts a piece of educational text to be simpler or more advanced, helping teachers cater to diverse learning needs.
 
 #### `generateLessonPlan`
+
 - **Name**: `generateLessonPlan`
 - **Parameters**: `input: LessonPlanInput` containing `topic`, `gradeLevel`, and `duration`.
 - **Calls**: `lessonPlannerPrompt`.
@@ -45,6 +48,7 @@ These server-side functions handle AI-powered features using Genkit.
 ### Core React Components
 
 #### `ParentDashboard`
+
 - **Name**: `ParentDashboard`
 - **Parameters**: `studentId: string`.
 - **Calls**: `useStudents()`, `generateWeeklyDigest()`.
@@ -52,6 +56,7 @@ These server-side functions handle AI-powered features using Genkit.
 - **Dependencies**: `@/hooks/use-students`, `@/ai/flows/ai-weekly-digest`.
 
 #### `ChatbotWidget`
+
 - **Name**: `ChatbotWidget`
 - **Parameters**: `studentId: string`.
 - **Calls**: `getChatbotResponse()` API endpoint.
@@ -59,6 +64,7 @@ These server-side functions handle AI-powered features using Genkit.
 - **Dependencies**: `@/ai/flows/ai-chatbot`.
 
 #### `AutomatedMarkingPage`
+
 - **Name**: `AutomatedMarkingPage`
 - **Parameters**: None.
 - **Calls**: `useStudents().updateGrades()`.
@@ -68,6 +74,7 @@ These server-side functions handle AI-powered features using Genkit.
 ### Custom Hooks
 
 #### `useAuth`
+
 - **Name**: `useAuth`
 - **Parameters**: None.
 - **Returns**: An object with `user`, `authState`, `login`, `logout`, `submitMfa`, and `isLoading`.
@@ -75,6 +82,7 @@ These server-side functions handle AI-powered features using Genkit.
 - **Dependencies**: `react`, `next/navigation`, `@/hooks/use-audit-log`.
 
 #### API-Driven Data Hooks (`useStudents`, `useFinance`, etc.)
+
 - **Name**: e.g., `useStudents`
 - **Parameters**: None.
 - **Returns**: State variables (e.g., `students`, `grades`, `isLoading`) and action functions (e.g., `addStudent`).
@@ -83,15 +91,15 @@ These server-side functions handle AI-powered features using Genkit.
 
 ## 3. Flow / Execution Order
 
-1.  **Initial Load & Redirect**: User accesses the site, `src/app/page.tsx` redirects them to `/login`.
-2.  **Authentication**: The `LoginPage` is displayed, showing the `LoginForm` by default. The user can toggle to the `SignupForm`.
-3.  **Credential Entry**: The user fills in their details (name, email, password, role) and submits the form.
-4.  **MFA Step**: The `login` function from `useAuth` is called, which captures the user's details and updates the state to `awaitingMfa`. The `MfaForm` is displayed.
-5.  **Session Creation**: The user enters a 6-digit code. The `submitMfa` function calls the `/api/auth/login` backend endpoint. The backend creates a session and returns a secure, HTTP-only cookie. The `useAuth` hook then updates its state to `authenticated`.
-6.  **Redirection to Dashboard**: The `LoginPage` (or any other page) detects the `authenticated` state and redirects the user to `/dashboard`.
-7.  **Authenticated Layout**: `AppLayout` takes over. It confirms authentication via `useAuth` and renders the main application interface.
-8.  **Data Fetching**: All data provider hooks (e.g., `StudentProvider`, `FinanceProvider`), now detecting that `authState` is `authenticated`, trigger their `fetch` requests to the backend APIs (e.g., `/api/students`).
-9.  **Page Rendering**: Once data is loaded, the requested page component (e.g., `StudentsPage`) renders with live data from the backend.
+1. **Initial Load & Redirect**: User accesses the site, `src/app/page.tsx` redirects them to `/login`.
+2. **Authentication**: The `LoginPage` is displayed, showing the `LoginForm` by default. The user can toggle to the `SignupForm`.
+3. **Credential Entry**: The user fills in their details (name, email, password, role) and submits the form.
+4. **MFA Step**: The `login` function from `useAuth` is called, which captures the user's details and updates the state to `awaitingMfa`. The `MfaForm` is displayed.
+5. **Session Creation**: The user enters a 6-digit code. The `submitMfa` function calls the `/api/auth/login` backend endpoint. The backend creates a session and returns a secure, HTTP-only cookie. The `useAuth` hook then updates its state to `authenticated`.
+6. **Redirection to Dashboard**: The `LoginPage` (or any other page) detects the `authenticated` state and redirects the user to `/dashboard`.
+7. **Authenticated Layout**: `AppLayout` takes over. It confirms authentication via `useAuth` and renders the main application interface.
+8. **Data Fetching**: All data provider hooks (e.g., `StudentProvider`, `FinanceProvider`), now detecting that `authState` is `authenticated`, trigger their `fetch` requests to the backend APIs (e.g., `/api/students`).
+9. **Page Rendering**: Once data is loaded, the requested page component (e.g., `StudentsPage`) renders with live data from the backend.
 10. **AI Feature Interaction**: On pages like "AI Weekly Digest", the user interacts with a component that calls a server-side Genkit flow (e.g., `generateWeeklyDigest`) to get an AI-generated result.
 
 ## 4. Backend Integration Strategy
@@ -112,22 +120,30 @@ The application has been refactored from a mock, `localStorage`-based prototype 
 
 ## 6. Usage Guide (Local Development)
 
-1.  **Install Dependencies**:
-    ```bash
-    npm install
-    ```
-2.  **Set up Database**: Apply database migrations and seed it with initial data.
-    ```bash
-    npx prisma migrate dev --name init
-    npx prisma db seed
-    ```
-3.  **Start the Genkit Server**: (For AI features)
-    ```bash
-    npm run genkit:dev
-    ```
-4.  **Start the Next.js Development Server**: (Main App & API)
-    ```bash
-    npm run dev
-    ```
-5.  **Access the App**:
-    Open your browser and navigate to `http://localhost:9002`.
+1. **Install Dependencies**:
+
+   ```bash
+   npm install
+   ```
+
+2. **Set up Database**: Apply database migrations and seed it with initial data.
+
+   ```bash
+   npx prisma migrate dev --name init
+   npx prisma db seed
+   ```
+
+3. **Start the Genkit Server**: (For AI features)
+
+   ```bash
+   npm run genkit:dev
+   ```
+
+4. **Start the Next.js Development Server**: (Main App & API)
+
+   ```bash
+   npm run dev
+   ```
+
+5. **Access the App**:
+   Open your browser and navigate to `http://localhost:9002`.
