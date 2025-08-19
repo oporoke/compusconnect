@@ -30,7 +30,8 @@ export const AdmissionsProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       const response = await fetch('/api/admissions', { signal });
       if (!response.ok) {
-        console.error('Failed to fetch admissions from API.');
+        // Use console.log instead of console.error to avoid Next.js overlay
+        console.log('Failed to fetch admissions from API.');
       }
       const data = await response.json();
       setApplications(data);
